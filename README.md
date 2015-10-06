@@ -20,6 +20,10 @@ For Oct. 27
     * electrons entering/leaving
 * within phospholipid bilayer
 
+Some resources/inspiration:
+* [Powering the Cell: Mitochondria](https://www.youtube.com/watch?v=RrS2uROUjK4)
+* [Molecular animation of ATP synthase](https://www.youtube.com/watch?v=GM9buhWJjlA)
+
 ### Interactivity Exercises
 
 * take apart dimer -> fall apart
