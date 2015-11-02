@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/biorender/biorender/issues"
   },
-  "homepage": "https://github.com/biorender/biorender#readme"
+  "homepage": "https://github.com/biorender/biorender#readme",
+  "devDependencies": {
+    "babel-core": "^6.0.15",
+    "babel-loader": "^6.0.0",
+    "babel-preset-es2015": "^6.0.15",
+    "webpack": "^1.12.2"
+  }
 }
