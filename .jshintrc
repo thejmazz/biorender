@@ -1,8 +1,5 @@
 {
     "esnext": true,
     "globalstrict": true,
-    "globals": {
-        "console": true,
-        "module": true
-    }
+    "globals": {}
 }
