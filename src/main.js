@@ -74,11 +74,13 @@ loader.load('/models/ATP-synthase.json', function(geometry, materials) {
     scene.add(bBox);
     // scene.add(dimer);
 
-    for (let i=0; i < 2; i++) {
-        for (let j=0; j < 2; j++) {
+    for (let i=0; i < 4; i++) {
+        for (let j=0; j < 4; j++) {
             var dimerN = dimer.clone();
+            dimerN.matrixAutoUpdate = false;
             dimerN.position.x = -50 + i*20;
             dimerN.position.z = -50 + j*50;
+            dimerN.updateMatrix();
 
             scene.add(dimerN);
         }
