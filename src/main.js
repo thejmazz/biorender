@@ -45,24 +45,44 @@ camera.position.z = 5;
 camera.position.y = 2;
 camera.lookAt( new THREE.Vector3());
 
-var axisHelper = new THREE.AxisHelper( 5 );
-scene.add( axisHelper );
+// var axisHelper = new THREE.AxisHelper( 5 );
+// scene.add( axisHelper );
 
+
+var protein, dimer;
 loader.load('/models/ATP-synthase.json', function(geometry, materials) {
-    var material = new THREE.MeshNormalMaterial();
-    var obj = new THREE.Mesh(geometry, material);
-    obj.position.y += 10;
+    geometry.computeBoundingBox();
+    protein = new THREE.Mesh(
+        geometry,
+        new THREE.MeshNormalMaterial()
+    );
+    protein.position.y = Math.abs(protein.geometry.boundingBox.min.y);
 
+    var dimer = new THREE.Object3D();
 
-    var obj2 = new THREE.Mesh(geometry, material);
-    obj2.position.y += 10;
-    obj2.position.x += 10;
-    obj2.position.z += 27;
-    // obj2.position.x += 20;
-    obj2.rotation.y += Math.PI;
+    dimer.add(protein);
 
-    scene.add(obj);
-    scene.add(obj2);
+    var protein2 = protein.clone();
+
+    protein2.position.z += 25;
+    protein2.rotation.y += Math.PI;
+    dimer.add(protein2);
+
+    var bBox = new THREE.BoundingBoxHelper(dimer);
+    bBox.update();
+
+    scene.add(bBox);
+    // scene.add(dimer);
+
+    for (let i=0; i < 2; i++) {
+        for (let j=0; j < 2; j++) {
+            var dimerN = dimer.clone();
+            dimerN.position.x = -50 + i*20;
+            dimerN.position.z = -50 + j*50;
+
+            scene.add(dimerN);
+        }
+    }
 });
 
 
@@ -70,8 +90,12 @@ loader.load('/models/ATP-synthase.json', function(geometry, materials) {
 function render() {
     stats.begin();
 
-    // cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
+    if (dimer) {
+        dimer.rotation.y += 0.01;
+        // protein.applyMatrix(dimer.matrixWorld);
+        // dimer.rotateOnAxis(new THREE.Vector3(0,1,0), 0.01);
+    }
     renderer.render(scene, camera);
 
     stats.end();
