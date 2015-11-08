@@ -91,7 +91,7 @@ function createProtein() {
 loaderPromise('/models/ATP-synthase.json').then(function(geo, mat) {
     // Remove loading
     var loading = document.getElementById('loading');
-    loading.parentNode.removeChild(loading);
+    loading.remove();
 
     // Initialize scene
     init();
