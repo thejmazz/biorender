@@ -7,6 +7,7 @@ import requestAnimationFrame from 'raf';
 import OrbitControls from 'three-orbit-controls';
 
 var loader = new THREE.JSONLoader();
+
 function loaderPromise(url) {
     return new Promise((resolve, reject) => {
         loader.load(url, function(geometry, materials) {
@@ -16,7 +17,8 @@ function loaderPromise(url) {
 }
 
 
-var stats, scene, renderer, camera, cube;
+var stats, scene, renderer, camera, cube, light, sphere;
+
 function init() {
     // Stats
     stats = new Stats();
@@ -59,15 +61,31 @@ function init() {
     camera.position.z = 5;
     camera.position.y = 2;
     camera.lookAt(new THREE.Vector3());
+
+    var aLight = new THREE.AmbientLight(0xf40d0d);
+    scene.add(aLight);
+
+    light = new THREE.PointLight(0xffffff, 1, 100);
+    sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 10, 10),
+        new THREE.MeshBasicMaterial({color:0xffffff})
+    );
+    sphere.position.set(10,10,25);
+    light.position.set(10, 10, 25);
+    scene.add(light);
+    // camera.add(light);
+    // light.position = new THREE.Vector3(0,0,10);
+    scene.add(sphere);
 }
 
 
 var protein, geometry, materials;
+
 function createProtein() {
     geometry.computeBoundingBox();
     protein = new THREE.Mesh(
         geometry,
-        new THREE.MeshNormalMaterial()
+        new THREE.MeshLambertMaterial({color: 0x2194cf})
     );
     protein.position.y = Math.abs(protein.geometry.boundingBox.min.y);
 
@@ -108,11 +126,19 @@ loaderPromise('/models/ATP-synthase.json').then(function(geo, mat) {
 });
 
 
+var dTime, sTime = (new Date()).getTime();
+
 // Render
 function render() {
     stats.begin();
 
+    dTime = (new Date()).getTime() - sTime;
     cube.rotation.y += 0.01;
+    let x = 20 + Math.sin(dTime/2000)*10;
+    let z = 13 + Math.sin(dTime/1000)*10;
+    let y = 7 + Math.sin(dTime/500)*5;
+    light.position.set(x,y,z);
+    sphere.position.set(x,y,z);
     renderer.render(scene, camera);
 
     stats.end();
