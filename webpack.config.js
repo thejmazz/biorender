@@ -5,7 +5,7 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-    entry: ['./src/main', 'webpack/hot/dev-server'],
+    entry: ['webpack/hot/dev-server', './node_modules/babel-polyfill', './src/main'],
     output: {
         path: path.resolve(__dirname, 'build'),
         filename: 'bundle.js'
@@ -32,6 +32,6 @@ module.exports = {
     devServer: {
         contentBase: path.resolve(__dirname, 'app'),
         colors: true,
-        hot: true
+        hot: false
     }
 };

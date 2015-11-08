@@ -19,6 +19,7 @@
   "devDependencies": {
     "babel-core": "^6.0.15",
     "babel-loader": "^6.0.0",
+    "babel-polyfill": "^6.0.16",
     "babel-preset-es2015": "^6.0.15",
     "open-browser-webpack-plugin": "0.0.1",
     "webpack": "^1.12.2"

@@ -1,5 +1,7 @@
 'use strict';
 /* globals require, window, document */
+// require("babel-polyfill");
+// require("regenerator/runtime");
 
 import Stats from 'stats.js';
 import THREE from 'three';
@@ -17,7 +19,7 @@ document.body.appendChild(stats.domElement);
 
 // Scene
 var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xffffff);
@@ -31,7 +33,7 @@ cube.position.y = 1;
 // cube.matrixAutoUpdate = false;
 scene.add(cube);
 
-var planeGeom = new THREE.PlaneGeometry(1000,1000, 100, 100);
+var planeGeom = new THREE.PlaneGeometry(1500,500, 100, 100);
 var planeMaterial = new THREE.MeshBasicMaterial({color: 0xacacac});
 var planeWireframe = new THREE.MeshBasicMaterial({color: 0x5e5e5e, wireframe: true});
 var plane = new THREE.SceneUtils.createMultiMaterialObject(planeGeom, [planeMaterial, planeWireframe]);
@@ -48,6 +50,41 @@ camera.lookAt( new THREE.Vector3());
 // var axisHelper = new THREE.AxisHelper( 5 );
 // scene.add( axisHelper );
 
+function* loaderWrapper(url) {
+    let done = false;
+    let geom, mat;
+    loader.load(url, function(geometry, materials) {
+        geom = geometry;
+        mat = materials;
+    });
+    if (done) {
+        yield [geom, mat];
+    }
+}
+
+
+function* fibonacci(){
+  var fn1 = 1;
+  var fn2 = 1;
+  while (true){
+    var current = fn2;
+    fn2 = fn1;
+    fn1 = fn1 + current;
+    var reset = yield current;
+    if (reset){
+        fn1 = 1;
+        fn2 = 1;
+    }
+  }
+}
+
+var sequence = fibonacci();
+console.log(sequence.next().value);     // 1
+console.log(sequence.next().value);     // 1
+console.log(sequence.next().value);     // 2
+console.log(sequence.next().value);     // 3
+console.log(sequence.next().value);     // 5
+console.log(sequence.next().value);     // 8
 
 var protein, dimer;
 loader.load('/models/ATP-synthase.json', function(geometry, materials) {
@@ -68,22 +105,27 @@ loader.load('/models/ATP-synthase.json', function(geometry, materials) {
     protein2.rotation.y += Math.PI;
     dimer.add(protein2);
 
-    var bBox = new THREE.BoundingBoxHelper(dimer);
-    bBox.update();
-
-    scene.add(bBox);
+    // var bBox = new THREE.BoundingBoxHelper(dimer);
+    // bBox.update();
+    // scene.add(bBox);
     // scene.add(dimer);
 
-    for (let i=0; i < 4; i++) {
-        for (let j=0; j < 4; j++) {
-            var dimerN = dimer.clone();
-            dimerN.matrixAutoUpdate = false;
-            dimerN.position.x = -50 + i*20;
-            dimerN.position.z = -50 + j*50;
-            dimerN.updateMatrix();
+    // for (let i=0; i < 4; i++) {
+    //     for (let j=0; j < 4; j++) {
+    //         var dimerN = dimer.clone();
+    //         dimerN.matrixAutoUpdate = false;
+    //         dimerN.position.x = -50 + i*20;
+    //         dimerN.position.z = -50 + j*50;
+    //         dimerN.updateMatrix();
+    //
+    //         scene.add(dimerN);
+    //     }
+    // }
 
-            scene.add(dimerN);
-        }
+    for (let i=0; i < 3; i++) {
+        var dimerI = dimer.clone();
+        dimerI.position.x = i*20;
+        scene.add(dimerI);
     }
 });
 
