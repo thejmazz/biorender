@@ -1,10 +1,13 @@
 'use strict';
-/* globals require, window, document */
+/* globals require, window, document, console */
 
 import Stats from 'stats.js';
-import THREE from 'three';
+// import THREE from 'three';
 import requestAnimationFrame from 'raf';
 import OrbitControls from 'three-orbit-controls';
+// import SimplifyModifier from './SimplifyModifier';
+
+// window.THREE = THREE;
 
 var loader = new THREE.JSONLoader();
 
@@ -86,6 +89,27 @@ function init() {
 var protein, geometry, materials;
 
 function createProtein() {
+    var simplify = new THREE.SimplifyModifier();
+    console.log(simplify);
+
+    // var sortedGeom = simplify.modify(geometry);
+    // console.log(sortedGeom);
+
+
+    var geomba = new THREE.SphereGeometry(2, 20, 20);
+    var blackWireframe = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
+    var flab = new THREE.Mesh(geomba, new THREE.MeshNormalMaterial());
+    flab.position.set(-10,10,10);
+    scene.add(flab);
+
+    simplify.modify(geomba);
+
+    var geomba2 = new THREE.SphereGeometry(2, 20, 20);
+    // var geomba2 = simplify.modify(geomba.clone());
+    var flab2 = new THREE.Mesh(geomba2, blackWireframe);
+    flab2.position.set(-10, 10, 15);
+    scene.add(flab2);
+
     geometry.computeBoundingBox();
     protein = new THREE.Mesh(
         geometry,
@@ -110,7 +134,7 @@ function createProtein() {
     }
 }
 
-loaderPromise('/models/ATP-synthase.json').then(function(geo, mat) {
+loaderPromise('/models/ATP-synthase-0.25.json').then(function(geo, mat) {
     // Remove loading
     var loading = document.getElementById('loading');
     loading.remove();
@@ -138,11 +162,13 @@ function render() {
 
     dTime = (new Date()).getTime() - sTime;
     cube.rotation.y += 0.01;
+
     // let x = 20 + Math.sin(dTime/2000)*10;
     // let z = 13 + Math.sin(dTime/1000)*10;
     // let y = 7 + Math.sin(dTime/500)*5;
     // light.position.set(x,y,z);
     // sphere.position.set(x,y,z);
+
     renderer.render(scene, camera);
 
     stats.end();
