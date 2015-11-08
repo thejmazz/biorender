@@ -67,15 +67,19 @@ function init() {
 
     light = new THREE.PointLight(0xffffff, 1, 100);
     sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 10, 10),
+        new THREE.SphereGeometry(0.2, 10, 10),
         new THREE.MeshBasicMaterial({color:0xffffff})
     );
-    sphere.position.set(10,10,25);
-    light.position.set(10, 10, 25);
-    scene.add(light);
-    // camera.add(light);
-    // light.position = new THREE.Vector3(0,0,10);
-    scene.add(sphere);
+    // sphere.position.set(10,10,25);
+    // light.position.set(10, 10, 25);
+    // scene.add(light);
+    // scene.add(sphere);
+
+    camera.add(light);
+    // camera.add(sphere);
+    light.position.set(0,0,-10);
+    sphere.position.set(0,0,-10);
+    scene.add(camera);
 }
 
 
@@ -134,11 +138,11 @@ function render() {
 
     dTime = (new Date()).getTime() - sTime;
     cube.rotation.y += 0.01;
-    let x = 20 + Math.sin(dTime/2000)*10;
-    let z = 13 + Math.sin(dTime/1000)*10;
-    let y = 7 + Math.sin(dTime/500)*5;
-    light.position.set(x,y,z);
-    sphere.position.set(x,y,z);
+    // let x = 20 + Math.sin(dTime/2000)*10;
+    // let z = 13 + Math.sin(dTime/1000)*10;
+    // let y = 7 + Math.sin(dTime/500)*5;
+    // light.position.set(x,y,z);
+    // sphere.position.set(x,y,z);
     renderer.render(scene, camera);
 
     stats.end();
