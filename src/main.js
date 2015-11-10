@@ -11,51 +11,42 @@ import OrbitControls from 'three-orbit-controls';
 
 var loader = new THREE.JSONLoader();
 
-function loaderModel(url) {
+function loadModel(url) {
     return new Promise((resolve, reject) => {
         loader.load(url, resolve);
     });
 }
 
-function loaderPromise(url) {
-    return new Promise((resolve, reject) => {
-        loader.load(url, function(geometry, materials) {
-            resolve(geometry, materials);
-        });
-    });
-}
+co(function *(){
+    // return yield Promise.all([
+    //     loadModel('/models/ATP-synthase.json'),
+    //     loadModel('/models/ATP-synthase-0.25.json')
+    // ]);
 
-// co(function *(){
-//     // return yield Promise.all([
-//     //     loaderModel('/models/ATP-synthase.json'),
-//     //     loaderModel('/models/ATP-synthase-0.25.json')
-//     // ]);
-//
-//     return yield loaderModel('/models/ATP-synthase.json');
-// }).then( (models) => {
-//     // console.log(models);
-//
-//
-//     // // Remove loading
-//     // var loading = document.getElementById('loading');
-//     // loading.remove();
-//     //
-//     // // Initialize scene
-//     // init();
-//     //
-//     // // Make loaded model available
-//     // geometry = models;
-//     // // materials = models[0].material;
-//     //
-//     // // Create dimer from loaded model
-//     // createProtein();
-//     //
-//     // // ==== Render ====
-//     // render();
-//
-// }).catch( (err) => {
-//     console.error(err);
-// });
+    return yield loadModel('/models/ATP-synthase.json');
+}).then( (model) => {
+    console.log(model);
+
+    // // Remove loading
+    // var loading = document.getElementById('loading');
+    // loading.remove();
+    //
+    // // Initialize scene
+    // init();
+    //
+    // // Make loaded model available
+    // geometry = model;
+    // // materials = models[0].material;
+    //
+    // // Create dimer from loaded model
+    // createProtein();
+    //
+    // // ==== Render ====
+    // render();
+
+}).catch( (err) => {
+    console.error(err);
+});
 
 
 var stats, scene, renderer, camera, cube, light, sphere;
@@ -152,7 +143,7 @@ function createProtein() {
 }
 
 
-loaderPromise('/models/ATP-synthase-0.25.json').then(function(geo, mat) {
+loadModel('/models/ATP-synthase-0.25.json').then(function(geo, mat) {
     // Remove loading
     var loading = document.getElementById('loading');
     loading.remove();
