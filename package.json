@@ -25,6 +25,9 @@
     "webpack": "^1.12.2"
   },
   "dependencies": {
+    "babel-core": "^6.1.2",
+    "bluebird": "^3.0.5",
+    "co": "^4.6.0",
     "raf": "^3.1.0",
     "stats.js": "^1.0.0",
     "three": "^0.73.0",

@@ -1,12 +1,21 @@
 'use strict';
 /* globals require, window, document, console, THREE */
 
+import Promise from 'bluebird';
+import co from 'co';
 import Stats from 'stats.js';
 // import THREE from 'three';
 import requestAnimationFrame from 'raf';
 import OrbitControls from 'three-orbit-controls';
 
+
 var loader = new THREE.JSONLoader();
+
+function loaderModel(url) {
+    return new Promise((resolve, reject) => {
+        loader.load(url, resolve);
+    });
+}
 
 function loaderPromise(url) {
     return new Promise((resolve, reject) => {
@@ -15,6 +24,38 @@ function loaderPromise(url) {
         });
     });
 }
+
+// co(function *(){
+//     // return yield Promise.all([
+//     //     loaderModel('/models/ATP-synthase.json'),
+//     //     loaderModel('/models/ATP-synthase-0.25.json')
+//     // ]);
+//
+//     return yield loaderModel('/models/ATP-synthase.json');
+// }).then( (models) => {
+//     // console.log(models);
+//
+//
+//     // // Remove loading
+//     // var loading = document.getElementById('loading');
+//     // loading.remove();
+//     //
+//     // // Initialize scene
+//     // init();
+//     //
+//     // // Make loaded model available
+//     // geometry = models;
+//     // // materials = models[0].material;
+//     //
+//     // // Create dimer from loaded model
+//     // createProtein();
+//     //
+//     // // ==== Render ====
+//     // render();
+//
+// }).catch( (err) => {
+//     console.error(err);
+// });
 
 
 var stats, scene, renderer, camera, cube, light, sphere;
@@ -110,6 +151,7 @@ function createProtein() {
     }
 }
 
+
 loaderPromise('/models/ATP-synthase-0.25.json').then(function(geo, mat) {
     // Remove loading
     var loading = document.getElementById('loading');
@@ -128,7 +170,6 @@ loaderPromise('/models/ATP-synthase-0.25.json').then(function(geo, mat) {
     // ==== Render ====
     render();
 });
-
 
 var dTime, sTime = (new Date()).getTime();
 
