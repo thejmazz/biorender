@@ -17,34 +17,32 @@ function loadModel(url) {
     });
 }
 
-co(function *(){
+function *start() {
     // return yield Promise.all([
     //     loadModel('/models/ATP-synthase.json'),
     //     loadModel('/models/ATP-synthase-0.25.json')
     // ]);
 
-    return yield loadModel('/models/ATP-synthase.json');
-}).then( (model) => {
-    console.log(model);
+    let model = yield loadModel('/models/ATP-synthase-0.25.json');
 
-    // // Remove loading
-    // var loading = document.getElementById('loading');
-    // loading.remove();
-    //
-    // // Initialize scene
-    // init();
-    //
-    // // Make loaded model available
-    // geometry = model;
-    // // materials = models[0].material;
-    //
-    // // Create dimer from loaded model
-    // createProtein();
-    //
-    // // ==== Render ====
-    // render();
+    // Remove loading
+    (document.getElementById('loading')).remove();
 
-}).catch( (err) => {
+    // Initialize scene
+    init();
+
+    // Make loaded model available
+    geometry = model;
+    // materials = models[0].material;
+
+    // Create dimer from loaded model
+    createProtein();
+
+    // ==== Render ====
+    render();
+}
+
+co(start).catch( (err) => {
     console.error(err);
 });
 
@@ -142,25 +140,6 @@ function createProtein() {
     }
 }
 
-
-loadModel('/models/ATP-synthase-0.25.json').then(function(geo, mat) {
-    // Remove loading
-    var loading = document.getElementById('loading');
-    loading.remove();
-
-    // Initialize scene
-    init();
-
-    // Make loaded model available
-    geometry = geo;
-    materials = mat;
-
-    // Create dimer from loaded model
-    createProtein();
-
-    // ==== Render ====
-    render();
-});
 
 var dTime, sTime = (new Date()).getTime();
 
