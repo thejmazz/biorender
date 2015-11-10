@@ -1,13 +1,10 @@
 'use strict';
-/* globals require, window, document, console */
+/* globals require, window, document, console, THREE */
 
 import Stats from 'stats.js';
 // import THREE from 'three';
 import requestAnimationFrame from 'raf';
 import OrbitControls from 'three-orbit-controls';
-// import SimplifyModifier from './SimplifyModifier';
-
-// window.THREE = THREE;
 
 var loader = new THREE.JSONLoader();
 
@@ -89,30 +86,6 @@ function init() {
 var protein, geometry, materials;
 
 function createProtein() {
-    var simplify = new THREE.SimplifyModifier();
-
-    // var sortedGeom = simplify.modify(geometry);
-    // console.log(sortedGeom);
-    // crashes
-    console.log(geometry);
-    // console.log('starting simplify');
-    // simplify.modify(geometry);
-
-
-    // var geomba = new THREE.SphereGeometry(2, 20, 20);
-    // var blackWireframe = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
-    // var flab = new THREE.Mesh(geomba, new THREE.MeshNormalMaterial());
-    // flab.position.set(-10,10,10);
-    // scene.add(flab);
-    //
-    // simplify.modify(geomba);
-    //
-    // var geomba2 = new THREE.SphereGeometry(2, 20, 20);
-    // // var geomba2 = simplify.modify(geomba.clone());
-    // var flab2 = new THREE.Mesh(geomba2, blackWireframe);
-    // flab2.position.set(-10, 10, 15);
-    // scene.add(flab2);
-
     geometry.computeBoundingBox();
     protein = new THREE.Mesh(
         geometry,
