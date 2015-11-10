@@ -26,7 +26,7 @@ let buildProtein = co.wrap(function *() {
         loadModel('/models/ATP-synthase_d0.25_stator-base.json'),
         loadModel('/models/ATP-synthase_d0.25_axel-front.json'),
         loadModel('/models/ATP-synthase_d0.25_stator-blue-dark.json'),
-        loadModel('/models/ATP-synthase_d0.25_axel.json'),
+        loadModel('/models/ATP-synthase_d0.25_axel_origin.json'),
         loadModel('/models/ATP-synthase_d0.25_stator-blue-med.json')
     ]);
 
@@ -37,6 +37,12 @@ let buildProtein = co.wrap(function *() {
             geom,
             new THREE.MeshLambertMaterial({color: ((i+1)*(255/geoms.length))/1 * 0xffffff})
         ));
+
+        if (i === 6) {
+            domains[i].position.set(0, -6.46, 5);
+            domains[i].rotation.x = -0.68;
+        }
+
         ATPS.add(domains[i]);
     });
 
@@ -175,7 +181,8 @@ function render() {
 
     cube.rotation.y += 0.01;
 
-    domains[6].position.x = Math.sin(dTime/2000)*10;
+    // domains[6].position.x = Math.sin(dTime/2000)*5;
+    domains[6].rotation.y += 0.01;
 
     // let x = 20 + Math.sin(dTime/2000)*10;
     // let z = 13 + Math.sin(dTime/1000)*10;
