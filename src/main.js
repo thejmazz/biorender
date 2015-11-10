@@ -17,12 +17,37 @@ function loadModel(url) {
     });
 }
 
-var start = co.wrap(function *start() {
-    // return yield Promise.all([
-    //     loadModel('/models/ATP-synthase.json'),
-    //     loadModel('/models/ATP-synthase-0.25.json')
-    // ]);
 
+let buildProtein = co.wrap(function *() {
+    let geoms = yield Promise.all([
+        loadModel('/models/ATP-synthase_d0.25_f1-redish-dark-front.json'),
+        loadModel('/models/ATP-synthase_d0.25_f1-redish-front.json'),
+        loadModel('/models/ATP-synthase_d0.25_OSAP.json'),
+        loadModel('/models/ATP-synthase_d0.25_stator-base.json'),
+        loadModel('/models/ATP-synthase_d0.25_axel-front.json'),
+        loadModel('/models/ATP-synthase_d0.25_stator-blue-dark.json'),
+        loadModel('/models/ATP-synthase_d0.25_axel.json'),
+        loadModel('/models/ATP-synthase_d0.25_stator-blue-med.json')
+    ]);
+
+    let ATPS = new THREE.Object3D();
+
+    geoms.forEach(function(geom, i) {
+        ATPS.add(new THREE.Mesh(
+            geom,
+            new THREE.MeshLambertMaterial({color: ((i+1)*(255/geoms.length))/1 * 0xffffff})
+        ));
+    });
+
+    ATPS.position.set(-15,12,0);
+    scene.add(ATPS);
+
+    console.log(geoms);
+});
+
+
+
+var start = co.wrap(function *start() {
     let model = yield loadModel('/models/ATP-synthase-0.25.json');
 
     // Remove loading
@@ -30,6 +55,8 @@ var start = co.wrap(function *start() {
 
     // Initialize scene
     init();
+
+    buildProtein();
 
     // Make loaded model available
     geometry = model;
