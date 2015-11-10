@@ -17,7 +17,7 @@ function loadModel(url) {
     });
 }
 
-
+var domains = [];
 let buildProtein = co.wrap(function *() {
     let geoms = yield Promise.all([
         loadModel('/models/ATP-synthase_d0.25_f1-redish-dark-front.json'),
@@ -33,16 +33,15 @@ let buildProtein = co.wrap(function *() {
     let ATPS = new THREE.Object3D();
 
     geoms.forEach(function(geom, i) {
-        ATPS.add(new THREE.Mesh(
+        domains.push(new THREE.Mesh(
             geom,
             new THREE.MeshLambertMaterial({color: ((i+1)*(255/geoms.length))/1 * 0xffffff})
         ));
+        ATPS.add(domains[i]);
     });
 
     ATPS.position.set(-15,12,0);
     scene.add(ATPS);
-
-    console.log(geoms);
 });
 
 
@@ -56,7 +55,7 @@ var start = co.wrap(function *start() {
     // Initialize scene
     init();
 
-    buildProtein();
+    yield buildProtein();
 
     // Make loaded model available
     geometry = model;
@@ -64,6 +63,8 @@ var start = co.wrap(function *start() {
 
     // Create dimer from loaded model
     createProtein();
+
+    console.log(domains);
 
     // ==== Render ====
     render();
@@ -116,7 +117,7 @@ function init() {
     camera.position.set(-15, 8, -8);
     camera.lookAt(new THREE.Vector3());
 
-    var aLight = new THREE.AmbientLight(0xf40d0d);
+    var aLight = new THREE.AmbientLight(0x404040);
     scene.add(aLight);
 
     light = new THREE.PointLight(0xffffff, 1, 100);
@@ -170,11 +171,12 @@ var dTime, sTime = (new Date()).getTime();
 // Render
 function render() {
     stats.begin();
-
+    dTime = (new Date()).getTime() - sTime;
 
     cube.rotation.y += 0.01;
 
-    // dTime = (new Date()).getTime() - sTime;
+    domains[6].position.x = Math.sin(dTime/2000)*10;
+
     // let x = 20 + Math.sin(dTime/2000)*10;
     // let z = 13 + Math.sin(dTime/1000)*10;
     // let y = 7 + Math.sin(dTime/500)*5;
