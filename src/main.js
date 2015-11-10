@@ -17,7 +17,7 @@ function loadModel(url) {
     });
 }
 
-function *start() {
+var start = co.wrap(function *start() {
     // return yield Promise.all([
     //     loadModel('/models/ATP-synthase.json'),
     //     loadModel('/models/ATP-synthase-0.25.json')
@@ -40,11 +40,9 @@ function *start() {
 
     // ==== Render ====
     render();
-}
-
-co(start).catch( (err) => {
-    console.error(err);
 });
+
+start();
 
 
 var stats, scene, renderer, camera, cube, light, sphere;
@@ -88,8 +86,7 @@ function init() {
 
     var controls = new(new OrbitControls(THREE))(camera);
 
-    camera.position.z = 5;
-    camera.position.y = 2;
+    camera.position.set(-15, 8, -8);
     camera.lookAt(new THREE.Vector3());
 
     var aLight = new THREE.AmbientLight(0xf40d0d);
@@ -147,9 +144,10 @@ var dTime, sTime = (new Date()).getTime();
 function render() {
     stats.begin();
 
-    dTime = (new Date()).getTime() - sTime;
+
     cube.rotation.y += 0.01;
 
+    // dTime = (new Date()).getTime() - sTime;
     // let x = 20 + Math.sin(dTime/2000)*10;
     // let z = 13 + Math.sin(dTime/1000)*10;
     // let y = 7 + Math.sin(dTime/500)*5;
