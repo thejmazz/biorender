@@ -51,7 +51,6 @@ let buildProtein = co.wrap(function *() {
 });
 
 
-
 var start = co.wrap(function *start() {
     let model = yield loadModel('/models/ATP-synthase-0.25.json');
 
@@ -91,7 +90,7 @@ function init() {
 
     // Scene
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0xffffff);
@@ -117,6 +116,12 @@ function init() {
 
     plane.rotation.x = -Math.PI / 2;
     scene.add(plane);
+
+    var cellGeom = new THREE.SphereGeometry(20000, 100, 100, 0, Math.PI*2, Math.PI/2, Math.PI);
+    var cell = new THREE.SceneUtils.createMultiMaterialObject(cellGeom, [
+        new THREE.MeshNormalMaterial({wireframe: true})
+    ]);
+    scene.add(cell);
 
     var controls = new(new OrbitControls(THREE))(camera);
 
