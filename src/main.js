@@ -101,6 +101,7 @@ function init() {
     var material = new THREE.MeshNormalMaterial();
     cube = new THREE.Mesh(geometry, material);
     cube.position.y = 1;
+    cube.position.z = 3200;
     // cube.matrixAutoUpdate = false;
     scene.add(cube);
 
@@ -114,6 +115,7 @@ function init() {
     });
     var plane = new THREE.SceneUtils.createMultiMaterialObject(planeGeom, [planeMaterial, planeWireframe]);
 
+    plane.position.z = 3200;
     plane.rotation.x = -Math.PI / 2;
     scene.add(plane);
 
@@ -131,8 +133,8 @@ function init() {
 
     var controls = new(new OrbitControls(THREE))(camera);
 
-    camera.position.set(-15, 8, -8);
-    camera.lookAt(new THREE.Vector3());
+    camera.position.set(-15, 8, -8 + 3200);
+    camera.lookAt(new THREE.Vector3(0,0,3200));
 
     var aLight = new THREE.AmbientLight(0x404040);
     scene.add(aLight);
@@ -178,6 +180,7 @@ function createProtein() {
     for (let i = 0; i < 3; i++) {
         var dimerI = dimer.clone();
         dimerI.position.x = i * 20;
+        dimerI.position.z = 3200;
         scene.add(dimerI);
     }
 }
