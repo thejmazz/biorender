@@ -117,6 +117,12 @@ function init() {
     plane.rotation.x = -Math.PI / 2;
     scene.add(plane);
 
+    var nucleusGeom = new THREE.SphereGeometry(2500, 100, 100);
+    var nucleus = new THREE.SceneUtils.createMultiMaterialObject(nucleusGeom, [
+        new THREE.MeshBasicMaterial({color: 0x84c2c2, wireframe: true})
+    ]);
+    scene.add(nucleus);
+
     var cellGeom = new THREE.SphereGeometry(10000, 100, 100, 0, Math.PI*2, Math.PI/2, Math.PI);
     var cell = new THREE.SceneUtils.createMultiMaterialObject(cellGeom, [
         new THREE.MeshNormalMaterial({wireframe: true})
