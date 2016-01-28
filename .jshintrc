@@ -1,5 +1,11 @@
 {
-    "esnext": true,
-    "globalstrict": true,
-    "globals": {}
+  "esnext": true,
+  "globalstrict": true,
+  "asi": true,
+  "globals": {
+    "document": true,
+    "THREE": true,
+    "window": true,
+    "requestAnimationFrame": true
+  }
 }

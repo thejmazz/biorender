@@ -5,7 +5,11 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-    entry: ['webpack/hot/dev-server', './node_modules/babel-polyfill', './src/main'],
+    entry: [
+      'webpack/hot/dev-server',
+      './node_modules/babel-polyfill',
+      './src/mitochondria.js'
+    ],
     output: {
         path: path.resolve(__dirname, 'build'),
         filename: 'bundle.js'
@@ -17,12 +21,8 @@ module.exports = {
     module: {
         loaders: [{
             test: /\.js?$/,
-            exclude: /(node_modules|bower_components)/,
-            loader: 'babel',
-            query: {
-                cacheDirectory: true,
-                presets: ['es2015']
-            }
+            exclude: /(node_modules)/,
+            loader: 'babel'
         }]
     },
     plugins: [

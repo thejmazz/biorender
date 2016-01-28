@@ -54,9 +54,6 @@ let buildProtein = co.wrap(function *() {
 var start = co.wrap(function *start() {
     let model = yield loadModel('/models/ATP-synthase-0.25.json');
 
-    // Remove loading
-    (document.getElementById('loading')).remove();
-
     // Initialize scene
     init();
 
@@ -132,6 +129,8 @@ function init() {
     scene.add(cell);
 
     var controls = new(new OrbitControls(THREE))(camera);
+
+		// controls.addEventListener( 'change', render );
 
     camera.position.set(-15, 8, -8 + 3200);
     camera.lookAt(new THREE.Vector3(0,0,3200));

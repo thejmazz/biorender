@@ -12,12 +12,6 @@
             margin: 0;
             height: 100%;
         }
-        #loading {
-            height: 100%;
-            /* loading gif from https://www.reddit.com/r/loadingicon/comments/3rmj87/rgb_knot/ */
-            background: url('./loading.gif') center center no-repeat;
-            background-color: #161412;
-        }
         canvas {
             display: block;
         }
@@ -25,9 +19,8 @@
 </head>
 
 <body>
-    <div id="loading"></div>
-    
     <script src="three.min.js"></script>
+    <script src="TrackballControls.js"></script>
     <script src="http://localhost:8080/webpack-dev-server.js"></script>
     <script src="bundle.js"></script>
 </body>
