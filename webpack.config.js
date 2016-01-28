@@ -8,7 +8,7 @@ module.exports = {
     entry: [
       'webpack/hot/dev-server',
       './node_modules/babel-polyfill',
-      './src/mitochondria.js'
+      './src/entry.js'
     ],
     output: {
         path: path.resolve(__dirname, 'build'),
