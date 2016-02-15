@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "d6b59ad7b02d8d77832e"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "0f5a1269dcff4fde1055"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -5949,7 +5949,7 @@
 	
 	camera.position.set(0, 0, 2);
 	
-	var controls = new THREE.TrackballControls(camera);
+	var controls = new THREE.OrbitControls(camera);
 	controls.maxDistance = 17500;
 	controls.minDistance = 1.5;
 	console.log(controls);
@@ -6209,6 +6209,26 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var cell = new THREE.Mesh(new THREE.SphereGeometry(10000, 100, 100, 0, Math.PI * 2, Math.PI / 2, Math.PI), new THREE.MeshNormalMaterial({ wireframe: true }));
+	
+	var loader = new THREE.JSONLoader();
+	loader.load('/models/mitochondria.json', function (geom) {
+	  console.log(geom);
+	  var mitochondria = new THREE.Mesh(geom, new THREE.MeshNormalMaterial({ side: THREE.DoubleSide }));
+	
+	  mitochondria.position.set(2800, 0, 0);
+	  mitochondria.rotation.y = Math.PI / 2;
+	  mitochondria.scale.set(37.5, 37.5, 37.5);
+	  cell.add(mitochondria);
+	
+	  var m2 = mitochondria.clone();
+	  m2.position.set(0, 0, 0);
+	  cell.add(m2);
+	
+	  var bbox = new THREE.BoundingBoxHelper(mitochondria, 0x000000);
+	  bbox.update();
+	  // cell.add( bbox );
+	  console.log(bbox);
+	});
 	
 	cell.add(_nucleus2.default);
 	cell.add(_cube2.default);
