@@ -6,7 +6,7 @@ import cell from './cell'
 const { scene, camera, renderer } = createScene({})
 camera.position.set(0,0,2)
 
-const controls = new THREE.TrackballControls(camera)
+const controls = new THREE.OrbitControls(camera)
 controls.maxDistance = 17500
 controls.minDistance = 1.5
 console.log(controls)
