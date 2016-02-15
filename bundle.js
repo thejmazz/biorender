@@ -6211,7 +6211,7 @@
 	var cell = new THREE.Mesh(new THREE.SphereGeometry(10000, 100, 100, 0, Math.PI * 2, Math.PI / 2, Math.PI), new THREE.MeshNormalMaterial({ wireframe: true }));
 	
 	var loader = new THREE.JSONLoader();
-	loader.load('/models/mitochondria.json', function (geom) {
+	loader.load('https://biorender.github.io/biorender/models/mitochondria.json', function (geom) {
 	  console.log(geom);
 	  var mitochondria = new THREE.Mesh(geom, new THREE.MeshNormalMaterial({ side: THREE.DoubleSide }));
 	
