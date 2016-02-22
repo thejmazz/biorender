@@ -2,3 +2,4 @@ node_modules
 #app/models
 *.log
 .DS_Store
+*.swp

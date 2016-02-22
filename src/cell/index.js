@@ -9,7 +9,7 @@ const cell = new THREE.Mesh(
 )
 
 const loader = new THREE.JSONLoader()
-loader.load('/models/mitochondria.json', (geom) => {
+loader.load('/models/mitochondria_4.json', (geom) => {
   console.log(geom)
   const mitochondria = new THREE.Mesh(
     geom,
@@ -20,7 +20,7 @@ loader.load('/models/mitochondria.json', (geom) => {
 
   mitochondria.position.set(2800,0,0)
   mitochondria.rotation.y = Math.PI / 2
-  mitochondria.scale.set(37.5, 37.5, 37.5)
+  mitochondria.scale.set(6*37.5, 6*37.5, 6*37.5)
   cell.add(mitochondria)
 
   const m2 = mitochondria.clone()
