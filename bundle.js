@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "0f5a1269dcff4fde1055"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "0398e9157fe5890f7e3f"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -6217,7 +6217,7 @@
 	
 	  mitochondria.position.set(2800, 0, 0);
 	  mitochondria.rotation.y = Math.PI / 2;
-	  mitochondria.scale.set(37.5, 37.5, 37.5);
+	  mitochondria.scale.set(6 * 37.5, 6 * 37.5, 6 * 37.5);
 	  cell.add(mitochondria);
 	
 	  var m2 = mitochondria.clone();
