@@ -1,30 +1,50 @@
 # === Imports ===
-import bpy
+import bpy, bmesh
 import random
-
-# Length of mitochondrion block
-a = 3
-# Width of mitochondrion block
-b = 1
-# Factor to apply on a to get length of subdived block
-f1 = 0.8
-c = f1 * a
-# Number of cristae rows (#cristae/2)
-n = 20
-# Width of row
-w = c / n
-# Padding in each cristae block
-pf = 0.2
-p = w*pf
-# Width of actual cristae
-wI = w - 4*p
 
 # === Functions ===
 
-# takes two tuples of 3
-def make_box(loc=(0,0,0), scale=(1,1,1)):
+def numToStr(num):
+    if num > 99:
+        return str(num)
+    elif num > 9:
+        return "0" + str(num)
+    else:
+        return "00" + str(num)
+
+def select_some():
+    bpy.ops.object.mode_set(mode="EDIT")
+ 
+    active_mesh = bpy.context.object.data
+    mesh = bmesh.from_edit_mesh(active_mesh)
+
+    center = 0.0
+    threshold = 0.01
+    vertices = []
+
+    for v in mesh.verts:
+        x = v.co.x
+        y = v.co.y
+        z = v.co.z
+        
+        if y >= 0 and z >= center-threshold and z <= center+threshold:
+            # v.select = True
+            vertices.append({'x': x, 'y':y, 'z':z})
+    
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+    # Trigger viewport update
+    #bpy.context.scene.objects.active = bpy.context.scene.objects.active
+    
+    return vertices
+
+def make_box(loc=(0,0,0), scale=(1,1,1), name=""):
     bpy.ops.mesh.primitive_cube_add(location=loc)
     bpy.ops.transform.resize(value=scale)
+
+    if name != "":
+        bpy.context.object.name = name 
+
 
 def make_row(n, scale, spacing, origin):
     x = origin["x"]
@@ -42,8 +62,8 @@ def make_row(n, scale, spacing, origin):
         
         x += spacing
         
-def make_membranes():
-    make_box((0,0,0), (a,b,1))
+def make_membranes(scale, loc=(0,0,0)):
+    make_box(loc, scale, name="Membrane")
     
     # Subsurf modifier
     bpy.ops.object.modifier_add(type="SUBSURF")
@@ -60,20 +80,26 @@ def make_membranes():
     # Seperate Inner and Outer membrane
     bpy.ops.mesh.separate(type="LOOSE")
 
+def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_factor=0.2):
+    mito_length = 0.8*length
+    row_width = mito_length / num_rows
+    cristae_width = row_width*(1 - 2*padding_factor)
+
+    make_membranes(scale=(length, width, 1))
+    
+    bpy.context.object.select = False
+    bpy.data.objects["Membrane"].select = True
+    bpy.data.objects["Membrane.001"].select = False
+    vertices = select_some()
+    print(vertices)
+
+    start = 0 - mito_length
+    for i in range(0, num_rows+1): 
+        x = start + 2*row_width*i
+        y = 3*(random.random() - 0.5) 
+        make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name="Cristae." + numToStr(i))
+        bpy.context.object.select = False
+
 # === Main ===
 random.seed(1000825609)
-make_membranes()
-# test f1
-# make_box(scale=(c, 1, 1))
-
-# make_box(loc=(0-c/2,0,0))
-
-start = 0 - c
-for i in range(0, 2*n+1):
-    #x = start + w*i + 4*p*(i+1)
-    #x = start + i*(w+p) + p*2 
-    x = start + w*i
-    make_box(loc=(x,0,0), scale=(wI, 1, 1))
-
-# make_row(20, {"x":0.05}, 0.2, {"x":-2, "y": 0, "z": 0})
- 
+make_mitochondria()
