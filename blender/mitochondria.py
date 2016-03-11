@@ -83,6 +83,7 @@ def make_membranes(scale, loc=(0,0,0)):
     # Seperate Inner and Outer membrane
     bpy.ops.mesh.separate(type='LOOSE')
 
+# TODO width -> radius
 def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_factor=0.2):
     mito_length = 0.8*length
     row_width = mito_length / num_rows
@@ -94,7 +95,8 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
     bpy.data.objects['Membrane'].select = True
     bpy.data.objects['Membrane.001'].select = False
     
-    vertices = sorted(select_some(), key=itemgetter('x')) 
+    vertices = sorted(select_some(), key=itemgetter('x'))
+    j_spaces = []
 
     start = 0 - mito_length
     for i in range(0, num_rows+1):
@@ -103,11 +105,19 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
         
         for v in vertices: 
             if v['x'] >= x:
+                j_spaces.append(2*v['y'])
                 y = v['y'] + width
                 break
 
-        # y = 3*(random.random() - 0.5) 
-        make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name='Cristae.' + numToStr(i))
+        
+        j_1 = j_spaces[i]*random.random()
+        y -= j_1
+
+        j_2 = (j_spaces[i]-j_1)*random.random()
+        y2 = y - j_2 - width*2 
+ 
+        make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name='Cristae')
+        make_box(loc=(x, y2, 0), scale=(cristae_width, 1, 1), name='Cristae')
         bpy.context.object.select = False
 
 # === Main ===
