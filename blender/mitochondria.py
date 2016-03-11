@@ -114,7 +114,9 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
         y -= j_1
 
         j_2 = (j_spaces[i]-j_1)*random.random()
-        y2 = y - j_2 - width*2 
+        y2 = y - j_2 - width*2
+
+        print('{x: %s, y1: %s, y2: %s}' % (x, y, y2))
  
         make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name='Cristae')
         make_box(loc=(x, y2, 0), scale=(cristae_width, 1, 1), name='Cristae')

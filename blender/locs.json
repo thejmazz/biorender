@@ -1,39 +1,4 @@
-'use strict'
-
-import nucleus from './nucleus'
-import cube from '../proteins/cube.js'
-
-const cell = new THREE.Mesh(
-  new THREE.SphereGeometry(10000, 100, 100, 0, Math.PI*2, Math.PI/2, Math.PI),
-  new THREE.MeshNormalMaterial({wireframe: true})
-)
-
-const loader = new THREE.JSONLoader()
-loader.load('/models/mitochondria_griddy.json', (geom) => {
-  console.log(geom)
-  const mitochondria = new THREE.Mesh(
-    geom,
-    new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
-  )
-
-
-
-  mitochondria.position.set(2800,0,0)
-  // mitochondria.rotation.y = Math.PI / 2
-  mitochondria.scale.set(6*37.5, 6*37.5, 6*37.5)
-  cell.add(mitochondria)
-
-  const m2 = mitochondria.clone()
-  m2.position.set(0,0,0)
-  cell.add(m2)
-
-  var bbox = new THREE.BoundingBoxHelper( mitochondria, 0x000000 );
-  bbox.update();
-  // cell.add( bbox );
-  console.log(bbox)
-})
-
-const locs = [
+[
     {"x": -2.4000000000000004, "y1": 0.876572662211675, "y2": -1.2176219683910938},
     {"x": -2.24, "y1": 1.2959568887305837, "y2": -0.9429154022250592},
     {"x": -2.08, "y1": 0.6521914975890114, "y2": -1.4603149711769277},
@@ -66,20 +31,3 @@ const locs = [
     {"x": 2.24, "y1": 1.1572622556429506, "y2": -1.0644396309475237},
     {"x": 2.4000000000000004, "y1": 1.0441441984716004, "y2": -1.0471585630356628}
 ]
-
-locs.forEach( (loc) => {
-  let s = new THREE.Mesh(
-    new THREE.SphereGeometry(5, 20, 20),
-    new THREE.MeshNormalMaterial()
-  )
-
-  s.position.set(loc.x*6*37.5, 0, loc.y1*6*37.5 - 200)
-  // s.rotation.y = Math.PI/2
-
-  cell.add(s)
-})
-
-cell.add(nucleus)
-cell.add(cube)
-
-export default cell
