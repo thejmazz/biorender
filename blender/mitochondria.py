@@ -120,6 +120,23 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
         make_box(loc=(x, y2, 0), scale=(cristae_width, 1, 1), name='Cristae')
         bpy.context.object.select = False
 
+    # Select all Cristaes
+    for obj in bpy.data.objects:
+        if obj.name.find('Cristae') == 0:
+            obj.select = True
+    
+    # Join Cristaes
+    bpy.ops.object.join()
+
+    bpy.ops.object.modifier_add(type='BOOLEAN')
+    bpy.context.object.modifiers['Boolean'].object = bpy.data.objects['Membrane']
+    bpy.context.object.modifiers['Boolean'].operation = 'UNION'
+    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Boolean')
+    
+    
+        
+    
+
 # === Main ===
 random.seed(1000825609)
 make_mitochondria()
