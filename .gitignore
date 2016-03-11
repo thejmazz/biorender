@@ -3,3 +3,5 @@ node_modules
 *.log
 .DS_Store
 *.swp
+
+/app/models/ATP-synthase_d0.25.json

@@ -67,17 +67,38 @@ const locs = [
     {"x": 2.4000000000000004, "y1": 1.0441441984716004, "y2": -1.0471585630356628}
 ]
 
-locs.forEach( (loc) => {
-  let s = new THREE.Mesh(
-    new THREE.SphereGeometry(5, 20, 20),
-    new THREE.MeshNormalMaterial()
+loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
+  const synthase = new THREE.Mesh(
+      geom,
+      new THREE.MeshNormalMaterial()
   )
 
-  s.position.set(loc.x*6*37.5, 0, loc.y1*6*37.5 - 200)
-  // s.rotation.y = Math.PI/2
+  locs.forEach( (loc) => {
+    // let s = new THREE.Mesh(
+    //   new THREE.SphereGeometry(5, 20, 20),
+    //   new THREE.MeshNormalMaterial()
+    // )
+    const s = synthase.clone()
+    
+    s.position.set(loc.x*6*37.5, 0, loc.y1*6*37.5*-1 + 225)
+    s.rotation.y = Math.PI
 
-  cell.add(s)
+    cell.add(s)
+
+
+    // let t = new THREE.Mesh(
+    //   new THREE.SphereGeometry(5, 20, 20),
+    //   new THREE.MeshNormalMaterial()
+    // )
+    
+    const t = synthase.clone() 
+
+    t.position.set(loc.x*6*37.5, 0, loc.y2*6*37.5*-1 - 225)
+
+    cell.add(t)
+  })
 })
+  
 
 cell.add(nucleus)
 cell.add(cube)
