@@ -5,6 +5,18 @@ from operator import itemgetter
 
 # === Functions ===
 
+def view3d_find(return_area=False):
+    # returns first 3d view, normally we get from context
+    for area in bpy.context.window.screen.areas:
+        if area.type == 'VIEW_3D':
+            v3d = area.spaces[0]
+            rv3d = v3d.region_3d
+            for region in area.regions:
+                if region.type == 'WINDOW':
+                    if return_area: return region, rv3d, v3d, area
+                    return region, rv3d, v3d
+    return None, None
+
 def numToStr(num):
     if num > 99:
         return str(num)
@@ -41,6 +53,41 @@ def select_some():
     
     return vertices
 
+def loop_cut(edge_index):
+    bpy.ops.object.mode_set(mode='EDIT')
+    
+    region, rv3d, v3d, area = view3d_find(True)
+
+    override = {
+        'scene': bpy.context.scene,
+        'region': region,
+        'area': area,
+        'space': v3d
+    }
+
+    bpy.ops.mesh.loopcut_slide(
+        override,
+        MESH_OT_loopcut={
+            "number_cuts":2,
+            "smoothness":0,
+            "falloff":'INVERSE_SQUARE',
+            "edge_index":edge_index,
+            "mesh_select_mode_init":(True, False, False)
+        },
+        TRANSFORM_OT_edge_slide={
+            "value":0,
+            "single_side":False,
+            "mirror":False,
+            "snap":False,
+            "snap_target":'CLOSEST',
+            "snap_point":(0, 0, 0),
+            "snap_align":False,
+            "snap_normal":(0, 0, 0),
+            "correct_uv":False,
+            "release_confirm":False
+        }
+    )
+
 def make_box(loc=(0,0,0), scale=(1,1,1), name=''):
     bpy.ops.mesh.primitive_cube_add(location=loc)
     bpy.ops.transform.resize(value=scale)
@@ -64,7 +111,15 @@ def make_row(n, scale, spacing, origin):
         bpy.context.object.name = 'Cristae'
         
         x += spacing
-        
+
+def subsurf(level):
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    bpy.ops.object.modifier_add(type='SUBSURF')
+    bpy.context.object.modifiers['Subsurf'].levels = level
+    bpy.context.object.modifiers['Subsurf'].render_levels = level
+    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
+
 def make_membranes(scale, loc=(0,0,0)):
     make_box(loc, scale, name='Membrane')
     
@@ -83,7 +138,7 @@ def make_membranes(scale, loc=(0,0,0)):
     # Seperate Inner and Outer membrane
     bpy.ops.mesh.separate(type='LOOSE')
 
-# TODO width -> radius
+# TODO width -> radius...
 def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_factor=0.2):
     mito_length = 0.8*length
     row_width = mito_length / num_rows
@@ -96,49 +151,63 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
     bpy.data.objects['Membrane.001'].select = False
     
     vertices = sorted(select_some(), key=itemgetter('x'))
-    j_spaces = []
+    j_spaces = [] 
 
     start = 0 - mito_length
     for i in range(0, num_rows+1):
         x = start + 2*row_width*i
         y = -2
-        
+
         for v in vertices: 
             if v['x'] >= x:
                 j_spaces.append(2*v['y'])
                 y = v['y'] + width
                 break
 
-        
-        j_1 = j_spaces[i]*random.random()
+
+        j_1 = j_spaces[i]*random.random() 
         y -= j_1
 
         j_2 = (j_spaces[i]-j_1)*random.random()
         y2 = y - j_2 - width*2
 
         print('{x: %s, y1: %s, y2: %s}' % (x, y, y2))
- 
+
         make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name='Cristae')
+
+        scale_val = 2.4
+        loop_cut(7)
+        bpy.ops.transform.resize(value=(1, scale_val, 1))
+        loop_cut(8)
+        bpy.ops.transform.resize(value=(1, 1, scale_val))
+        subsurf(4)
+
         make_box(loc=(x, y2, 0), scale=(cristae_width, 1, 1), name='Cristae')
+        loop_cut(7)
+        bpy.ops.transform.resize(value=(1, scale_val, 1))
+        loop_cut(8)
+        bpy.ops.transform.resize(value=(1, 1, scale_val))
+        subsurf(4)
+        
         bpy.context.object.select = False
 
     # Select all Cristaes
     for obj in bpy.data.objects:
         if obj.name.find('Cristae') == 0:
             obj.select = True
-    
+
     # Join Cristaes
     bpy.ops.object.join()
 
+    # Boolean union -> Membrane
     bpy.ops.object.modifier_add(type='BOOLEAN')
     bpy.context.object.modifiers['Boolean'].object = bpy.data.objects['Membrane']
     bpy.context.object.modifiers['Boolean'].operation = 'UNION'
     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Boolean')
+  
+    # TODO fix cristae's ending up outside
+    bpy.ops.mesh.separate(type='LOOSE')
     
-    
-        
-    
-
 # === Main ===
 random.seed(1000825609)
 make_mitochondria()
