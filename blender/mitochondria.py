@@ -126,6 +126,21 @@ def make_row(n, scale, spacing, origin):
         
         x += spacing
 
+def corrective_smooth(factor, iterations, use_only_smooth):
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    bpy.ops.object.modifier_add(type='CORRECTIVE_SMOOTH')
+    bpy.context.object.modifiers['CorrectiveSmooth'].use_only_smooth = use_only_smooth
+    bpy.context.object.modifiers['CorrectiveSmooth'].iterations = iterations
+    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='CorrectiveSmooth') 
+
+def laplacian_smooth(lambda_factor):
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    bpy.ops.object.modifier_add(type='LAPLACIANSMOOTH')
+    bpy.context.object.modifiers['Laplacian Smooth'].lambda_factor = lambda_factor
+    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Laplacian Smooth') 
+
 def subsurf(level):
     bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -160,7 +175,11 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
     mito_length = 0.8*length
     row_width = mito_length / num_rows
     cristae_width = row_width*(1 - 2*padding_factor)
-
+    cristae_disc_subsurf_level = 2
+    cristae_disc_loop_cut_scale_val = 2.4
+    inner_membrane_subsurf_level = 2
+    
+    
     make_membranes(scale=(length, width, 1))
     
     bpy.context.object.select = False
@@ -192,21 +211,19 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
 
         make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name='Cristae')
 
-        scale_val = 2.4
-        subsurf_level = 2
         
         loop_cut(7)
-        bpy.ops.transform.resize(value=(1, scale_val, 1))
+        bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
         loop_cut(8)
-        bpy.ops.transform.resize(value=(1, 1, scale_val))
-        subsurf(subsurf_level)
+        bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
+        subsurf(cristae_disc_subsurf_level)
 
         make_box(loc=(x, y2, 0), scale=(cristae_width, 1, 1), name='Cristae')
         loop_cut(7)
-        bpy.ops.transform.resize(value=(1, scale_val, 1))
+        bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
         loop_cut(8)
-        bpy.ops.transform.resize(value=(1, 1, scale_val))
-        subsurf(subsurf_level)
+        bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
+        subsurf(cristae_disc_subsurf_level)
         
         bpy.context.object.select = False
 
@@ -242,6 +259,14 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
     bpy.data.objects['Cristae'].select = True
     bpy.context.scene.objects.active = bpy.data.objects['Cristae']
     remove_top_outer()
+
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.data.objects['Cristae'].select = True
+    
+
+    subsurf(inner_membrane_subsurf_level)
+    corrective_smooth(1, 5, True)
+    laplacian_smooth(15)
     
 # === Main ===
 random.seed(1000825609)
