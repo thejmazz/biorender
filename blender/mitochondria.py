@@ -253,20 +253,45 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
     bpy.data.objects['Membrane.001'].select = True
     remove_top_outer()
     
-    bpy.ops.object.mode_set(mode='OBJECT')
+    #bpy.ops.object.mode_set(mode='OBJECT')
 
-    unselect_all()
+    bpy.ops.object.mode_set(mode='OBJECT')
     bpy.data.objects['Cristae'].select = True
     bpy.context.scene.objects.active = bpy.data.objects['Cristae']
-    remove_top_outer()
-
-    bpy.ops.object.mode_set(mode='OBJECT')
-    bpy.data.objects['Cristae'].select = True
     
-
     subsurf(inner_membrane_subsurf_level)
     corrective_smooth(1, 5, True)
     laplacian_smooth(15)
+    
+
+    # bisect
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.bisect(plane_co=(0,0,0), plane_no=(0,0,1), xstart=10, xend=545, ystart=572, yend=572)
+
+    # unselect_all()
+    # bpy.data.objects['Cristae'].select = True
+    # bpy.context.scene.objects.active = bpy.data.objects['Cristae']
+    # remove_top_outer()
+
+    mesh = bmesh.from_edit_mesh(bpy.context.object.data)
+
+    zs = []
+
+    for v in mesh.verts:
+        v2 = bpy.context.object.matrix_world * v.co
+        if v.select == True:
+            v.select = False
+            zs.append(v2.z)
+     
+    mz = max(zs)
+     
+    for v in mesh.verts:
+        v2 = bpy.context.object.matrix_world * v.co
+        if v2.z > mz:
+            v.select = True
+
+    bpy.ops.mesh.delete(type='VERT')
     
 # === Main ===
 random.seed(1000825609)
