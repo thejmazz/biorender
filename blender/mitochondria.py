@@ -53,6 +53,20 @@ def select_some():
     
     return vertices
 
+def remove_top_outer():
+    bpy.context.object.select = False
+
+    bpy.ops.object.mode_set(mode='EDIT')
+
+    mesh=bmesh.from_edit_mesh(bpy.context.object.data)
+
+    for v in mesh.verts:
+        v2 = bpy.context.object.matrix_world * v.co
+        if v2.z > 0.01:
+            v.select = True
+            
+    bpy.ops.mesh.delete(type='VERT')
+
 def loop_cut(edge_index):
     bpy.ops.object.mode_set(mode='EDIT')
     
@@ -120,23 +134,26 @@ def subsurf(level):
     bpy.context.object.modifiers['Subsurf'].render_levels = level
     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
 
+def solidify(offset, thickness):
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    bpy.ops.object.modifier_add(type='SOLIDIFY')
+    bpy.context.object.modifiers['Solidify'].offset = offset
+    bpy.context.object.modifiers['Solidify'].thickness = thickness
+    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Solidify')
+
 def make_membranes(scale, loc=(0,0,0)):
     make_box(loc, scale, name='Membrane')
     
-    # Subsurf modifier
-    bpy.ops.object.modifier_add(type='SUBSURF')
-    bpy.context.object.modifiers['Subsurf'].levels = 4
-    bpy.context.object.modifiers['Subsurf'].render_levels = 4
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
-    
-    # Solidify
-    bpy.ops.object.modifier_add(type='SOLIDIFY')
-    bpy.context.object.modifiers['Solidify'].offset = 0
-    bpy.context.object.modifiers['Solidify'].thickness = 0.04
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Solidify')
+    subsurf(4)    
+    solidify(0, 0.04) 
     
     # Seperate Inner and Outer membrane
     bpy.ops.mesh.separate(type='LOOSE')
+
+def unselect_all():
+    for obj in bpy.data.objects:
+        obj.select = False
 
 # TODO width -> radius...
 def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_factor=0.2):
@@ -176,18 +193,20 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
         make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name='Cristae')
 
         scale_val = 2.4
+        subsurf_level = 2
+        
         loop_cut(7)
         bpy.ops.transform.resize(value=(1, scale_val, 1))
         loop_cut(8)
         bpy.ops.transform.resize(value=(1, 1, scale_val))
-        subsurf(4)
+        subsurf(subsurf_level)
 
         make_box(loc=(x, y2, 0), scale=(cristae_width, 1, 1), name='Cristae')
         loop_cut(7)
         bpy.ops.transform.resize(value=(1, scale_val, 1))
         loop_cut(8)
         bpy.ops.transform.resize(value=(1, 1, scale_val))
-        subsurf(4)
+        subsurf(subsurf_level)
         
         bpy.context.object.select = False
 
@@ -207,6 +226,22 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
   
     # TODO fix cristae's ending up outside
     bpy.ops.mesh.separate(type='LOOSE')
+
+    unselect_all() 
+    bpy.data.objects['Membrane'].select = True
+    bpy.ops.object.delete()
+
+    unselect_all()
+    bpy.context.scene.objects.active = bpy.data.objects['Membrane.001'] 
+    bpy.data.objects['Membrane.001'].select = True
+    remove_top_outer()
+    
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    unselect_all()
+    bpy.data.objects['Cristae'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Cristae']
+    remove_top_outer()
     
 # === Main ===
 random.seed(1000825609)
