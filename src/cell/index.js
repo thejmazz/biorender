@@ -9,7 +9,7 @@ const cell = new THREE.Mesh(
 )
 
 const loader = new THREE.JSONLoader()
-loader.load('/models/mitochondria_griddy.json', (geom) => {
+loader.load('/models/inner-membrane.json', (geom) => {
   console.log(geom)
   const mitochondria = new THREE.Mesh(
     geom,
