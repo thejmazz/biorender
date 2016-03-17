@@ -8,12 +8,22 @@ const cell = new THREE.Mesh(
   new THREE.MeshNormalMaterial({wireframe: true})
 )
 
+const pLight = new THREE.PointLight(0xff0000, 1, 1000)
+pLight.position.set(0, 200, 0)
+cell.add(pLight)
+const pLightHelper = new THREE.PointLightHelper(pLight, 5)
+cell.add(pLightHelper)
+
+const aLight = new THREE.AmbientLight(0x404040)
+cell.add(aLight)
+
 const loader = new THREE.JSONLoader()
 loader.load('/models/inner-membrane.json', (geom) => {
   console.log(geom)
   const mitochondria = new THREE.Mesh(
     geom,
-    new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
+    // new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
+    new THREE.MeshLambertMaterial({side: THREE.DoubleSide})
   )
 
 
