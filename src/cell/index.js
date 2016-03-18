@@ -25,7 +25,7 @@ loader.load('/models/outer-membrane.json', (geom) => {
     new THREE.MeshLambertMaterial({
       color: 0x3498db,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.65,
       side: THREE.DoubleSide
     })
   )
@@ -35,17 +35,23 @@ loader.load('/models/outer-membrane.json', (geom) => {
 })
 
 loader.load('/models/inner-membrane.json', (geom) => {
-  const mitochondria = new THREE.Mesh(
-    geom,
-    // new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
-    // 0x1e832e
-    // 0xdf9134
-    // 0x490b63
-    // 0x9e1238
-    // 0x590f49
-    // 0xa017a7
-    new THREE.MeshLambertMaterial({color: 0x490b63, side: THREE.DoubleSide})
-  )
+  // const mitochondria = new THREE.Mesh(
+  //   geom,
+  //   // new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
+  //   // 0x1e832e
+  //   // 0xdf9134
+  //   // 0x490b63
+  //   // 0x9e1238
+  //   // 0x590f49
+  //   // 0xa017a7
+  //   // 0x490b63
+  //   new THREE.MeshLambertMaterial({color: 0x29c1d6, side: THREE.DoubleSide})
+  // )
+
+  const mitochondria = THREE.SceneUtils.createMultiMaterialObject(geom, [
+    new THREE.MeshLambertMaterial({color: 0x490b63, side: THREE.FrontSide}),
+    new THREE.MeshLambertMaterial({color: 0xa017a7, side: THREE.BackSide})
+  ])
 
 
 
