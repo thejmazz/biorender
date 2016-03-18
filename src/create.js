@@ -25,7 +25,7 @@ export const createStats = () => {
 const createRenderer = (W, H) => {
   const renderer = new THREE.WebGLRenderer()
   renderer.setSize(W, H)
-  renderer.setClearColor(0xffffff)
+  renderer.setClearColor(0x545454)
   document.body.appendChild(renderer.domElement)
 
   return renderer

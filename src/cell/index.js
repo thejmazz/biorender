@@ -5,7 +5,7 @@ import cube from '../proteins/cube.js'
 
 const cell = new THREE.Mesh(
   new THREE.SphereGeometry(10000, 100, 100, 0, Math.PI*2, Math.PI/2, Math.PI),
-  new THREE.MeshNormalMaterial({wireframe: true})
+  new THREE.MeshLambertMaterial({color: 0xdf9134})
 )
 
 const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x2980b9, 0x9b59b6, 0x8e44ad, 0x34495e, 0x2c3e50, 0xf1c40f, 0xf39c12, 0xe67e22, 0xd35400, 0xe74c3c, 0xc0392b]
@@ -19,9 +19,22 @@ const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x29
 // cell.add(pLightHelper)
 
 const loader = new THREE.JSONLoader()
-loader.load('/models/inner-membrane.json', (geom) => {
-  console.log(geom)
+loader.load('/models/outer-membrane.json', (geom) => {
+  const outerMembrane = new THREE.Mesh(
+    geom,
+    new THREE.MeshLambertMaterial({
+      color: 0x3498db,
+      transparent: true,
+      opacity: 0.5,
+      side: THREE.DoubleSide
+    })
+  )
 
+  outerMembrane.scale.set(6*37.5, 6*37.5, 6*37.5)
+  cell.add(outerMembrane)
+})
+
+loader.load('/models/inner-membrane.json', (geom) => {
   const mitochondria = new THREE.Mesh(
     geom,
     // new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
