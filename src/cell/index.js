@@ -8,6 +8,10 @@ const cell = new THREE.Mesh(
   new THREE.MeshNormalMaterial({wireframe: true})
 )
 
+const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x2980b9, 0x9b59b6, 0x8e44ad, 0x34495e, 0x2c3e50, 0xf1c40f, 0xf39c12, 0xe67e22, 0xd35400, 0xe74c3c, 0xc0392b]
+
+
+
 // const pLight = new THREE.PointLight(0xff0000, 1, 1000)
 // pLight.position.set(0, 200, 0)
 // cell.add(pLight)
@@ -82,12 +86,14 @@ const locs = [
 ]
 
 loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
-  const norm = new THREE.MeshNormalMaterial()
-  norm.shading = THREE.FlatShading
+  const col = new THREE.Color()
+  // 0x2194cf
+  const mat = new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+  mat.emissiveIntensity = 1
 
   const synthase = new THREE.Mesh(
       geom,
-      norm
+      mat
   )
 
   locs.forEach( (loc) => {
@@ -109,6 +115,7 @@ loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
     // )
 
     const t = synthase.clone()
+    t.material = new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
 
     t.position.set(loc.x*6*37.5, 0, loc.y2*6*37.5*-1 - 225)
 

@@ -20,11 +20,9 @@ scene.add(hLight)
 scene.add(new THREE.HemisphereLightHelper(hLight, 20))
 
 const cLight = new THREE.PointLight(0xffffff, 1, 1000)
-// const cLight = new THREE.SpotLight(0xffffff)
 camera.add(cLight)
 cLight.position.set(0, 0, -10)
 scene.add(camera)
-// scene.add(new THREE.SpotLightHelper(cLight))
 
 
 const controls = new THREE.OrbitControls(camera)
