@@ -5,3 +5,4 @@ node_modules
 *.swp
 
 /app/models/ATP-synthase_d0.25.json
+/app/models/ATP-synthase_d0.05.json

@@ -14,7 +14,7 @@ scene.add(aLight)
 // dLight.position.set(0,100,0)
 // scene.add(dLight)
 
-const hLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 1)
+const hLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.5)
 hLight.position.set(0, 2600, 0)
 scene.add(hLight)
 scene.add(new THREE.HemisphereLightHelper(hLight, 20))

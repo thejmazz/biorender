@@ -98,7 +98,7 @@ const locs = [
     {"x": 2.4000000000000004, "y1": 1.0441441984716004, "y2": -1.0471585630356628}
 ]
 
-loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
+loader.load('/models/ATP-synthase_d0.05.json', (geom) => {
   const col = new THREE.Color()
   // 0x2194cf
   const mat = new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
@@ -114,12 +114,21 @@ loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
     //   new THREE.SphereGeometry(5, 20, 20),
     //   new THREE.MeshNormalMaterial()
     // )
-    const s = synthase.clone()
+    // const s = synthase.clone()
 
-    s.position.set(loc.x*6*37.5, 0, loc.y1*6*37.5*-1 + 225)
-    s.rotation.y = Math.PI
 
-    cell.add(s)
+    for(let i=0; i < 5; i++) {
+      const s = createSynthaseDimer(geom)
+
+      s.position.set(loc.x*6*37.5 - 6.5, 0 - 20*i, loc.y1*6*37.5*-1 + 225 - 8.5)
+      s.rotation.y = Math.PI/2
+      s.rotation.z = Math.PI/2
+      s.scale.set(0.5, 0.5, 0.5)
+
+      cell.add(s)
+    }
+
+
 
 
     // let t = new THREE.Mesh(
@@ -127,14 +136,40 @@ loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
     //   new THREE.MeshNormalMaterial()
     // )
 
-    const t = synthase.clone()
+    // const t = synthase.clone()
+    const t = createSynthaseDimer(geom)
+
     t.material = new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
 
-    t.position.set(loc.x*6*37.5, 0, loc.y2*6*37.5*-1 - 225)
+    t.position.set(loc.x*6*37.5 + 6.5, 0, loc.y2*6*37.5*-1 - 225 + 8.5)
+    t.rotation.y = -Math.PI/2
+    t.rotation.z = Math.PI/2
+    t.scale.set(0.5, 0.5, 0.5)
 
     cell.add(t)
   })
 })
+
+function createSynthaseDimer(geometry) {
+  geometry.computeBoundingBox();
+  var protein = new THREE.Mesh(
+      geometry,
+      new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+  );
+  protein.position.y = Math.abs(protein.geometry.boundingBox.min.y);
+
+  var dimer = new THREE.Object3D();
+
+  dimer.add(protein);
+
+  var protein2 = protein.clone();
+
+  protein2.position.z += 25;
+  protein2.rotation.y += Math.PI;
+  dimer.add(protein2);
+
+  return dimer
+}
 
 
 cell.add(nucleus)
