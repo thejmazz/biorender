@@ -8,22 +8,26 @@ const cell = new THREE.Mesh(
   new THREE.MeshNormalMaterial({wireframe: true})
 )
 
-const pLight = new THREE.PointLight(0xff0000, 1, 1000)
-pLight.position.set(0, 200, 0)
-cell.add(pLight)
-const pLightHelper = new THREE.PointLightHelper(pLight, 5)
-cell.add(pLightHelper)
-
-const aLight = new THREE.AmbientLight(0x404040)
-cell.add(aLight)
+// const pLight = new THREE.PointLight(0xff0000, 1, 1000)
+// pLight.position.set(0, 200, 0)
+// cell.add(pLight)
+// const pLightHelper = new THREE.PointLightHelper(pLight, 5)
+// cell.add(pLightHelper)
 
 const loader = new THREE.JSONLoader()
 loader.load('/models/inner-membrane.json', (geom) => {
   console.log(geom)
+
   const mitochondria = new THREE.Mesh(
     geom,
     // new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
-    new THREE.MeshLambertMaterial({side: THREE.DoubleSide})
+    // 0x1e832e
+    // 0xdf9134
+    // 0x490b63
+    // 0x9e1238
+    // 0x590f49
+    // 0xa017a7
+    new THREE.MeshLambertMaterial({color: 0x490b63, side: THREE.DoubleSide})
   )
 
 
@@ -78,9 +82,12 @@ const locs = [
 ]
 
 loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
+  const norm = new THREE.MeshNormalMaterial()
+  norm.shading = THREE.FlatShading
+
   const synthase = new THREE.Mesh(
       geom,
-      new THREE.MeshNormalMaterial()
+      norm
   )
 
   locs.forEach( (loc) => {
@@ -89,7 +96,7 @@ loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
     //   new THREE.MeshNormalMaterial()
     // )
     const s = synthase.clone()
-    
+
     s.position.set(loc.x*6*37.5, 0, loc.y1*6*37.5*-1 + 225)
     s.rotation.y = Math.PI
 
@@ -100,15 +107,15 @@ loader.load('/models/ATP-synthase_d0.25.json', (geom) => {
     //   new THREE.SphereGeometry(5, 20, 20),
     //   new THREE.MeshNormalMaterial()
     // )
-    
-    const t = synthase.clone() 
+
+    const t = synthase.clone()
 
     t.position.set(loc.x*6*37.5, 0, loc.y2*6*37.5*-1 - 225)
 
     cell.add(t)
   })
 })
-  
+
 
 cell.add(nucleus)
 cell.add(cube)
