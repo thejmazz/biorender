@@ -19,22 +19,57 @@ const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x29
 // cell.add(pLightHelper)
 
 const loader = new THREE.JSONLoader()
+const textureLoader = new THREE.TextureLoader()
+
 loader.load('/models/outer-membrane.json', (geom) => {
-  const outerMembrane = new THREE.Mesh(
-    geom,
-    new THREE.MeshLambertMaterial({
-      color: 0x3498db,
-      transparent: true,
-      opacity: 0.65,
-      side: THREE.DoubleSide
-    })
-  )
+  const outerMembraneMat = new THREE.MeshLambertMaterial({
+    color: 0x3498db,
+    transparent: true,
+    opacity: 0.65,
+    side: THREE.DoubleSide
+  })
+
+  const outerMembrane = new THREE.Mesh(geom, outerMembraneMat)
 
   outerMembrane.scale.set(6*37.5, 6*37.5, 6*37.5)
   cell.add(outerMembrane)
 })
 
+// see: http://stackoverflow.com/a/20775508/1409233
+const assignUVs = (geometry) => {
+
+    geometry.computeBoundingBox()
+
+    var max     = geometry.boundingBox.max
+    var min     = geometry.boundingBox.min
+
+    var offset  = new THREE.Vector2(0 - min.x, 0 - min.y)
+    var range   = new THREE.Vector2(max.x - min.x, max.y - min.y)
+
+    geometry.faceVertexUvs[0] = []
+    var faces = geometry.faces
+
+    for (let i = 0; i < geometry.faces.length;  i++) {
+
+      var v1 = geometry.vertices[faces[i].a]
+      var v2 = geometry.vertices[faces[i].b]
+      var v3 = geometry.vertices[faces[i].c]
+
+      geometry.faceVertexUvs[0].push([
+        new THREE.Vector2( ( v1.x + offset.x ) / range.x , ( v1.y + offset.y ) / range.y ),
+        new THREE.Vector2( ( v2.x + offset.x ) / range.x , ( v2.y + offset.y ) / range.y ),
+        new THREE.Vector2( ( v3.x + offset.x ) / range.x , ( v3.y + offset.y ) / range.y )
+      ])
+
+    }
+
+    geometry.uvsNeedUpdate = true;
+
+}
+
 loader.load('/models/inner-membrane.json', (geom) => {
+  assignUVs(geom)
+
   // const mitochondria = new THREE.Mesh(
   //   geom,
   //   // new THREE.MeshNormalMaterial({side: THREE.DoubleSide})
@@ -48,9 +83,27 @@ loader.load('/models/inner-membrane.json', (geom) => {
   //   new THREE.MeshLambertMaterial({color: 0x29c1d6, side: THREE.DoubleSide})
   // )
 
+  const bMap = textureLoader.load('/img/stone.jpg')
+  bMap.wrapS = bMap.wrapT =  THREE.RepeatWrapping
+  bMap.repeat.set(10, 2)
+
+  const frontMat = new THREE.MeshPhongMaterial({
+    color: 0x490b63,
+    side: THREE.FrontSide,
+    bumpMap: bMap,
+    bumpScale: 5
+  })
+
+  const backMat = new THREE.MeshPhongMaterial({
+    color: 0xa017a7,
+    side: THREE.BackSide,
+    bumpMap: bMap,
+    bumpScale: 5
+  })
+
   const mitochondria = THREE.SceneUtils.createMultiMaterialObject(geom, [
-    new THREE.MeshLambertMaterial({color: 0x490b63, side: THREE.FrontSide}),
-    new THREE.MeshLambertMaterial({color: 0xa017a7, side: THREE.BackSide})
+    // new THREE.MeshLambertMaterial({color: 0x490b63, side: THREE.FrontSide}),
+    frontMat, backMat
   ])
 
 
