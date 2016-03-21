@@ -83,7 +83,8 @@ loader.load('/models/inner-membrane.json', (geom) => {
   //   new THREE.MeshLambertMaterial({color: 0x29c1d6, side: THREE.DoubleSide})
   // )
 
-  const bMap = textureLoader.load('/img/stone.jpg')
+  // const bMap = textureLoader.load('/img/stone.jpg')
+  const bMap = textureLoader.load('/img/licheny.jpg')
   bMap.wrapS = bMap.wrapT =  THREE.RepeatWrapping
   bMap.repeat.set(10, 2)
 
