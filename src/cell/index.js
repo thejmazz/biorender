@@ -50,14 +50,16 @@ loader.load('/models/mito_rimmed.json', (geom) => {
 })
 
 OBJLoader.load('/models/mito_rimmed.obj', (object) => {
-  console.log(object)
+  const phosphosTexture = textureLoader.load('/img/phospholipids.png')
+  phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
+  phosphosTexture.repeat.set(100, 100)
 
   const textureMappings = {
     'Membrane.Inner': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Outer': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Rim': new THREE.MeshPhongMaterial({color: 0x3498db, side: THREE.DoubleSide}),
     'Cristae.Inner': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
-    'Cristae.Rim': new THREE.MeshPhongMaterial({color: 0x8e44ad, side: THREE.DoubleSide}),
+    'Cristae.Rim': new THREE.MeshPhongMaterial({map: phosphosTexture, side: THREE.DoubleSide}),
     'Cristae.Outer': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
   }
 
@@ -71,6 +73,10 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
     child.material = textureMappings[child.name]
     child.scale.set(6*37.5, 6*37.5, 6*37.5)
 
+    if (child.geometry) {
+      child.geometry  = new THREE.Geometry().fromBufferGeometry(child.geometry)
+      assignUVs(child.geometry)
+    }
 
     childs.push(child)
   })
