@@ -52,6 +52,8 @@ loader.load('/models/mito_rimmed.json', (geom) => {
 OBJLoader.load('/models/mito_rimmed.obj', (object) => {
   const phosphosTexture = textureLoader.load('/img/phospholipids.png')
   phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
+  const phosphosBump = textureLoader.load('/img/phospholipids-bump.png')
+  phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
   // phosphosTexture.repeat.set(100, 100)
   let faceMat
 
@@ -86,24 +88,31 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
       for(let i=0; i < faceMat.length; i++) {
         child.geometry.faces[i].materialIndex = i
         // faceMat[i] = new THREE.MeshPhongMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
-        faceMat[i] = new THREE.MeshPhongMaterial({map: phosphosTexture})
+        faceMat[i] = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
       }
 
       child.geometry.faceVertexUvs[0] = []
       let faces = child.geometry.faces
 
-      for (let i = 0; i < child.geometry.faces.length;  i++) {
+      for (let i = 0; i < child.geometry.faces.length;  i+= 2) {
 
         var v1 = child.geometry.vertices[faces[i].a]
         var v2 = child.geometry.vertices[faces[i].b]
         var v3 = child.geometry.vertices[faces[i].c]
 
+        // 0,1; 0,0; 1,0
+
         child.geometry.faceVertexUvs[0].push([
-          new THREE.Vector2(0 , 1),
           new THREE.Vector2(0 , 0),
+          new THREE.Vector2(0 , 1),
           new THREE.Vector2(1 , 0),
         ])
 
+        child.geometry.faceVertexUvs[0].push([
+          new THREE.Vector2(0 , 1),
+          new THREE.Vector2(1 , 1),
+          new THREE.Vector2(1 , 0),
+        ])
       }
 
       child.geometry.uvsNeedUpdate = true;
