@@ -52,6 +52,14 @@ loader.load('/models/mito_rimmed.json', (geom) => {
 OBJLoader.load('/models/mito_rimmed.obj', (object) => {
   console.log(object)
 
+  const textureMappings = {
+    'Membrane.Inner': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
+    'Membrane.Outer': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
+    'Membrane.Rim': new THREE.MeshPhongMaterial({color: 0x3498db, side: THREE.DoubleSide}),
+    'Cristae.Inner': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
+    'Cristae.Rim': new THREE.MeshPhongMaterial({color: 0x8e44ad, side: THREE.DoubleSide}),
+    'Cristae.Outer': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
+  }
 
   let childs = []
 
@@ -60,7 +68,7 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
 
     console.log(child.name)
 
-    child.material = new THREE.MeshPhongMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+    child.material = textureMappings[child.name]
     child.scale.set(6*37.5, 6*37.5, 6*37.5)
 
 
@@ -83,7 +91,7 @@ loader.load('/models/outer-membrane.json', (geom) => {
   const outerMembrane = new THREE.Mesh(geom, outerMembraneMat)
 
   outerMembrane.scale.set(6*37.5, 6*37.5, 6*37.5)
-  cell.add(outerMembrane)
+  // cell.add(outerMembrane)
 })
 
 // see: http://stackoverflow.com/a/20775508/1409233
