@@ -76,7 +76,7 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
 
     if (child.geometry) {
       child.geometry  = new THREE.Geometry().fromBufferGeometry(child.geometry)
-      assignUVs(child.geometry)
+      // assignUVs(child.geometry)
     }
 
     if (child.name === 'Cristae.Rim') {
@@ -85,8 +85,28 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
 
       for(let i=0; i < faceMat.length; i++) {
         child.geometry.faces[i].materialIndex = i
-        faceMat[i] = new THREE.MeshPhongMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+        // faceMat[i] = new THREE.MeshPhongMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+        faceMat[i] = new THREE.MeshPhongMaterial({map: phosphosTexture})
       }
+
+      child.geometry.faceVertexUvs[0] = []
+      let faces = child.geometry.faces
+
+      for (let i = 0; i < child.geometry.faces.length;  i++) {
+
+        var v1 = child.geometry.vertices[faces[i].a]
+        var v2 = child.geometry.vertices[faces[i].b]
+        var v3 = child.geometry.vertices[faces[i].c]
+
+        child.geometry.faceVertexUvs[0].push([
+          new THREE.Vector2(0 , 1),
+          new THREE.Vector2(0 , 0),
+          new THREE.Vector2(1 , 0),
+        ])
+
+      }
+
+      child.geometry.uvsNeedUpdate = true;
 
       console.log(faceMat)
       textureMappings[child.name] = new THREE.MeshFaceMaterial(faceMat)
