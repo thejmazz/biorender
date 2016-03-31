@@ -52,18 +52,19 @@ loader.load('/models/mito_rimmed.json', (geom) => {
 OBJLoader.load('/models/mito_rimmed.obj', (object) => {
   const phosphosTexture = textureLoader.load('/img/phospholipids.png')
   phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
-  phosphosTexture.repeat.set(100, 100)
+  // phosphosTexture.repeat.set(100, 100)
+  let faceMat
 
-  const textureMappings = {
+  let childs = []
+
+  let textureMappings = {
     'Membrane.Inner': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Outer': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Rim': new THREE.MeshPhongMaterial({color: 0x3498db, side: THREE.DoubleSide}),
     'Cristae.Inner': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
-    'Cristae.Rim': new THREE.MeshPhongMaterial({map: phosphosTexture, side: THREE.DoubleSide}),
+    // 'Cristae.Rim': new THREE.MeshFaceMaterial(faceMat),
     'Cristae.Outer': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
   }
-
-  let childs = []
 
   object.traverse((child) => {
     child.name = child.name.split('_')[0]
@@ -76,6 +77,20 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
     if (child.geometry) {
       child.geometry  = new THREE.Geometry().fromBufferGeometry(child.geometry)
       assignUVs(child.geometry)
+    }
+
+    if (child.name === 'Cristae.Rim') {
+      console.log(child)
+      faceMat = new Array(child.geometry.faces.length)
+
+      for(let i=0; i < faceMat.length; i++) {
+        child.geometry.faces[i].materialIndex = i
+        faceMat[i] = new THREE.MeshPhongMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+      }
+
+      console.log(faceMat)
+      textureMappings[child.name] = new THREE.MeshFaceMaterial(faceMat)
+      child.material = textureMappings[child.name]
     }
 
     childs.push(child)
