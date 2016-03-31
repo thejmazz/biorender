@@ -8,7 +8,9 @@ const cell = new THREE.Mesh(
   new THREE.MeshLambertMaterial({color: 0xdf9134})
 )
 
-const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x2980b9, 0x9b59b6, 0x8e44ad, 0x34495e, 0x2c3e50, 0xf1c40f, 0xf39c12, 0xe67e22, 0xd35400, 0xe74c3c, 0xc0392b]
+const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db,
+0x2980b9, 0x9b59b6, 0x8e44ad, 0x34495e, 0x2c3e50, 0xf1c40f, 0xf39c12, 0xe67e22,
+0xd35400, 0xe74c3c, 0xc0392b]
 
 
 
@@ -19,7 +21,56 @@ const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x29
 // cell.add(pLightHelper)
 
 const loader = new THREE.JSONLoader()
+const OBJLoader = new THREE.OBJLoader()
 const textureLoader = new THREE.TextureLoader()
+
+// not working..
+loader.load('/models/mito_rimmed.json', (geom) => {
+  const frontMat = new THREE.MeshPhongMaterial({
+    color: 0x27ae60,
+    side: THREE.FrontSide
+  })
+
+  const backMat = new THREE.MeshPhongMaterial({
+    color: 0x1abc9c,
+    side: THREE.BackSide
+  })
+
+  // const mitochondria = THREE.SceneUtils.createMultiMaterialObject(geom, [frontMat, backMat])
+
+  const mitochondria = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({color: 0x27ae60}))
+
+  mitochondria.position.set(2800,0,0)
+  // mitochondria.rotation.y = Math.PI / 2
+  mitochondria.scale.set(6*37.5, 6*37.5, 6*37.5)
+
+  console.log(mitochondria)
+
+  cell.add(mitochondria)
+})
+
+OBJLoader.load('/models/mito_rimmed.obj', (object) => {
+  console.log(object)
+
+
+  let childs = []
+
+  object.traverse((child) => {
+    child.name = child.name.split('_')[0]
+
+    console.log(child.name)
+
+    child.material = new THREE.MeshPhongMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+    child.scale.set(6*37.5, 6*37.5, 6*37.5)
+
+
+    childs.push(child)
+  })
+
+  childs.forEach((meshy) => {
+    cell.add(meshy)
+  })
+})
 
 loader.load('/models/outer-membrane.json', (geom) => {
   const outerMembraneMat = new THREE.MeshLambertMaterial({
@@ -109,19 +160,19 @@ loader.load('/models/inner-membrane.json', (geom) => {
 
 
 
-  mitochondria.position.set(2800,0,0)
-  // mitochondria.rotation.y = Math.PI / 2
-  mitochondria.scale.set(6*37.5, 6*37.5, 6*37.5)
-  cell.add(mitochondria)
-
-  const m2 = mitochondria.clone()
-  m2.position.set(0,0,0)
-  cell.add(m2)
-
-  var bbox = new THREE.BoundingBoxHelper( mitochondria, 0x000000 );
-  bbox.update();
-  // cell.add( bbox );
-  console.log(bbox)
+  // mitochondria.position.set(2800,0,0)
+  // // mitochondria.rotation.y = Math.PI / 2
+  // mitochondria.scale.set(6*37.5, 6*37.5, 6*37.5)
+  // cell.add(mitochondria)
+  //
+  // const m2 = mitochondria.clone()
+  // m2.position.set(0,0,0)
+  // cell.add(m2)
+  //
+  // var bbox = new THREE.BoundingBoxHelper( mitochondria, 0x000000 );
+  // bbox.update();
+  // // cell.add( bbox );
+  // console.log(bbox)
 })
 
 const locs = [
@@ -185,7 +236,7 @@ loader.load('/models/ATP-synthase_d0.05.json', (geom) => {
       s.rotation.z = Math.PI/2
       s.scale.set(0.5, 0.5, 0.5)
 
-      cell.add(s)
+      // cell.add(s)
     }
 
 
@@ -206,7 +257,7 @@ loader.load('/models/ATP-synthase_d0.05.json', (geom) => {
     t.rotation.z = Math.PI/2
     t.scale.set(0.5, 0.5, 0.5)
 
-    cell.add(t)
+    // cell.add(t)
   })
 })
 
