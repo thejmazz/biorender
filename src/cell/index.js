@@ -266,12 +266,12 @@ loader.load('/models/ATP-synthase_d0.05.json', (geom) => {
 
     t.material = new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
 
-    t.position.set(loc.x*6*37.5 + 6.5, 0, loc.y2*6*37.5*-1 - 225 + 8.5)
+    t.position.set(loc.x*6*37.5 + 6.5 - 1, 0, loc.y2*6*37.5*-1 - 225 + 8.5 - 3.6)
     t.rotation.y = -Math.PI/2
     t.rotation.z = Math.PI/2
     t.scale.set(0.5, 0.5, 0.5)
 
-    // cell.add(t)
+    cell.add(t)
   })
 })
 
@@ -289,7 +289,7 @@ function createSynthaseDimer(geometry) {
 
   var protein2 = protein.clone();
 
-  protein2.position.z += 25;
+  protein2.position.z += 22;
   protein2.rotation.y += Math.PI;
   dimer.add(protein2);
 
