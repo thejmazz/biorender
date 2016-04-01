@@ -63,9 +63,9 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
     'Membrane.Inner': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Outer': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Rim': new THREE.MeshPhongMaterial({color: 0x3498db, side: THREE.DoubleSide}),
-    'Cristae.Inner': new THREE.MeshPhongMaterial({color: 0x525fa1, side: THREE.DoubleSide}),
+    'Cristae.Inner': new THREE.MeshLambertMaterial({color: 0x525fa1, side: THREE.DoubleSide}),
     // 'Cristae.Rim': new THREE.MeshFaceMaterial(faceMat),
-    'Cristae.Outer': new THREE.MeshPhongMaterial({color: 0x6ce18e, side: THREE.DoubleSide}),
+    'Cristae.Outer': new THREE.MeshLambertMaterial({color: 0x6ce18e, side: THREE.DoubleSide}),
   }
 
   object.traverse((child) => {
