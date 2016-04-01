@@ -63,9 +63,9 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
     'Membrane.Inner': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Outer': new THREE.MeshPhongMaterial({color: 0x2ecc71, transparent: true, opacity: 0.25, side: THREE.DoubleSide}),
     'Membrane.Rim': new THREE.MeshPhongMaterial({color: 0x3498db, side: THREE.DoubleSide}),
-    'Cristae.Inner': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
+    'Cristae.Inner': new THREE.MeshPhongMaterial({color: 0x525fa1, side: THREE.DoubleSide}),
     // 'Cristae.Rim': new THREE.MeshFaceMaterial(faceMat),
-    'Cristae.Outer': new THREE.MeshPhongMaterial({color: 0xc0392b, side: THREE.DoubleSide}),
+    'Cristae.Outer': new THREE.MeshPhongMaterial({color: 0x6ce18e, side: THREE.DoubleSide}),
   }
 
   object.traverse((child) => {
@@ -87,7 +87,6 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
 
       for(let i=0; i < faceMat.length; i++) {
         child.geometry.faces[i].materialIndex = i
-        // faceMat[i] = new THREE.MeshPhongMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
         faceMat[i] = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
       }
 
@@ -95,12 +94,6 @@ OBJLoader.load('/models/mito_rimmed.obj', (object) => {
       let faces = child.geometry.faces
 
       for (let i = 0; i < child.geometry.faces.length;  i+= 2) {
-
-        var v1 = child.geometry.vertices[faces[i].a]
-        var v2 = child.geometry.vertices[faces[i].b]
-        var v3 = child.geometry.vertices[faces[i].c]
-
-        // 0,1; 0,0; 1,0
 
         child.geometry.faceVertexUvs[0].push([
           new THREE.Vector2(0 , 0),
