@@ -4,5 +4,5 @@ node_modules
 .DS_Store
 *.swp
 
-/app/models/ATP-synthase_d0.25.json
-/app/models/ATP-synthase_d0.05.json
+ATP-synthase_d0.25.json
+ATP-synthase_d0.05.json
