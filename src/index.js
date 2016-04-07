@@ -104,15 +104,15 @@ OBJLoader.load('/models/cristae2.obj', (object) => {
   })
 
 
-  curved.forEach(curve => scene.add(curve))
+  // curved.forEach(curve => scene.add(curve))
   // rim.forEach(r => scene.add(r))
-  etc.forEach(e => scene.add(e))
+  // etc.forEach(e => scene.add(e))
 
   // scene.add(master)
 })
 
 OBJLoader.load('/models/cristae_nogroups.obj', (object) => {
-  console.log(object)
+  // console.log(object)
   let mesh
 
   object.children.forEach( (child) => {
@@ -121,7 +121,30 @@ OBJLoader.load('/models/cristae_nogroups.obj', (object) => {
 
   mesh.material = new THREE.MeshLambertMaterial({color: 0xbdb5c4, side: THREE.DoubleSide})
   mesh.position.set(0,0,-2)
-  scene.add(mesh)
+  // scene.add(mesh)
+})
+
+OBJLoader.load('/models/cristae_mats.obj', (object) => {
+  console.log(object)
+  let red, blue, purple
+
+  object.children.forEach( (child) => {
+    console.log(child.name)
+    if (child.name === 'Cristae_Cube.001_Red') {
+      child.material = new THREE.MeshLambertMaterial({color: 0xe92f06, side: THREE.DoubleSide})
+      red = child
+    } else if (child.name === 'Cristae_Cube.001_Blue') {
+      child.material = new THREE.MeshLambertMaterial({color: 0x181ad7, side: THREE.DoubleSide})
+      blue = child
+    } else if (child.name === 'Cristae_Cube.001_Purple') {
+      child.material = new THREE.MeshLambertMaterial({color: 0xb815da, side: THREE.DoubleSide})
+      purple = child
+    }
+  })
+
+  scene.add(red)
+  scene.add(blue)
+  scene.add(purple)
 })
 
 // ===========================================================================
