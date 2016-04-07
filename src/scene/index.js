@@ -13,5 +13,5 @@ export default () => {
   //   box.rotation.y += 0.01
   // }
 
-  return({ box })
+  return({})
 }

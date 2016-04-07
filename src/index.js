@@ -51,7 +51,7 @@ OBJLoader.load('/models/disk.obj', (object) => {
   let curved, etc
 
   object.children.forEach( (child) => {
-    console.log(child)
+    // console.log(child)
     child.material.side = THREE.DoubleSide
 
     if (child.name === 'Curved') {
@@ -66,8 +66,33 @@ OBJLoader.load('/models/disk.obj', (object) => {
     //   scene.add(child)
   })
 
-  scene.add(curved)
-  scene.add(etc)
+  // scene.add(curved)
+  // scene.add(etc)
+})
+
+OBJLoader.load('/models/cristae.obj', (object) => {
+  let curved = []
+  let rim = []
+  let etc = []
+
+  console.log(object)
+
+  object.children.forEach( (child) => {
+    if (child.name === 'Curved') {
+      child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
+      curved.push(child)
+    } else if (child.name === 'ETC') {
+      child.material = new THREE.MeshLambertMaterial({color: 0x2141b5})
+      etc.push(child)
+    } else if (child.name === 'Rim') {
+      child.material = new THREE.MeshLambertMaterial({color: 0x6d12e0})
+      rim.push(child)
+    }
+  })
+
+  curved.forEach(curve => scene.add(curve))
+  rim.forEach(r => scene.add(r))
+  etc.forEach(e => scene.add(e))
 })
 
 // ===========================================================================
