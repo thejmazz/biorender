@@ -65,6 +65,8 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
 
   console.log(curved)
 
+  curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
+
   scene.add(curved)
   scene.add(etc)
   scene.add(rim)
@@ -72,7 +74,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
 
 // has /^[gs]/ lines deleted
 OBJLoader.load('/models/cristae_polygroups_whole.obj', (object) => {
-  console.log(object)
+  // console.log(object)
   let mesh
 
   object.children.forEach( (child) => {
