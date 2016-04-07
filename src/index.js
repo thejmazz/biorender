@@ -48,6 +48,41 @@ OBJLoader.load('/models/cristae.obj', (object) => {
   let rim = []
   let etc = []
 
+  // console.log(object)
+
+  object.children.forEach( (child) => {
+    child.name = child.name.split('_')[0]
+
+    // console.log(child.name)
+    if (child.name === 'Cristae.Curved') {
+      child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
+      curved.push(child)
+    } else if (child.name === 'Cristae.ETC') {
+      child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
+      etc.push(child)
+    } else if (child.name === 'Cristae.Rim') {
+      child.material = new THREE.MeshLambertMaterial({color: 0x6d12e0, side: THREE.DoubleSide})
+      rim.push(child)
+    }
+
+    // if (child.name === 'Cristae') {
+    //   scene.add(child)
+    // }
+  })
+
+
+  // curved.forEach(curve => scene.add(curve))
+  // rim.forEach(r => scene.add(r))
+  // etc.forEach(e => scene.add(e))
+})
+
+OBJLoader.load('/models/cristae2.obj', (object) => {
+  let curved = []
+  let rim = []
+  let etc = []
+
+  let master
+
   console.log(object)
 
   object.children.forEach( (child) => {
@@ -63,12 +98,30 @@ OBJLoader.load('/models/cristae.obj', (object) => {
     } else if (child.name === 'Cristae.Rim') {
       child.material = new THREE.MeshLambertMaterial({color: 0x6d12e0, side: THREE.DoubleSide})
       rim.push(child)
+    } else if (child.name === 'Cristae') {
+      master = child
     }
   })
 
+
   curved.forEach(curve => scene.add(curve))
-  rim.forEach(r => scene.add(r))
+  // rim.forEach(r => scene.add(r))
   etc.forEach(e => scene.add(e))
+
+  // scene.add(master)
+})
+
+OBJLoader.load('/models/cristae_nogroups.obj', (object) => {
+  console.log(object)
+  let mesh
+
+  object.children.forEach( (child) => {
+    mesh = child
+  })
+
+  mesh.material = new THREE.MeshLambertMaterial({color: 0xbdb5c4, side: THREE.DoubleSide})
+  mesh.position.set(0,0,-2)
+  scene.add(mesh)
 })
 
 // ===========================================================================
