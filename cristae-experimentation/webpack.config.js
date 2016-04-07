@@ -21,7 +21,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'My Three Project',
+      title: 'Cristae'
       template: './src/index.html'
     }),
     new CopyWebpackPlugin([{
