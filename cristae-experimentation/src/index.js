@@ -68,9 +68,9 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
 
   curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
 
-  // scene.add(curved)
-  // scene.add(etc)
-  // scene.add(rim)
+  scene.add(curved)
+  scene.add(etc)
+  scene.add(rim)
 
   // Bounding box around curved section
   const curvedHelper = new THREE.BoundingBoxHelper(curved, 0xf6f400)
@@ -127,17 +127,14 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
     return dimer
   }
 
-  const dimer = dimerCreator()
+  const dimer = dimerCreator(Math.PI/16)
+  // TODO rotate from center of group
+  dimer.rotation.x = Math.PI/2
+  dimer.rotation.z = Math.PI/2
   dimer.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
+  dimer.position.set(-0.983, 0.83, -0.02)
+
   scene.add(dimer)
-
-
-  // barrel.position.set(0.015, 0, 0.02)
-  // barrel.rotation.y = 1.86
-
-
-  // synthase.position.set(0,0,4)
-  // scene.add(synthase)
 })
 
 // has /^[gs]/ lines deleted
