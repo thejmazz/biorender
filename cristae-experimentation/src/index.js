@@ -10,7 +10,7 @@ window.scene = scene
 
 // ===========================================================================
 
-camera.position.set(0,0,2)
+camera.position.set(0,0,1.5)
 
 // ===========================================================================
 
@@ -198,6 +198,8 @@ OBJLoader.load('/models/cristae_polygroups_whole.obj', (object) => {
   scene.add(mesh)
 })
 
+let lodReady = false
+let lod
 OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
   const ATPSynthase = new THREE.Group()
   const components = []
@@ -248,11 +250,28 @@ OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
 
   const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
   // ATPSynthaseDimer.position.set(-0.983, 0.83, -0.02)
-  ATPSynthaseDimer.position.set(0,0,1)
+  // ATPSynthaseDimer.position.set(0,0,1)
 
-  ATPSynthaseDimer.scale.set(0.01, 0.01, 0.01)
+  ATPSynthaseDimer.scale.set(0.005, 0.005, 0.005)
 
-  scene.add(ATPSynthaseDimer)
+  // scene.add(ATPSynthaseDimer)
+
+  const crudeDimer = dimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
+  crudeDimer.rotation.y = Math.PI/2
+  // crudeDimer.position.set(0.2,0,1)
+  // scene.add(crudeDimer)
+
+  lod = new THREE.LOD()
+  lod.addLevel(ATPSynthaseDimer, 0.1)
+  lod.addLevel(crudeDimer, 0.5)
+  lod.position.set(0,0,1)
+  lod.updateMatrix()
+  lod.matrixAutoUpdate = false
+
+  lod.update(camera)
+
+  scene.add(lod)
+  lodReady = true
 })
 
 // ===========================================================================
@@ -265,6 +284,10 @@ const render = () => {
 
   for (let keyframe of keyframes) {
     keyframe()
+  }
+
+  if (lodReady) {
+    lod.update(camera)
   }
 
   renderer.render(scene, camera)
