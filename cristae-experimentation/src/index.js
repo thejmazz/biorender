@@ -51,6 +51,46 @@ ground.position.set(0,-2,0)
 ground.rotation.x = Math.PI/2
 scene.add(ground)
 
+const crudeSynthaseCreator = () => {
+  const synthase = new THREE.Group()
+  const barrel = new THREE.Mesh(
+    new THREE.BoxGeometry(0.01,0.01,0.01),
+    new THREE.MeshLambertMaterial({color: 0x12d0f6})
+  )
+  barrel.scale.set(2,3,2)
+  synthase.add(barrel)
+
+  const rotor = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.005, 0.005, 0.04, 16),
+    new THREE.MeshLambertMaterial({color: 0x2fc37f})
+  )
+  rotor.position.set(0,0.035,0)
+  synthase.add(rotor)
+
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.02, 16, 16),
+    new THREE.MeshLambertMaterial({color: 0xc4caf4})
+  )
+  head.position.set(0,0.045,0)
+  synthase.add(head)
+
+  return synthase
+}
+
+const dimerCreator = (angle=Math.PI/8, spread=0.04, synthase) => {
+  const dimer = new THREE.Group()
+  const synthaseA = synthase
+  const synthaseB = synthase.clone()
+
+  dimer.add(synthaseA)
+  dimer.add(synthaseB)
+
+  synthaseA.rotation.z = angle
+  synthaseB.rotation.z = -angle
+  synthaseB.position.set(spread, 0, 0)
+
+  return dimer
+}
 
 OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   // console.log(object)
@@ -118,44 +158,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   sphere.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
   // scene.add(sphere)
 
-  const synthase = new THREE.Group()
-  const barrel = new THREE.Mesh(
-    new THREE.BoxGeometry(0.01,0.01,0.01),
-    new THREE.MeshLambertMaterial({color: 0x12d0f6})
-  )
-  barrel.scale.set(2,3,2)
-  synthase.add(barrel)
-
-  const rotor = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.005, 0.005, 0.04, 16),
-    new THREE.MeshLambertMaterial({color: 0x2fc37f})
-  )
-  rotor.position.set(0,0.035,0)
-  synthase.add(rotor)
-
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.02, 16, 16),
-    new THREE.MeshLambertMaterial({color: 0xc4caf4})
-  )
-  head.position.set(0,0.045,0)
-  synthase.add(head)
-
-  const dimerCreator = (angle=Math.PI/8, spread=0.04) => {
-    const dimer = new THREE.Group()
-    const synthaseA = synthase
-    const synthaseB = synthase.clone()
-
-    dimer.add(synthaseA)
-    dimer.add(synthaseB)
-
-    synthaseA.rotation.z = angle
-    synthaseB.rotation.z = -angle
-    synthaseB.position.set(spread, 0, 0)
-
-    return dimer
-  }
-
-  const dimer = dimerCreator(Math.PI/4)
+  const dimer = dimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
   // TODO rotate from center of group
   dimer.rotation.x = Math.PI/2
   dimer.rotation.z = Math.PI/2
@@ -223,7 +226,33 @@ OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
 
   components.forEach(component => ATPSynthase.add(component))
 
-  scene.add(ATPSynthase)
+  const newDimerCreator = (spread=0, synthase) => {
+    const dimer = new THREE.Group()
+
+    const synthaseA = synthase
+    const synthaseB = synthase.clone()
+
+    const bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000)
+    bBox.update()
+
+
+    synthaseB.rotation.y = Math.PI
+    synthaseB.position.set(0,0, bBox.scale.z + spread*bBox.scale.z)
+
+    dimer.add(synthaseA)
+    dimer.add(synthaseB)
+
+    return dimer
+  }
+
+
+  const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
+  // ATPSynthaseDimer.position.set(-0.983, 0.83, -0.02)
+  ATPSynthaseDimer.position.set(0,0,1)
+
+  ATPSynthaseDimer.scale.set(0.01, 0.01, 0.01)
+
+  scene.add(ATPSynthaseDimer)
 })
 
 // ===========================================================================
