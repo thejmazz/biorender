@@ -70,7 +70,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
       const phosphosAlbedo = textureLoader.load('/textures/phospholipids_a.png')
       const phosphosBump = textureLoader.load('/textures/phospholipids_b.png')
 
-      child.geometry  = new THREE.Geometry().fromBufferGeometry(child.geometry)
+      child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry)
 
       for (let i = 0; i < child.geometry.faces.length;  i+= 2) {
        child.geometry.faceVertexUvs[0].push([
@@ -87,10 +87,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
 
       child.geometry.uvsNeedUpdate = true
 
-      console.log(child)
-
       child.material = new THREE.MeshPhongMaterial({map: phosphosAlbedo, bumpMap: phosphosBump})
-      // child.material = new THREE.MeshLambertMaterial({color: 0x6d12e0, side: THREE.DoubleSide})
       rim = child
     }
   })
@@ -112,8 +109,8 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   // Pull out position and scale of curved section
   const curvedPosition = curvedHelper.position
   const curvedScale = curvedHelper.scale
-  console.log(curvedPosition)
-  console.log(curvedScale)
+  // console.log(curvedPosition)
+  // console.log(curvedScale)
 
   // helper sphere
   const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
@@ -158,7 +155,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
     return dimer
   }
 
-  const dimer = dimerCreator(Math.PI/16)
+  const dimer = dimerCreator(Math.PI/4)
   // TODO rotate from center of group
   dimer.rotation.x = Math.PI/2
   dimer.rotation.z = Math.PI/2
@@ -171,16 +168,16 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   dimerHelper.update()
   // scene.add(dimerHelper)
   const dimerScale = dimerHelper.scale
-  console.log(dimerScale)
+  // console.log(dimerScale)
   // By inspection, z is the size we want..
 
-  let currentSpot = -curvedScale.y/2 + dimerScale.z + 0.005
-  while (currentSpot <= curvedScale.y/2 + dimerScale.z/2) {
+  let currentSpot = -curvedScale.y/2 + dimerScale.y + 0.005
+  while (currentSpot <= curvedScale.y/2 + dimerScale.y/2) {
     const anotherDimer = dimer.clone()
     anotherDimer.position.set(-0.983, currentSpot, -0.02)
     scene.add(anotherDimer)
 
-    currentSpot += dimerScale.z/2
+    currentSpot += dimerScale.y
   }
 })
 
@@ -196,6 +193,73 @@ OBJLoader.load('/models/cristae_polygroups_whole.obj', (object) => {
   mesh.material = new THREE.MeshLambertMaterial({color: 0xbdb5c4, side: THREE.DoubleSide})
   mesh.position.set(0,0,-2)
   scene.add(mesh)
+})
+
+OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
+  console.log(object)
+  let axelFront, osap, statorMed, f1, statorDark, statorBase, test, test1, axelHydrophobic, f1Dark
+
+  object.children.forEach( (child, i) => {
+    if (i > 0) {
+      child.name = child.name.split('_')[2]
+      console.log(child.name)
+
+      switch (child.name) {
+        case 'Axel-Front':
+          child.material = new THREE.MeshLambertMaterial({color: 0x007C00})
+          axelFront = child
+          break
+        case 'OSAP':
+          child.material = new THREE.MeshLambertMaterial({color: 0x6f8efa})
+          osap = child
+          break
+        case 'Stator-Blue-Med':
+          child.material = new THREE.MeshLambertMaterial({color: 0x1753c7})
+          statorMed = child
+          break
+        case 'F1-Redish-Front':
+          child.material = new THREE.MeshLambertMaterial({color: 0xc43535})
+          f1 = child
+          break
+        case 'Stator-Blue-Dark':
+          child.material = new THREE.MeshLambertMaterial({color: 0x431cc6})
+          statorDark = child
+          break
+        case 'Stator-Base':
+          child.material = new THREE.MeshLambertMaterial({color: 0xe97ea5})
+          statorBase = child
+          break
+        case 'Test-Velvet-Green':
+          child.material = new THREE.MeshLambertMaterial({color: 0x21f112})
+          test = child
+          break
+        case 'Test-Velvet-Green.001':
+          child.material = new THREE.MeshLambertMaterial({color: 0x60be44})
+          test1 = child
+          break
+        case 'Axel-Hydrophobic':
+          child.material = new THREE.MeshLambertMaterial({color: 0xcdcdcd})
+          axelHydrophobic = child
+          break
+        case 'F1-Redish-Dark-Front':
+          child.material = new THREE.MeshLambertMaterial({color: 0xd5381d})
+          f1Dark = child
+          break
+        default: break
+      }
+    }
+  })
+
+  scene.add(axelFront)
+  scene.add(osap)
+  scene.add(statorMed)
+  scene.add(f1)
+  scene.add(statorDark)
+  scene.add(statorBase)
+  scene.add(test)
+  scene.add(test1)
+  scene.add(axelHydrophobic)
+  scene.add(f1Dark)
 })
 
 // ===========================================================================

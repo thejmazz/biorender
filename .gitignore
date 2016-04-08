@@ -6,4 +6,4 @@ node_modules
 *.swp
 
 ATP-synthase_d0.25.json
-ATP-synthase_d0.05.json
+ATP-synthase_d0.05.*
