@@ -75,7 +75,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   // Bounding box around curved section
   const curvedHelper = new THREE.BoundingBoxHelper(curved, 0xf6f400)
   curvedHelper.update()
-  scene.add(curvedHelper)
+  // scene.add(curvedHelper)
   // console.log(curvedHelper)
 
   // Pull out position and scale of curved section
@@ -88,7 +88,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
   const sphere = new THREE.Mesh(sphereGeom, new THREE.MeshLambertMaterial({color: 0x158e41}))
   sphere.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
-  scene.add(sphere)
+  // scene.add(sphere)
 
   const synthase = new THREE.Group()
   const barrel = new THREE.Mesh(
@@ -131,10 +131,26 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   // TODO rotate from center of group
   dimer.rotation.x = Math.PI/2
   dimer.rotation.z = Math.PI/2
-  dimer.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
+  // dimer.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
   dimer.position.set(-0.983, 0.83, -0.02)
+  // scene.add(dimer)
 
-  scene.add(dimer)
+  // Get dimer dimensions
+  const dimerHelper = new THREE.BoundingBoxHelper(dimer, 0xf6f400)
+  dimerHelper.update()
+  // scene.add(dimerHelper)
+  const dimerScale = dimerHelper.scale
+  console.log(dimerScale)
+  // By inspection, z is the size we want..
+
+  let currentSpot = -curvedScale.y/2 + dimerScale.z + 0.005
+  while (currentSpot <= curvedScale.y/2 + dimerScale.z/2) {
+    const anotherDimer = dimer.clone()
+    anotherDimer.position.set(-0.983, currentSpot, -0.02)
+    scene.add(anotherDimer)
+
+    currentSpot += dimerScale.z/2
+  }
 })
 
 // has /^[gs]/ lines deleted
