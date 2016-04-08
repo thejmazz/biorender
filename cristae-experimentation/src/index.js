@@ -43,13 +43,14 @@ ground.position.set(0,-2,0)
 ground.rotation.x = Math.PI/2
 scene.add(ground)
 
+
 OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
-  console.log(object)
+  // console.log(object)
   let curved, etc, rim
 
   object.children.forEach( (child) => {
     child.name = child.name.split('_')[0]
-    console.log(child.name)
+    // console.log(child.name)
 
     if (child.name === 'Cristae.Curved') {
       child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
@@ -63,13 +64,30 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
     }
   })
 
-  console.log(curved)
+  // console.log(curved)
 
   curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
 
   scene.add(curved)
   scene.add(etc)
   scene.add(rim)
+
+  // Bounding box around curved section
+  const curvedHelper = new THREE.BoundingBoxHelper(curved, 0xf6f400)
+  curvedHelper.update()
+  scene.add(curvedHelper)
+  // console.log(curvedHelper)
+
+  // Pull out position and scale of curved section
+  const curvedPosition = curvedHelper.position
+  const curvedScale = curvedHelper.scale
+  console.log(curvedPosition)
+  console.log(curvedScale)
+
+  const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
+  const sphere = new THREE.Mesh(sphereGeom, new THREE.MeshLambertMaterial({color: 0x158e41}))
+  sphere.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
+  scene.add(sphere)
 })
 
 // has /^[gs]/ lines deleted

@@ -21,7 +21,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Cristae'
+      title: 'Cristae',
       template: './src/index.html'
     }),
     new CopyWebpackPlugin([{
