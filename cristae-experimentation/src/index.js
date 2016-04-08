@@ -68,9 +68,9 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
 
   curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
 
-  scene.add(curved)
-  scene.add(etc)
-  scene.add(rim)
+  // scene.add(curved)
+  // scene.add(etc)
+  // scene.add(rim)
 
   // Bounding box around curved section
   const curvedHelper = new THREE.BoundingBoxHelper(curved, 0xf6f400)
@@ -84,10 +84,43 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   console.log(curvedPosition)
   console.log(curvedScale)
 
+  // helper sphere
   const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
   const sphere = new THREE.Mesh(sphereGeom, new THREE.MeshLambertMaterial({color: 0x158e41}))
   sphere.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
   scene.add(sphere)
+
+  const synthase = new THREE.Group()
+  const barrel = new THREE.Mesh(
+    new THREE.BoxGeometry(0.01,0.01,0.01),
+    new THREE.MeshLambertMaterial({color: 0x12d0f6})
+  )
+  barrel.scale.set(2,3,2)
+  synthase.add(barrel)
+
+
+  const rotor = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.005, 0.005, 0.04, 16),
+    new THREE.MeshLambertMaterial({color: 0x2fc37f})
+  )
+  rotor.position.set(0,0.035,0)
+  synthase.add(rotor)
+
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.02, 16, 16),
+    new THREE.MeshLambertMaterial({color: 0xc4caf4})
+  )
+  head.position.set(0,0.045,0)
+  synthase.add(head)
+
+
+
+  // barrel.position.set(0.015, 0, 0.02)
+  // barrel.rotation.y = 1.86
+
+  synthase.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
+  // synthase.position.set(0,0,4)
+  scene.add(synthase)
 })
 
 // has /^[gs]/ lines deleted
