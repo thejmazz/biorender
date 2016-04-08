@@ -8,7 +8,11 @@ const { scene, camera, renderer } = createScene({
 })
 window.scene = scene
 
-camera.position.set(0,0,5)
+// ===========================================================================
+
+camera.position.set(0,0,2)
+
+// ===========================================================================
 
 import sceneGraphConstructor from './scene'
 const sceneGraph = sceneGraphConstructor()
@@ -27,6 +31,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 // ===========================================================================
 
 const OBJLoader = new THREE.OBJLoader()
+const textureLoader = new THREE.TextureLoader()
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement)
 
@@ -34,6 +39,9 @@ const cLight = new THREE.PointLight(0xffffff, 1, 1000)
 camera.add(cLight)
 cLight.position.set(0,0,-0.1)
 scene.add(camera)
+
+const aLight = new THREE.AmbientLight(0xe6e6e6, 0.5)
+scene.add(aLight)
 
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(10, 10, 10),
@@ -59,7 +67,30 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
       child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
       etc = child
     } else if (child.name === 'Cristae.Rim') {
-      child.material = new THREE.MeshLambertMaterial({color: 0x6d12e0, side: THREE.DoubleSide})
+      const phosphosAlbedo = textureLoader.load('/textures/phospholipids_a.png')
+      const phosphosBump = textureLoader.load('/textures/phospholipids_b.png')
+
+      child.geometry  = new THREE.Geometry().fromBufferGeometry(child.geometry)
+
+      for (let i = 0; i < child.geometry.faces.length;  i+= 2) {
+       child.geometry.faceVertexUvs[0].push([
+         new THREE.Vector2(0 , 0),
+         new THREE.Vector2(0 , 1),
+         new THREE.Vector2(1 , 0),
+       ])
+       child.geometry.faceVertexUvs[0].push([
+         new THREE.Vector2(0 , 1),
+         new THREE.Vector2(1 , 1),
+         new THREE.Vector2(1 , 0),
+       ])
+      }
+
+      child.geometry.uvsNeedUpdate = true
+
+      console.log(child)
+
+      child.material = new THREE.MeshPhongMaterial({map: phosphosAlbedo, bumpMap: phosphosBump})
+      // child.material = new THREE.MeshLambertMaterial({color: 0x6d12e0, side: THREE.DoubleSide})
       rim = child
     }
   })
