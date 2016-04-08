@@ -98,7 +98,6 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   barrel.scale.set(2,3,2)
   synthase.add(barrel)
 
-
   const rotor = new THREE.Mesh(
     new THREE.CylinderGeometry(0.005, 0.005, 0.04, 16),
     new THREE.MeshLambertMaterial({color: 0x2fc37f})
@@ -113,14 +112,32 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   head.position.set(0,0.045,0)
   synthase.add(head)
 
+  const dimerCreator = (angle=Math.PI/8, spread=0.04) => {
+    const dimer = new THREE.Group()
+    const synthaseA = synthase
+    const synthaseB = synthase.clone()
+
+    dimer.add(synthaseA)
+    dimer.add(synthaseB)
+
+    synthaseA.rotation.z = angle
+    synthaseB.rotation.z = -angle
+    synthaseB.position.set(spread, 0, 0)
+
+    return dimer
+  }
+
+  const dimer = dimerCreator()
+  dimer.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
+  scene.add(dimer)
 
 
   // barrel.position.set(0.015, 0, 0.02)
   // barrel.rotation.y = 1.86
 
-  synthase.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
+
   // synthase.position.set(0,0,4)
-  scene.add(synthase)
+  // scene.add(synthase)
 })
 
 // has /^[gs]/ lines deleted
