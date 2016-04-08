@@ -196,70 +196,34 @@ OBJLoader.load('/models/cristae_polygroups_whole.obj', (object) => {
 })
 
 OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
-  console.log(object)
-  let axelFront, osap, statorMed, f1, statorDark, statorBase, test, test1, axelHydrophobic, f1Dark
+  const ATPSynthase = new THREE.Group()
+  const components = []
 
-  object.children.forEach( (child, i) => {
-    if (i > 0) {
-      child.name = child.name.split('_')[2]
-      console.log(child.name)
+  const materialMappings = {
+    'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
+    'OSAP': new THREE.MeshLambertMaterial({color: 0x6f8efa}),
+    'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
+    'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xc43535}),
+    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
+    'Stator-Base': new THREE.MeshLambertMaterial({color: 0x2f28be}),
+    'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
+    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
+    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({color: 0xcdcdcd}),
+    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xd5381d})
+  }
 
-      switch (child.name) {
-        case 'Axel-Front':
-          child.material = new THREE.MeshLambertMaterial({color: 0x007C00})
-          axelFront = child
-          break
-        case 'OSAP':
-          child.material = new THREE.MeshLambertMaterial({color: 0x6f8efa})
-          osap = child
-          break
-        case 'Stator-Blue-Med':
-          child.material = new THREE.MeshLambertMaterial({color: 0x1753c7})
-          statorMed = child
-          break
-        case 'F1-Redish-Front':
-          child.material = new THREE.MeshLambertMaterial({color: 0xc43535})
-          f1 = child
-          break
-        case 'Stator-Blue-Dark':
-          child.material = new THREE.MeshLambertMaterial({color: 0x431cc6})
-          statorDark = child
-          break
-        case 'Stator-Base':
-          child.material = new THREE.MeshLambertMaterial({color: 0xe97ea5})
-          statorBase = child
-          break
-        case 'Test-Velvet-Green':
-          child.material = new THREE.MeshLambertMaterial({color: 0x21f112})
-          test = child
-          break
-        case 'Test-Velvet-Green.001':
-          child.material = new THREE.MeshLambertMaterial({color: 0x60be44})
-          test1 = child
-          break
-        case 'Axel-Hydrophobic':
-          child.material = new THREE.MeshLambertMaterial({color: 0xcdcdcd})
-          axelHydrophobic = child
-          break
-        case 'F1-Redish-Dark-Front':
-          child.material = new THREE.MeshLambertMaterial({color: 0xd5381d})
-          f1Dark = child
-          break
-        default: break
-      }
-    }
-  })
+  for (let i=1; i < object.children.length; i++) {
+    const child = object.children[i]
+    child.name = child.name.split('_')[2]
 
-  scene.add(axelFront)
-  scene.add(osap)
-  scene.add(statorMed)
-  scene.add(f1)
-  scene.add(statorDark)
-  scene.add(statorBase)
-  scene.add(test)
-  scene.add(test1)
-  scene.add(axelHydrophobic)
-  scene.add(f1Dark)
+    child.material = materialMappings[child.name]
+
+    components.push(child)
+  }
+
+  components.forEach(component => ATPSynthase.add(component))
+
+  scene.add(ATPSynthase)
 })
 
 // ===========================================================================
