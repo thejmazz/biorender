@@ -1,9 +1,5 @@
 dist
 node_modules
-#app/models
 *.log
 .DS_Store
 *.swp
-
-ATP-synthase_d0.25.json
-ATP-synthase_d0.05.*

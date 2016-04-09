@@ -198,8 +198,44 @@ OBJLoader.load('/models/cristae_polygroups_whole.obj', (object) => {
   scene.add(mesh)
 })
 
+const newDimerCreator = (spread=0, synthase) => {
+  const dimer = new THREE.Group()
+
+  const synthaseA = synthase
+  const synthaseB = synthase.clone()
+
+  const bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000)
+  bBox.update()
+
+
+  synthaseB.rotation.y = Math.PI
+  synthaseB.position.set(0,0, bBox.scale.z + spread*bBox.scale.z)
+
+  dimer.add(synthaseA)
+  dimer.add(synthaseB)
+
+  return dimer
+}
+
 let lodReady = false
-let lod
+let lod = new THREE.LOD()
+let synthaseHigh = false
+let synthaseLow = false
+
+const makeLod = () => {
+  const low = 0.21
+  const high = 0.2
+  if (synthaseHigh && synthaseLow) {
+    lod.addLevel(synthaseHigh, high)
+    lod.addLevel(synthaseLow, low)
+    lod.position.set(0,0,1)
+    lod.updateMatrix()
+    lod.matrixAutoUpdate = false
+    scene.add(lod)
+    lodReady = true
+  }
+}
+
 OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
   const ATPSynthase = new THREE.Group()
   const components = []
@@ -228,50 +264,48 @@ OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
 
   components.forEach(component => ATPSynthase.add(component))
 
-  const newDimerCreator = (spread=0, synthase) => {
-    const dimer = new THREE.Group()
-
-    const synthaseA = synthase
-    const synthaseB = synthase.clone()
-
-    const bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000)
-    bBox.update()
-
-
-    synthaseB.rotation.y = Math.PI
-    synthaseB.position.set(0,0, bBox.scale.z + spread*bBox.scale.z)
-
-    dimer.add(synthaseA)
-    dimer.add(synthaseB)
-
-    return dimer
-  }
-
-
   const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
-  // ATPSynthaseDimer.position.set(-0.983, 0.83, -0.02)
-  // ATPSynthaseDimer.position.set(0,0,1)
 
   ATPSynthaseDimer.scale.set(0.005, 0.005, 0.005)
 
-  // scene.add(ATPSynthaseDimer)
+  synthaseHigh = ATPSynthaseDimer
+  makeLod()
+})
 
-  const crudeDimer = dimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
-  crudeDimer.rotation.y = Math.PI/2
-  // crudeDimer.position.set(0.2,0,1)
-  // scene.add(crudeDimer)
+OBJLoader.load('/models/ATP-synthase_d0.01.obj', (object) => {
+  const ATPSynthase = new THREE.Group()
+  const components = []
 
-  lod = new THREE.LOD()
-  lod.addLevel(ATPSynthaseDimer, 0.1)
-  lod.addLevel(crudeDimer, 0.5)
-  lod.position.set(0,0,1)
-  lod.updateMatrix()
-  lod.matrixAutoUpdate = false
+  const materialMappings = {
+    'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
+    'OSAP': new THREE.MeshLambertMaterial({color: 0x6f8efa}),
+    'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
+    'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xc43535}),
+    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
+    'Stator-Base': new THREE.MeshLambertMaterial({color: 0x2f28be}),
+    'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
+    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
+    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({color: 0xcdcdcd}),
+    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xd5381d})
+  }
 
-  lod.update(camera)
+  for (let i=1; i < object.children.length; i++) {
+    const child = object.children[i]
+    child.name = child.name.split('_')[2]
 
-  scene.add(lod)
-  lodReady = true
+    child.material = materialMappings[child.name]
+
+    components.push(child)
+  }
+
+  components.forEach(component => ATPSynthase.add(component))
+
+  const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
+
+  ATPSynthaseDimer.scale.set(0.005, 0.005, 0.005)
+
+  synthaseLow = ATPSynthaseDimer
+  makeLod()
 })
 
 // ===========================================================================
