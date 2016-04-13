@@ -5,7 +5,7 @@ import { createScene, createStats } from './lib/create.js'
 const { scene, camera, renderer } = createScene({
   clearColor: 0xffffff,
   antialias: true,
-  size: 0.5
+  size: 1
 })
 window.scene = scene
 
@@ -32,17 +32,6 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 // ===========================================================================
 
 import { OBJLoaderAsync } from './lib/loaders.js'
-
-async function foo() {
-  console.log('async working!')
-}
-
-async function bar() {
-  await foo()
-  console.log('after foo')
-}
-
-bar()
 
 const OBJLoader = new THREE.OBJLoader()
 const textureLoader = new THREE.TextureLoader()
@@ -231,96 +220,71 @@ const newDimerCreator = (spread=0, synthase) => {
   return dimer
 }
 
-let lodReady = false
+let lods = []
 let lod = new THREE.LOD()
-let synthaseHigh = false
-let synthaseLow = false
 
-const makeLod = () => {
-  const low = 0.21
-  const high = 0.2
-  if (synthaseHigh && synthaseLow) {
-    lod.addLevel(synthaseHigh, high)
-    lod.addLevel(synthaseLow, low)
-    lod.position.set(0,0,1)
-    lod.updateMatrix()
-    lod.matrixAutoUpdate = false
-    scene.add(lod)
-    lodReady = true
+async function makeDimerLOD() {
+  let geoms = await Promise.all([
+    OBJLoaderAsync('/models/ATP-synthase_d0.05.obj'),
+    OBJLoaderAsync('/models/ATP-synthase_d0.01.obj')
+  ])
+
+  const materialMappings = {
+    'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
+    'OSAP': new THREE.MeshLambertMaterial({color: 0x6f8efa}),
+    'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
+    'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xc43535}),
+    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
+    'Stator-Base': new THREE.MeshLambertMaterial({color: 0x2f28be}),
+    'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
+    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
+    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({color: 0xcdcdcd}),
+    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xd5381d})
   }
+
+  let meshes = []
+
+  geoms.forEach( (object) => {
+    const ATPSynthase = new THREE.Group()
+    const components = []
+
+    for (let i=1; i < object.children.length; i++) {
+      const child = object.children[i]
+      child.name = child.name.split('_')[2]
+
+      child.material = materialMappings[child.name]
+
+      components.push(child)
+    }
+
+    components.forEach(component => ATPSynthase.add(component))
+
+    const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
+
+    ATPSynthaseDimer.scale.set(0.005, 0.005, 0.005)
+
+    meshes.push(ATPSynthaseDimer)
+  })
+
+  const lod = new THREE.LOD()
+
+  const distances = [0.2, 0.21]
+
+  meshes.forEach( (mesh, i) => {
+    lod.addLevel(mesh, distances[i])
+  })
+
+  return lod
 }
 
-OBJLoader.load('/models/ATP-synthase_d0.05.obj', (object) => {
-  const ATPSynthase = new THREE.Group()
-  const components = []
-
-  const materialMappings = {
-    'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
-    'OSAP': new THREE.MeshLambertMaterial({color: 0x6f8efa}),
-    'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
-    'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xc43535}),
-    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
-    'Stator-Base': new THREE.MeshLambertMaterial({color: 0x2f28be}),
-    'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
-    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
-    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({color: 0xcdcdcd}),
-    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xd5381d})
-  }
-
-  for (let i=1; i < object.children.length; i++) {
-    const child = object.children[i]
-    child.name = child.name.split('_')[2]
-
-    child.material = materialMappings[child.name]
-
-    components.push(child)
-  }
-
-  components.forEach(component => ATPSynthase.add(component))
-
-  const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
-
-  ATPSynthaseDimer.scale.set(0.005, 0.005, 0.005)
-
-  synthaseHigh = ATPSynthaseDimer
-  makeLod()
-})
-
-OBJLoader.load('/models/ATP-synthase_d0.01.obj', (object) => {
-  const ATPSynthase = new THREE.Group()
-  const components = []
-
-  const materialMappings = {
-    'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
-    'OSAP': new THREE.MeshLambertMaterial({color: 0x6f8efa}),
-    'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
-    'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xc43535}),
-    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
-    'Stator-Base': new THREE.MeshLambertMaterial({color: 0x2f28be}),
-    'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
-    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
-    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({color: 0xcdcdcd}),
-    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xd5381d})
-  }
-
-  for (let i=1; i < object.children.length; i++) {
-    const child = object.children[i]
-    child.name = child.name.split('_')[2]
-
-    child.material = materialMappings[child.name]
-
-    components.push(child)
-  }
-
-  components.forEach(component => ATPSynthase.add(component))
-
-  const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
-
-  ATPSynthaseDimer.scale.set(0.005, 0.005, 0.005)
-
-  synthaseLow = ATPSynthaseDimer
-  makeLod()
-})
+(async function() {
+  lod = await makeDimerLOD()
+  lod.position.set(0, 0, 1)
+  lod.updateMatrix()
+  lod.matrixAutoUpdate = false
+  scene.add(lod)
+  lods.push(lod)
+})()
 
 // ===========================================================================
 
@@ -334,7 +298,7 @@ const render = () => {
     keyframe()
   }
 
-  if (lodReady) {
+  for (let lod of lods) {
     lod.update(camera)
   }
 
