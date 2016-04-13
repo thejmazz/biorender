@@ -22,11 +22,13 @@ export const createStats = () => {
  * @param  {int} H height
  * @return {Object}   THREE renderer
  */
-const createRenderer = (W, H, clearColor) => {
+const createRenderer = (W, H, clearColor, size) => {
   const renderer = new THREE.WebGLRenderer({antialias: true})
-  renderer.setSize(W, H)
+  renderer.setSize(W * size, H * size)
   renderer.setClearColor(clearColor)
   document.body.appendChild(renderer.domElement)
+  renderer.domElement.style.height = '100%';
+  renderer.domElement.style.width = '100%';
 
   return renderer
 }
@@ -34,6 +36,7 @@ const createRenderer = (W, H, clearColor) => {
 export const createScene = ({
   W = window.innerWidth,
   H = window.innerHeight,
+  size = 1,
   fov = 75,
   close = 0.01,
   far = 100000,
@@ -42,7 +45,7 @@ export const createScene = ({
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(fov, W / H, close, far)
-  const renderer = createRenderer(W, H, clearColor)
+  const renderer = createRenderer(W, H, clearColor, size)
 
   return { scene, camera, renderer }
 }

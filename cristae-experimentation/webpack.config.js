@@ -5,6 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: [
+    'babel-polyfill',
     './src/index.js'
   ],
   output: {
@@ -24,6 +25,7 @@ module.exports = {
       title: 'Cristae',
       template: './src/index.html'
     }),
+    // TODO exclude .DS_Store
     new CopyWebpackPlugin([{
       from: 'public'
     }, {

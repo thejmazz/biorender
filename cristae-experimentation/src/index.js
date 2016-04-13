@@ -4,7 +4,8 @@ import { createScene, createStats } from './lib/create.js'
 
 const { scene, camera, renderer } = createScene({
   clearColor: 0xffffff,
-  antialias: true
+  antialias: true,
+  size: 0.5
 })
 window.scene = scene
 
@@ -29,6 +30,19 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 }
 
 // ===========================================================================
+
+import { OBJLoaderAsync } from './lib/loaders.js'
+
+async function foo() {
+  console.log('async working!')
+}
+
+async function bar() {
+  await foo()
+  console.log('after foo')
+}
+
+bar()
 
 const OBJLoader = new THREE.OBJLoader()
 const textureLoader = new THREE.TextureLoader()
