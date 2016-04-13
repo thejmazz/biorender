@@ -1,5 +1,9 @@
 # BioRender
 
+Thanks for [Smart Biology](https://www.smart-biology.com/) for providing several models and resources!
+- ATP Synthase
+- phosholipid bilayer texture
+
 ## API
 
 *In development*
