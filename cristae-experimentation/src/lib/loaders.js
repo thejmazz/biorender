@@ -2,6 +2,8 @@
 
 const OBJLoader = new THREE.OBJLoader()
 
+export const textureLoader = new THREE.TextureLoader()
+
 // TODO Promise shim for older browsers
 // TODO reject
 export const OBJLoaderAsync = (url) => {

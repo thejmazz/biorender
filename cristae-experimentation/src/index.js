@@ -31,10 +31,20 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 
 // ===========================================================================
 
-import { OBJLoaderAsync } from './lib/loaders.js'
+import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
+import { makeLOD } from './lib/lod.js'
+
+import {
+  crudeSynthaseCreator,
+  crudeDimerCreator,
+  dimerCreator,
+  constructSynthase,
+  constructDimer
+} from './scene/meshes/atp-synthase.js'
+
+import { constructCristae } from './scene/meshes/cristae.js'
 
 const OBJLoader = new THREE.OBJLoader()
-const textureLoader = new THREE.TextureLoader()
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement)
 
@@ -54,90 +64,8 @@ ground.position.set(0,-2,0)
 ground.rotation.x = Math.PI/2
 scene.add(ground)
 
-const crudeSynthaseCreator = () => {
-  const synthase = new THREE.Group()
-  const barrel = new THREE.Mesh(
-    new THREE.BoxGeometry(0.01,0.01,0.01),
-    new THREE.MeshLambertMaterial({color: 0x12d0f6})
-  )
-  barrel.scale.set(2,3,2)
-  synthase.add(barrel)
-
-  const rotor = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.005, 0.005, 0.04, 16),
-    new THREE.MeshLambertMaterial({color: 0x2fc37f})
-  )
-  rotor.position.set(0,0.035,0)
-  synthase.add(rotor)
-
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.02, 16, 16),
-    new THREE.MeshLambertMaterial({color: 0xc4caf4})
-  )
-  head.position.set(0,0.045,0)
-  synthase.add(head)
-
-  return synthase
-}
-
-const dimerCreator = (angle=Math.PI/8, spread=0.04, synthase) => {
-  const dimer = new THREE.Group()
-  const synthaseA = synthase
-  const synthaseB = synthase.clone()
-
-  dimer.add(synthaseA)
-  dimer.add(synthaseB)
-
-  synthaseA.rotation.z = angle
-  synthaseB.rotation.z = -angle
-  synthaseB.position.set(spread, 0, 0)
-
-  return dimer
-}
-
-OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
-  // console.log(object)
-  let curved, etc, rim
-
-  object.children.forEach( (child) => {
-    child.name = child.name.split('_')[0]
-    // console.log(child.name)
-
-    if (child.name === 'Cristae.Curved') {
-      child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
-      curved = child
-    } else if (child.name === 'Cristae.ETC') {
-      child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
-      etc = child
-    } else if (child.name === 'Cristae.Rim') {
-      const phosphosAlbedo = textureLoader.load('/textures/phospholipids_a.png')
-      const phosphosBump = textureLoader.load('/textures/phospholipids_b.png')
-
-      child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry)
-
-      for (let i = 0; i < child.geometry.faces.length;  i+= 2) {
-       child.geometry.faceVertexUvs[0].push([
-         new THREE.Vector2(0 , 0),
-         new THREE.Vector2(0 , 1),
-         new THREE.Vector2(1 , 0),
-       ])
-       child.geometry.faceVertexUvs[0].push([
-         new THREE.Vector2(0 , 1),
-         new THREE.Vector2(1 , 1),
-         new THREE.Vector2(1 , 0),
-       ])
-      }
-
-      child.geometry.uvsNeedUpdate = true
-
-      child.material = new THREE.MeshPhongMaterial({map: phosphosAlbedo, bumpMap: phosphosBump})
-      rim = child
-    }
-  })
-
-  // console.log(curved)
-
-  curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
+const populateCristae = (object, dimer) => {
+  const { curved, etc, rim } = constructCristae(object)
 
   scene.add(curved)
   scene.add(etc)
@@ -147,13 +75,10 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   const curvedHelper = new THREE.BoundingBoxHelper(curved, 0xf6f400)
   curvedHelper.update()
   // scene.add(curvedHelper)
-  // console.log(curvedHelper)
 
   // Pull out position and scale of curved section
   const curvedPosition = curvedHelper.position
   const curvedScale = curvedHelper.scale
-  // console.log(curvedPosition)
-  // console.log(curvedScale)
 
   // helper sphere
   const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
@@ -161,7 +86,7 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
   sphere.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
   // scene.add(sphere)
 
-  const dimer = dimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
+  // const dimer = crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
   // TODO rotate from center of group
   dimer.rotation.x = Math.PI/2
   dimer.rotation.z = Math.PI/2
@@ -185,106 +110,32 @@ OBJLoader.load('/models/cristae_polygroups.obj', (object) => {
 
     currentSpot += dimerScale.y
   }
-})
-
-// has /^[gs]/ lines deleted
-OBJLoader.load('/models/cristae_polygroups_whole.obj', (object) => {
-  // console.log(object)
-  let mesh
-
-  object.children.forEach( (child) => {
-    mesh = child
-  })
-
-  mesh.material = new THREE.MeshLambertMaterial({color: 0xbdb5c4, side: THREE.DoubleSide})
-  mesh.position.set(0,0,-2)
-  scene.add(mesh)
-})
-
-const newDimerCreator = (spread=0, synthase) => {
-  const dimer = new THREE.Group()
-
-  const synthaseA = synthase
-  const synthaseB = synthase.clone()
-
-  const bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000)
-  bBox.update()
-
-
-  synthaseB.rotation.y = Math.PI
-  synthaseB.position.set(0,0, bBox.scale.z + spread*bBox.scale.z)
-
-  dimer.add(synthaseA)
-  dimer.add(synthaseB)
-
-  return dimer
 }
 
 let lods = []
-let lod = new THREE.LOD()
 
-async function makeDimerLOD() {
-  let geoms = await Promise.all([
-    OBJLoaderAsync('/models/ATP-synthase_d0.05.obj'),
-    OBJLoaderAsync('/models/ATP-synthase_d0.01.obj')
-  ])
+async function init() {
+  // TODO dont delay loading of models with
 
-  const materialMappings = {
-    'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
-    'OSAP': new THREE.MeshLambertMaterial({color: 0x6f8efa}),
-    'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
-    'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xc43535}),
-    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
-    'Stator-Base': new THREE.MeshLambertMaterial({color: 0x2f28be}),
-    'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
-    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
-    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({color: 0xcdcdcd}),
-    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xd5381d})
-  }
+  // === Dimer ===
+  const synthaseModels = ['/models/ATP-synthase_d0.05.obj', '/models/ATP-synthase_d0.01.obj']
+  const synthaseGeoms = await Promise.all(synthaseModels.map(model => OBJLoaderAsync(model)))
 
-  let meshes = []
-
-  geoms.forEach( (object) => {
-    const ATPSynthase = new THREE.Group()
-    const components = []
-
-    for (let i=1; i < object.children.length; i++) {
-      const child = object.children[i]
-      child.name = child.name.split('_')[2]
-
-      child.material = materialMappings[child.name]
-
-      components.push(child)
-    }
-
-    components.forEach(component => ATPSynthase.add(component))
-
-    const ATPSynthaseDimer = new newDimerCreator(0.1, ATPSynthase)
-
-    ATPSynthaseDimer.scale.set(0.005, 0.005, 0.005)
-
-    meshes.push(ATPSynthaseDimer)
+  const lod = makeLOD({
+    meshes: synthaseGeoms.map(geom => constructDimer(geom)),
+    distances: [0.2, 0.21]
   })
-
-  const lod = new THREE.LOD()
-
-  const distances = [0.2, 0.21]
-
-  meshes.forEach( (mesh, i) => {
-    lod.addLevel(mesh, distances[i])
-  })
-
-  return lod
-}
-
-(async function() {
-  lod = await makeDimerLOD()
   lod.position.set(0, 0, 1)
   lod.updateMatrix()
-  lod.matrixAutoUpdate = false
   scene.add(lod)
   lods.push(lod)
-})()
+
+  // === Cristae ===
+  const cristaeModel = await OBJLoaderAsync('/models/cristae_polygroups.obj')
+  populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
+}
+
+init()
 
 // ===========================================================================
 
