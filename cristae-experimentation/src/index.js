@@ -88,10 +88,10 @@ const populateCristae = (object, dimer) => {
 
   // const dimer = crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
   // TODO rotate from center of group
-  dimer.rotation.x = Math.PI/2
+  // dimer.rotation.x = Math.PI/2
   dimer.rotation.z = Math.PI/2
-  // dimer.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
-  dimer.position.set(-0.983, 0.83, -0.02)
+  dimer.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
+  // dimer.position.set(-0.983, 0.83, -0.02)
   // scene.add(dimer)
 
   // Get dimer dimensions
@@ -105,7 +105,9 @@ const populateCristae = (object, dimer) => {
   let currentSpot = -curvedScale.y/2 + dimerScale.y + 0.005
   while (currentSpot <= curvedScale.y/2 + dimerScale.y/2) {
     const anotherDimer = dimer.clone()
-    anotherDimer.position.set(-0.983, currentSpot, -0.02)
+    // anotherDimer.position.set(-0.983, currentSpot, -0.02)
+    anotherDimer.position.set(curvedPosition.x - curvedScale.x/2 - 0.01, currentSpot, curvedPosition.z - 0.05)
+    lods.push(anotherDimer)
     scene.add(anotherDimer)
 
     currentSpot += dimerScale.y
@@ -127,12 +129,13 @@ async function init() {
   })
   lod.position.set(0, 0, 1)
   lod.updateMatrix()
-  scene.add(lod)
-  lods.push(lod)
+  // scene.add(lod)
+  // lods.push(lod)
 
   // === Cristae ===
   const cristaeModel = await OBJLoaderAsync('/models/cristae_polygroups.obj')
-  populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
+  // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
+  populateCristae(cristaeModel, lod)
 }
 
 init()
