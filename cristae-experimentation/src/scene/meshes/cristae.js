@@ -2,6 +2,11 @@ import { textureLoader } from '../../lib/loaders.js'
 import { assignUVs } from '../../lib/UV-util.js'
 
 export const constructCristae = (group) => {
+  const phosphosTopAlbedo = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
+  phosphosTopAlbedo.wrapT = phosphosTopAlbedo.wrapS = THREE.RepeatWrapping
+  const phosphosTopBump = textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png')
+  phosphosTopBump.wrapS = phosphosTopBump.wrapT = THREE.RepeatWrapping
+
   let curved, etc, rim
 
   group.children.forEach( (child) => {
@@ -9,18 +14,19 @@ export const constructCristae = (group) => {
     // console.log(child.name)
 
     if (child.name === 'Cristae.Curved') {
-      child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
+      child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry)
+      assignUVs(child.geometry)
+
+
+      // child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
+      phosphosTopAlbedo.repeat.set(0.5, 0.5)
+      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosTopAlbedo, bumpMap: phosphosTopBump})
       curved = child
     } else if (child.name === 'Cristae.ETC') {
       child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry)
       assignUVs(child.geometry)
 
-      const phosphosAlbedo = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
-      phosphosAlbedo.wrapT = phosphosAlbedo.wrapS = THREE.RepeatWrapping
-      // phosphosAlbedo.repeat.set(10,10)
-      const phosphosBump = textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png')
-      phosphosBump.wrapS = phosphosBump.wrapT = THREE.RepeatWrapping
-      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosAlbedo, bumpMap: phosphosBump})
+      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosTopAlbedo, bumpMap: phosphosTopBump})
       // child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
 
       etc = child
@@ -52,7 +58,7 @@ export const constructCristae = (group) => {
 
   // console.log(curved)
 
-  curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
+  // curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
 
   curved.scale.set(1, 1, 0.5)
   etc.scale.set(1, 1, 0.5)
