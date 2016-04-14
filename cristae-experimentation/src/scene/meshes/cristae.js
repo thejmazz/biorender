@@ -1,4 +1,5 @@
 import { textureLoader } from '../../lib/loaders.js'
+import { assignUVs } from '../../lib/UV-util.js'
 
 export const constructCristae = (group) => {
   let curved, etc, rim
@@ -11,7 +12,17 @@ export const constructCristae = (group) => {
       child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
       curved = child
     } else if (child.name === 'Cristae.ETC') {
-      child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
+      child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry)
+      assignUVs(child.geometry)
+
+      const phosphosAlbedo = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
+      phosphosAlbedo.wrapT = phosphosAlbedo.wrapS = THREE.RepeatWrapping
+      // phosphosAlbedo.repeat.set(10,10)
+      const phosphosBump = textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png')
+      phosphosBump.wrapS = phosphosBump.wrapT = THREE.RepeatWrapping
+      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosAlbedo, bumpMap: phosphosBump})
+      // child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
+
       etc = child
     } else if (child.name === 'Cristae.Rim') {
       const phosphosAlbedo = textureLoader.load('/textures/phospholipids_a.png')
@@ -42,6 +53,10 @@ export const constructCristae = (group) => {
   // console.log(curved)
 
   curved.geometry = new THREE.Geometry().fromBufferGeometry(curved.geometry)
+
+  curved.scale.set(1, 1, 0.5)
+  etc.scale.set(1, 1, 0.5)
+  rim.scale.set(1, 1, 0.5)
 
   return { curved, etc, rim }
 }

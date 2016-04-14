@@ -106,7 +106,7 @@ const populateCristae = (object, dimer) => {
   while (currentSpot <= curvedScale.y/2 + dimerScale.y/2) {
     const anotherDimer = dimer.clone()
     // anotherDimer.position.set(-0.983, currentSpot, -0.02)
-    anotherDimer.position.set(curvedPosition.x - curvedScale.x/2 - 0.01, currentSpot, curvedPosition.z - 0.05)
+    anotherDimer.position.set(curvedPosition.x - curvedScale.x/2 - 0.00, currentSpot, curvedPosition.z - 0.055)
     lods.push(anotherDimer)
     scene.add(anotherDimer)
 
