@@ -47,17 +47,17 @@ import { constructETC } from './scene/meshes/etc.js'
 
 const OBJLoader = new THREE.OBJLoader()
 
-// const controls = new THREE.OrbitControls(camera, renderer.domElement)
-const controls = new THREE.FlyControls(camera)
-controls.movementSpeed = 5 //0.5
-controls.domElement = renderer.domElement
-controls.rollSpeed = (Math.PI / 6)*10
-controls.autoForward = false
-controls.dragToLook = false
+const controls = new THREE.OrbitControls(camera, renderer.domElement)
+// const controls = new THREE.FlyControls(camera)
+// controls.movementSpeed = 5 //0.5
+// controls.domElement = renderer.domElement
+// controls.rollSpeed = (Math.PI / 6)*10
+// controls.autoForward = false
+// controls.dragToLook = false
 
 const cLight = new THREE.PointLight(0xffffff, 1, 1000)
 camera.add(cLight)
-cLight.position.set(0,0,-0.1)
+cLight.position.set(0,0,-0.001)
 scene.add(camera)
 
 const aLight = new THREE.AmbientLight(0xe6e6e6, 0.5)
@@ -71,7 +71,7 @@ ground.position.set(0,-2,0)
 ground.rotation.x = Math.PI/2
 scene.add(ground)
 
-const populateCristae = (object, dimer) => {
+const populateCristae = (object, dimer, etcProteins) => {
   const { curved, etc, rim } = constructCristae(object)
 
   scene.add(curved)
@@ -86,12 +86,6 @@ const populateCristae = (object, dimer) => {
   // Pull out position and scale of curved section
   const curvedPosition = curvedHelper.position
   const curvedScale = curvedHelper.scale
-
-  // helper sphere
-  const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
-  const sphere = new THREE.Mesh(sphereGeom, new THREE.MeshLambertMaterial({color: 0x158e41}))
-  sphere.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
-  // scene.add(sphere)
 
   // const dimer = crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
   // TODO rotate from center of group
@@ -119,6 +113,20 @@ const populateCristae = (object, dimer) => {
 
     currentSpot += dimerScale.y
   }
+
+  // === ETC ===
+  const etcMax = etc.geometry.boundingBox.max
+  const etcMin = etc.geometry.boundingBox.min
+
+  // helper sphere
+  // const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
+  // const sphere = new THREE.Mesh(sphereGeom, new THREE.MeshLambertMaterial({color: 0x158e41}))
+  // sphere.position.set((etcMax.x - etcMin.x)/2, etcMax.y, (etcMax.z - etcMin.z)/2)
+  // // scene.add(sphere)
+
+  etcProteins.position.set((etcMax.x - etcMin.x)/2 - 0.05, etcMax.y - 0.1, (etcMax.z - etcMin.z)/2 - 0.125)
+  scene.add(etcProteins)
+  lods.push(etcProteins)
 }
 
 let lods = []
@@ -139,11 +147,6 @@ async function init() {
   // scene.add(lod)
   // lods.push(lod)
 
-  // === Cristae ===
-  const cristaeModel = await OBJLoaderAsync('/models/cristae_polygroups.obj')
-  // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
-  populateCristae(cristaeModel, lod)
-
   // === ETC ===
   const ETCModels = [
     // '/models/ETC/ETC.obj',
@@ -153,13 +156,26 @@ async function init() {
   ]
   const ETCGeoms = await Promise.all(ETCModels.map(model => OBJLoaderAsync(model)))
 
+
+  const etcScale = 0.0045
   const etcLOD = makeLOD({
     meshes: ETCGeoms.map(geom => constructETC(geom)),
-    distances: [20, 40, 60]
+    distances: [20, 40, 60].map(num => num*etcScale)
   })
 
-  scene.add(etcLOD)
-  lods.push(etcLOD)
+  etcLOD.rotation.x = Math.PI/2
+  etcLOD.rotation.y = Math.PI
+  etcLOD.position.set(0,0,1)
+  etcLOD.scale.set(1*etcScale, 1*etcScale, 1*etcScale)
+
+  // scene.add(etcLOD)
+  // lods.push(etcLOD)
+
+
+  // === Cristae ===
+  const cristaeModel = await OBJLoaderAsync('/models/cristae_polygroups.obj')
+  // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
+  populateCristae(cristaeModel, lod, etcLOD)
 }
 
 init()
@@ -174,7 +190,7 @@ const stats = createStats()
 const render = () => {
   stats.begin()
 
-  const delta = clock.getDelta()
+  // const delta = clock.getDelta()
 
   for (let keyframe of keyframes) {
     keyframe()
@@ -184,7 +200,7 @@ const render = () => {
     lod.update(camera)
   }
 
-  controls.update(delta*0.1)
+  // controls.update(delta*0.1)
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
 
