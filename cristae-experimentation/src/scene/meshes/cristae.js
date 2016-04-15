@@ -4,8 +4,10 @@ import { assignUVs } from '../../lib/UV-util.js'
 export const constructCristae = (group) => {
   const phosphosTopAlbedo = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
   phosphosTopAlbedo.wrapT = phosphosTopAlbedo.wrapS = THREE.RepeatWrapping
+  phosphosTopAlbedo.repeat.set(100,100)
   const phosphosTopBump = textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png')
   phosphosTopBump.wrapS = phosphosTopBump.wrapT = THREE.RepeatWrapping
+  phosphosTopBump.repeat.set(100,100)
 
   let curved, etc, rim
 
@@ -26,7 +28,7 @@ export const constructCristae = (group) => {
       child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry)
       assignUVs(child.geometry)
 
-      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosTopAlbedo, bumpMap: phosphosTopBump, side: THREE.DoubleSide})
+      child.material = new THREE.MeshPhongMaterial({map: phosphosTopAlbedo, bumpMap: phosphosTopBump, side: THREE.DoubleSide})
       // child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
 
       etc = child

@@ -111,7 +111,7 @@ const populateCristae = (object, dimer, etcProteins) => {
     lods.push(anotherDimer)
     scene.add(anotherDimer)
 
-    currentSpot += dimerScale.y
+    currentSpot += dimerScale.y*1.5
   }
 
   // === ETC ===
@@ -127,6 +127,9 @@ const populateCristae = (object, dimer, etcProteins) => {
   for (let i=0; i < 8; i++) {
     for (let j=0; j < 10; j++) {
       const anotherETC = etcProteins.clone()
+
+      anotherETC.rotation.y = Math.random() * 2 * Math.PI
+
       anotherETC.position.set((etcMax.x - etcMin.x)/2 - 0.07 - i*0.21, etcMax.y - 0.05 - j*0.15, (etcMax.z - etcMin.z)/2 - 0.125)
 
       scene.add(anotherETC)
