@@ -20,13 +20,13 @@ export const constructCristae = (group) => {
 
       // child.material = new THREE.MeshLambertMaterial({color: 0xe42908, side: THREE.DoubleSide})
       phosphosTopAlbedo.repeat.set(0.5, 0.5)
-      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosTopAlbedo, bumpMap: phosphosTopBump})
+      child.material = new THREE.MeshPhongMaterial({map: phosphosTopAlbedo, bumpMap: phosphosTopBump, side: THREE.DoubleSide})
       curved = child
     } else if (child.name === 'Cristae.ETC') {
       child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry)
       assignUVs(child.geometry)
 
-      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosTopAlbedo, bumpMap: phosphosTopBump})
+      child.material = new THREE.MeshPhongMaterial({color: 0xffffff, map: phosphosTopAlbedo, bumpMap: phosphosTopBump, side: THREE.DoubleSide})
       // child.material = new THREE.MeshLambertMaterial({color: 0x2141b5, side: THREE.DoubleSide})
 
       etc = child

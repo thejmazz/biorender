@@ -43,6 +43,7 @@ import {
 } from './scene/meshes/atp-synthase.js'
 
 import { constructCristae } from './scene/meshes/cristae.js'
+import { constructETC } from './scene/meshes/etc.js'
 
 const OBJLoader = new THREE.OBJLoader()
 
@@ -106,7 +107,7 @@ const populateCristae = (object, dimer) => {
   while (currentSpot <= curvedScale.y/2 + dimerScale.y/2) {
     const anotherDimer = dimer.clone()
     // anotherDimer.position.set(-0.983, currentSpot, -0.02)
-    anotherDimer.position.set(curvedPosition.x - curvedScale.x/2 - 0.00, currentSpot, curvedPosition.z - 0.055)
+    anotherDimer.position.set(curvedPosition.x - curvedScale.x/2, currentSpot, curvedPosition.z - 0.055)
     lods.push(anotherDimer)
     scene.add(anotherDimer)
 
@@ -136,6 +137,10 @@ async function init() {
   const cristaeModel = await OBJLoaderAsync('/models/cristae_polygroups.obj')
   // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
   populateCristae(cristaeModel, lod)
+
+  // === ETC ===
+  const ETC = constructETC(await OBJLoaderAsync('/models/ETC/ETC.obj'))
+  scene.add(ETC)
 }
 
 init()
