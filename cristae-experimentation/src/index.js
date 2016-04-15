@@ -49,9 +49,9 @@ const OBJLoader = new THREE.OBJLoader()
 
 // const controls = new THREE.OrbitControls(camera, renderer.domElement)
 const controls = new THREE.FlyControls(camera)
-controls.movementSpeed = 0.5
+controls.movementSpeed = 5 //0.5
 controls.domElement = renderer.domElement
-controls.rollSpeed = Math.PI / 6
+controls.rollSpeed = (Math.PI / 6)*10
 controls.autoForward = false
 controls.dragToLook = false
 
@@ -184,7 +184,7 @@ const render = () => {
     lod.update(camera)
   }
 
-  controls.update(delta)
+  controls.update(delta*0.1)
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
 
