@@ -125,11 +125,20 @@ const populateCristae = (object, dimer, etcProteins) => {
   // // scene.add(sphere)
 
   for (let i=0; i < 8; i++) {
-    const anotherETC = etcProteins.clone()
-    anotherETC.position.set((etcMax.x - etcMin.x)/2 - 0.07 - i*0.21, etcMax.y - 0.05, (etcMax.z - etcMin.z)/2 - 0.125)
+    for (let j=0; j < 10; j++) {
+      const anotherETC = etcProteins.clone()
+      anotherETC.position.set((etcMax.x - etcMin.x)/2 - 0.07 - i*0.21, etcMax.y - 0.05 - j*0.15, (etcMax.z - etcMin.z)/2 - 0.125)
 
-    scene.add(anotherETC)
-    lods.push(anotherETC)
+      scene.add(anotherETC)
+      lods.push(anotherETC)
+
+      // const anotherETC2 = etcProteins.clone()
+      // anotherETC2.rotation.z = Math.PI
+      // anotherETC2.position.set((etcMax.x - etcMin.x)/2 - 0.07 - i*0.21, etcMax.y - 0.05 - j*0.15, (etcMax.z - etcMin.z)/2 - 0.225)
+      //
+      // scene.add(anotherETC2)
+      // lods.push(anotherETC2)
+    }
   }
 
   // etcProteins.position.set((etcMax.x - etcMin.x)/2 - 0.07, etcMax.y - 0.05, (etcMax.z - etcMin.z)/2 - 0.125)
