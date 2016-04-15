@@ -47,7 +47,13 @@ import { constructETC } from './scene/meshes/etc.js'
 
 const OBJLoader = new THREE.OBJLoader()
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement)
+// const controls = new THREE.OrbitControls(camera, renderer.domElement)
+const controls = new THREE.FlyControls(camera)
+controls.movementSpeed = 0.5
+controls.domElement = renderer.domElement
+controls.rollSpeed = Math.PI / 6
+controls.autoForward = false
+controls.dragToLook = false
 
 const cLight = new THREE.PointLight(0xffffff, 1, 1000)
 camera.add(cLight)
@@ -140,8 +146,8 @@ async function init() {
 
   // === ETC ===
   const ETCModels = [
-    '/models/ETC/ETC.obj',
-    // '/models/ETC/ETC_d0.1.obj',
+    // '/models/ETC/ETC.obj',
+    '/models/ETC/ETC_d0.1.obj',
     '/models/ETC/ETC_d0.05.obj',
     '/models/ETC/ETC_d0.01.obj'
   ]
@@ -162,9 +168,13 @@ init()
 
 // window.capturer = new CCapture( { format: 'png' } )
 
+const clock = new THREE.Clock()
+
 const stats = createStats()
 const render = () => {
   stats.begin()
+
+  const delta = clock.getDelta()
 
   for (let keyframe of keyframes) {
     keyframe()
@@ -174,6 +184,7 @@ const render = () => {
     lod.update(camera)
   }
 
+  controls.update(delta)
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
 

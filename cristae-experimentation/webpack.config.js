@@ -37,6 +37,9 @@ module.exports = {
     }, {
       from: 'node_modules/three/examples/js/controls/OrbitControls.js',
       to: 'js'
+    },  {
+      from: 'node_modules/three/examples/js/controls/FlyControls.js',
+      to: 'js'
     }])
   ]
 }
