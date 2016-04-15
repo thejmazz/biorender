@@ -139,8 +139,21 @@ async function init() {
   populateCristae(cristaeModel, lod)
 
   // === ETC ===
-  const ETC = constructETC(await OBJLoaderAsync('/models/ETC/ETC.obj'))
-  scene.add(ETC)
+  const ETCModels = [
+    '/models/ETC/ETC.obj',
+    // '/models/ETC/ETC_d0.1.obj',
+    '/models/ETC/ETC_d0.05.obj',
+    '/models/ETC/ETC_d0.01.obj'
+  ]
+  const ETCGeoms = await Promise.all(ETCModels.map(model => OBJLoaderAsync(model)))
+
+  const etcLOD = makeLOD({
+    meshes: ETCGeoms.map(geom => constructETC(geom)),
+    distances: [20, 40, 60]
+  })
+
+  scene.add(etcLOD)
+  lods.push(etcLOD)
 }
 
 init()
