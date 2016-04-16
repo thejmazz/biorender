@@ -8,9 +8,10 @@ from blenderutils import setMode, delete_all_meshes
 # imp.reload(blenderutils)
 
 # Decorators
-# import blenderDecorators
+import blenderDecorators
+imp.reload(blenderDecorators)
 from blenderDecorators import startClean
-# imp.reload(blenderDecorators)
+
 
 # Mesh geometries
 # All geometry methods return the object created
@@ -91,17 +92,29 @@ def main():
 
     setMode('EDIT')
 
-
     mesh = bmesh.from_edit_mesh(cristae.data)
     v_indexes = []
 
     for v in mesh.verts:
         if v.co[1] < -0.9:
             v_indexes.append(v.index)
-            # curved_vg.add([v.index], 1.0, 'REPLACE')
 
     setMode('OBJECT')
     curved_vg = cristae.vertex_groups.new('Curved')
     curved_vg.add(v_indexes, 1.0, 'REPLACE')
+
+    red = makeMaterial('Red', (1,0,0), (1,1,1), 1)
+    setMaterial(cristae, red)
+
+    for i, mat in enumerate(cristae.material_slots):
+        print(mat.name)
+
+    # bpy.context.object.active_material_index = 1
+
+    # bpy.ops.object.material_slot_add()
+    # obj = bpy.context.object
+    # obj.material_slots[obj.material_slots.__len__() - 1].material = red
+
+    # bpy.ops.object.vertex_group_set_active(group='Curved')
 
 main()
