@@ -141,13 +141,13 @@ def laplacian_smooth(lambda_factor):
     bpy.context.object.modifiers['Laplacian Smooth'].lambda_factor = lambda_factor
     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Laplacian Smooth')
 
-def subsurf(level):
-    bpy.ops.object.mode_set(mode='OBJECT')
-
-    bpy.ops.object.modifier_add(type='SUBSURF')
-    bpy.context.object.modifiers['Subsurf'].levels = level
-    bpy.context.object.modifiers['Subsurf'].render_levels = level
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
+# def subsurf(level):
+#     bpy.ops.object.mode_set(mode='OBJECT')
+#
+#     bpy.ops.object.modifier_add(type='SUBSURF')
+#     bpy.context.object.modifiers['Subsurf'].levels = level
+#     bpy.context.object.modifiers['Subsurf'].render_levels = level
+#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
 
 def solidify(offset, thickness):
     bpy.ops.object.mode_set(mode='OBJECT')

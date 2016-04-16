@@ -20,6 +20,9 @@ imp.reload(geom)
 import edit
 imp.reload(edit)
 
+# Modifiers
+import modifiers
+
 # === CONSTANTS ===
 
 # Used in getFaceEdgeMap, getPolygonByNormal
@@ -63,18 +66,21 @@ def getEdgeForFaceAtIndex(obj, face, index):
 
 # === START ===
 
-# cristae_disc_loop_cut_scale_val = 2.4
+cristae_disc_loop_cut_scale_val = 2.5
 
 @startClean
 def main():
     cristae = geom.box(scale=(0.1, 1, 1), name='Cristae')
 
     face = getPolygonByNormal(cristae, Vector((1, 0, 0)))
-    good_index = getEdgeForFaceAtIndex(cristae, face, 0).index
 
-    edit.loop_cut(good_index, 2)
-    setMode('EDIT')
+    edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 0).index, 2)
+    bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
 
-    #bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
+    edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 1).index, 2)
+    bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
+
+    modifiers.subsurf(4)
+
 
 main()
