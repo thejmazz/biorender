@@ -12,7 +12,6 @@ import blenderDecorators
 imp.reload(blenderDecorators)
 from blenderDecorators import startClean
 
-
 # Mesh geometries
 # All geometry methods return the object created
 import geom
@@ -27,12 +26,6 @@ import modifiers
 
 # Materials
 from materials import makeMaterial, setMaterial
-
-# === CONSTANTS ===
-
-# Used in getFaceEdgeMap, getPolygonByNormal
-# INDEX_OF = 0
-# REF_TO = 1
 
 # === FUNCTIONS ===
 
@@ -69,6 +62,11 @@ def getEdgeForFaceAtIndex(obj, face, index):
         if i == index:
             return edge
 
+def getMaterialIndexByName(obj, name):
+    for i, mat in enumerate(obj.material_slots):
+        if mat.name == name:
+            return i
+
 # === START ===
 
 cristae_disc_loop_cut_scale_val = 2.5
@@ -92,6 +90,7 @@ def main():
 
     setMode('EDIT')
 
+    # Create a vertex group
     mesh = bmesh.from_edit_mesh(cristae.data)
     v_indexes = []
 
@@ -103,18 +102,14 @@ def main():
     curved_vg = cristae.vertex_groups.new('Curved')
     curved_vg.add(v_indexes, 1.0, 'REPLACE')
 
+    # Create a material and assign it to vertex group
     red = makeMaterial('Red', (1,0,0), (1,1,1), 1)
     setMaterial(cristae, red)
 
-    for i, mat in enumerate(cristae.material_slots):
-        print(mat.name)
+    cristae.active_material_index = getMaterialIndexByName(cristae, 'Red')
 
-    # bpy.context.object.active_material_index = 1
-
-    # bpy.ops.object.material_slot_add()
-    # obj = bpy.context.object
-    # obj.material_slots[obj.material_slots.__len__() - 1].material = red
-
-    # bpy.ops.object.vertex_group_set_active(group='Curved')
-
+    bpy.ops.object.vertex_group_set_active(group='Curved')
+    setMode('EDIT')
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.object.material_slot_assign()
 main()
