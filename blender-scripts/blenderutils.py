@@ -1,12 +1,12 @@
 import bpy
 
-def objectMode(func):
-    def inner(*args, **kwargs):
-        bpy.ops.object.mode_set(mode='OBJECT')
-        ret = func(*args, **kwargs)
-    return inner
+import blenderDecorators
+# from blenderDecorators import objectMode
 
-@objectMode
+def setMode(mode):
+    bpy.ops.object.mode_set(mode=mode)
+
+@blenderDecorators.objectMode
 def delete_all_meshes():
     for obj in bpy.data.objects:
         if obj.type == 'MESH':

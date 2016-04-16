@@ -6,3 +6,9 @@ def box(loc=(0,0,0), scale=(1,1,1), name=''):
 
     if name != '':
         bpy.context.object.name = name
+    else:
+        name = bpy.context.object.name
+
+    obj = bpy.data.objects[name]
+
+    return obj
