@@ -1,4 +1,5 @@
 import bpy
+import bmesh
 import imp
 from mathutils import Vector
 
@@ -87,5 +88,20 @@ def main():
 
     baseMat = makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1)
     setMaterial(cristae, baseMat)
+
+    setMode('EDIT')
+
+
+    mesh = bmesh.from_edit_mesh(cristae.data)
+    v_indexes = []
+
+    for v in mesh.verts:
+        if v.co[1] < -0.9:
+            v_indexes.append(v.index)
+            # curved_vg.add([v.index], 1.0, 'REPLACE')
+
+    setMode('OBJECT')
+    curved_vg = cristae.vertex_groups.new('Curved')
+    curved_vg.add(v_indexes, 1.0, 'REPLACE')
 
 main()
