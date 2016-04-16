@@ -23,6 +23,9 @@ imp.reload(edit)
 # Modifiers
 import modifiers
 
+# Materials
+from materials import makeMaterial, setMaterial
+
 # === CONSTANTS ===
 
 # Used in getFaceEdgeMap, getPolygonByNormal
@@ -82,5 +85,7 @@ def main():
 
     modifiers.subsurf(4)
 
+    baseMat = makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1)
+    setMaterial(cristae, baseMat)
 
 main()
