@@ -25,33 +25,33 @@ def numToStr(num):
     else:
         return '00' + str(num)
 
-def select_some():
-    bpy.ops.object.mode_set(mode='EDIT')
-
-    active_mesh = bpy.context.object.data
-    mesh = bmesh.from_edit_mesh(active_mesh)
-
-    center = 0.0
-    threshold = 0.01
-    vertices = []
-
-    for v in mesh.verts:
-        v = bpy.context.object.matrix_world * v.co
-
-        x = v.x
-        y = v.y
-        z = v.z
-
-        if y >= 0 and z >= center-threshold and z <= center+threshold:
-            # v.select = True
-            vertices.append({'x': x, 'y':y, 'z':z})
-
-    bpy.ops.object.mode_set(mode='OBJECT')
-
-    # Trigger viewport update
-    #bpy.context.scene.objects.active = bpy.context.scene.objects.active
-
-    return vertices
+# def select_some():
+#     bpy.ops.object.mode_set(mode='EDIT')
+#
+#     active_mesh = bpy.context.object.data
+#     mesh = bmesh.from_edit_mesh(active_mesh)
+#
+#     center = 0.0
+#     threshold = 0.01
+#     vertices = []
+#
+#     for v in mesh.verts:
+#         v = bpy.context.object.matrix_world * v.co
+#
+#         x = v.x
+#         y = v.y
+#         z = v.z
+#
+#         if y >= 0 and z >= center-threshold and z <= center+threshold:
+#             # v.select = True
+#             vertices.append({'x': x, 'y':y, 'z':z})
+#
+#     bpy.ops.object.mode_set(mode='OBJECT')
+#
+#     # Trigger viewport update
+#     #bpy.context.scene.objects.active = bpy.context.scene.objects.active
+#
+#     return vertices
 
 def remove_top_outer():
     bpy.context.object.select = False
@@ -126,20 +126,20 @@ def make_row(n, scale, spacing, origin):
 
         x += spacing
 
-def corrective_smooth(factor, iterations, use_only_smooth):
-    bpy.ops.object.mode_set(mode='OBJECT')
-
-    bpy.ops.object.modifier_add(type='CORRECTIVE_SMOOTH')
-    bpy.context.object.modifiers['CorrectiveSmooth'].use_only_smooth = use_only_smooth
-    bpy.context.object.modifiers['CorrectiveSmooth'].iterations = iterations
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='CorrectiveSmooth')
-
-def laplacian_smooth(lambda_factor):
-    bpy.ops.object.mode_set(mode='OBJECT')
-
-    bpy.ops.object.modifier_add(type='LAPLACIANSMOOTH')
-    bpy.context.object.modifiers['Laplacian Smooth'].lambda_factor = lambda_factor
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Laplacian Smooth')
+# def corrective_smooth(factor, iterations, use_only_smooth):
+#     bpy.ops.object.mode_set(mode='OBJECT')
+#
+#     bpy.ops.object.modifier_add(type='CORRECTIVE_SMOOTH')
+#     bpy.context.object.modifiers['CorrectiveSmooth'].use_only_smooth = use_only_smooth
+#     bpy.context.object.modifiers['CorrectiveSmooth'].iterations = iterations
+#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='CorrectiveSmooth')
+#
+# def laplacian_smooth(lambda_factor):
+#     bpy.ops.object.mode_set(mode='OBJECT')
+#
+#     bpy.ops.object.modifier_add(type='LAPLACIANSMOOTH')
+#     bpy.context.object.modifiers['Laplacian Smooth'].lambda_factor = lambda_factor
+#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Laplacian Smooth')
 
 # def subsurf(level):
 #     bpy.ops.object.mode_set(mode='OBJECT')
@@ -149,26 +149,26 @@ def laplacian_smooth(lambda_factor):
 #     bpy.context.object.modifiers['Subsurf'].render_levels = level
 #     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
 
-def solidify(offset, thickness):
-    bpy.ops.object.mode_set(mode='OBJECT')
+# def solidify(offset, thickness):
+#     bpy.ops.object.mode_set(mode='OBJECT')
+#
+#     bpy.ops.object.modifier_add(type='SOLIDIFY')
+#     bpy.context.object.modifiers['Solidify'].offset = offset
+#     bpy.context.object.modifiers['Solidify'].thickness = thickness
+#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Solidify')
 
-    bpy.ops.object.modifier_add(type='SOLIDIFY')
-    bpy.context.object.modifiers['Solidify'].offset = offset
-    bpy.context.object.modifiers['Solidify'].thickness = thickness
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Solidify')
+# def make_membranes(scale, loc=(0,0,0)):
+#     make_box(loc, scale, name='Membrane')
+#
+#     subsurf(4)
+#     solidify(0, 0.04)
+#
+#     # Seperate Inner and Outer membrane
+#     bpy.ops.mesh.separate(type='LOOSE')
 
-def make_membranes(scale, loc=(0,0,0)):
-    make_box(loc, scale, name='Membrane')
-
-    subsurf(4)
-    solidify(0, 0.04)
-
-    # Seperate Inner and Outer membrane
-    bpy.ops.mesh.separate(type='LOOSE')
-
-def unselect_all():
-    for obj in bpy.data.objects:
-        obj.select = False
+# def unselect_all():
+#     for obj in bpy.data.objects:
+#         obj.select = False
 
 # TODO width -> radius...
 def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False):

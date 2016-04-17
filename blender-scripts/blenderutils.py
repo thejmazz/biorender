@@ -15,3 +15,7 @@ def delete_all_meshes():
             obj.select = False
 
     bpy.ops.object.delete()
+
+def unselect_all():
+    for obj in bpy.data.objects:
+        obj.select = False
