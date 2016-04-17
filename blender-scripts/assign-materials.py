@@ -30,7 +30,6 @@ from meshUtils import getPolygonByNormal, getEdgeForFaceAtIndex, selectVerticesA
 
 cristae_disc_loop_cut_scale_val = 2.5
 
-@startClean
 def make_cristae(loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
     # Initial box
     cristae = geom.box(loc=loc, scale=(0.1, 1, 1), name='Cristae')
@@ -55,10 +54,11 @@ def make_cristae(loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
 
     # === SECOND ===
 
+@startClean
 def main():
     make_cristae(loc=(-1,0,0))
 
     # crashes..
-    make_cristae(loc=(1,0,0))
+    #make_cristae(loc=(1,0,0))
 
 main()
