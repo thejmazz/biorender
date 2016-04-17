@@ -14,6 +14,12 @@ def objectMode(func):
         ret = func(*args, **kwargs)
     return inner
 
+def editMode(func):
+    def inner(*args, **kwargs):
+        blenderutils.setMode('EDIT')
+        ret = func(*args, **kwargs)
+    return inner
+
 def startClean(func):
     def inner(*args, **kwargs):
         blenderutils.delete_all_meshes()

@@ -15,3 +15,8 @@ def makeMaterial(name, diffuse, specular, alpha):
 
 def setMaterial(obj, mat):
     obj.data.materials.append(mat)
+
+def getMaterialIndexByName(obj, name):
+    for i, mat in enumerate(obj.material_slots):
+        if mat.name == name:
+            return i
