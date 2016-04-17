@@ -35,3 +35,10 @@ def laplacian_smooth(lambda_factor):
     bpy.ops.object.modifier_add(type='LAPLACIANSMOOTH')
     bpy.context.object.modifiers['Laplacian Smooth'].lambda_factor = lambda_factor
     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Laplacian Smooth')
+
+@objectMode
+def boolean(targetObj, operation):
+    bpy.ops.object.modifier_add(type='BOOLEAN')
+    bpy.context.object.modifiers['Boolean'].object = targetObj
+    bpy.context.object.modifiers['Boolean'].operation = operation
+    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Boolean')

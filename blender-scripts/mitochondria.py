@@ -53,19 +53,19 @@ from operator import itemgetter
 #
 #     return vertices
 
-def remove_top_outer():
-    bpy.context.object.select = False
-
-    bpy.ops.object.mode_set(mode='EDIT')
-
-    mesh=bmesh.from_edit_mesh(bpy.context.object.data)
-
-    for v in mesh.verts:
-        v2 = bpy.context.object.matrix_world * v.co
-        if v2.z > 0.01:
-            v.select = True
-
-    bpy.ops.mesh.delete(type='VERT')
+# def remove_top_outer():
+#     bpy.context.object.select = False
+#
+#     bpy.ops.object.mode_set(mode='EDIT')
+#
+#     mesh=bmesh.from_edit_mesh(bpy.context.object.data)
+#
+#     for v in mesh.verts:
+#         v2 = bpy.context.object.matrix_world * v.co
+#         if v2.z > 0.01:
+#             v.select = True
+#
+#     bpy.ops.mesh.delete(type='VERT')
 
 # def loop_cut(edge_index):
 #     bpy.ops.object.mode_set(mode='EDIT')
@@ -110,21 +110,21 @@ def remove_top_outer():
 #         bpy.context.object.name = name
 
 
-def make_row(n, scale, spacing, origin):
-    x = origin['x']
-    y = origin['y']
-    z = origin['z']
-
-    cristaes = []
-
-    for i in range(1,n):
-        cY = y + (random.random() - 0.5)*3.57
-
-        bpy.ops.mesh.primitive_cube_add(radius=1, location=(x,cY,z))
-        bpy.ops.transform.resize(value=(scale['x'], 1, 1))
-        bpy.context.object.name = 'Cristae'
-
-        x += spacing
+# def make_row(n, scale, spacing, origin):
+#     x = origin['x']
+#     y = origin['y']
+#     z = origin['z']
+#
+#     cristaes = []
+#
+#     for i in range(1,n):
+#         cY = y + (random.random() - 0.5)*3.57
+#
+#         bpy.ops.mesh.primitive_cube_add(radius=1, location=(x,cY,z))
+#         bpy.ops.transform.resize(value=(scale['x'], 1, 1))
+#         bpy.context.object.name = 'Cristae'
+#
+#         x += spacing
 
 # def corrective_smooth(factor, iterations, use_only_smooth):
 #     bpy.ops.object.mode_set(mode='OBJECT')

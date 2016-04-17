@@ -35,6 +35,17 @@ import meshUtils
 imp.reload(meshUtils)
 from meshUtils import getPolygonByNormal, getEdgeForFaceAtIndex, selectVerticesAndAssignMaterial
 
+# === DECORATORS ===
+def timeit(method):
+  from time import time
+  def timed(*args, **kw):
+    ts = time()
+    result = method(*args, **kw)
+    te = time()
+    print('\t{:s} {:2.2f}'.format(method.__name__,te-ts))
+    return result
+  return timed
+
 # === FUNCTIONS ===
 
 # TODO generalize this
@@ -59,6 +70,20 @@ def select_some(obj, center, threshold):
 
     return vertices
 
+def remove_top_outer():
+    bpy.context.object.select = False
+
+    bpy.ops.object.mode_set(mode='EDIT')
+
+    mesh=bmesh.from_edit_mesh(bpy.context.object.data)
+
+    for v in mesh.verts:
+        v2 = bpy.context.object.matrix_world * v.co
+        if v2.z > 0.01:
+            v.select = True
+
+    bpy.ops.mesh.delete(type='VERT')
+
 def numToStr(num):
     if num > 99:
         return str(num)
@@ -80,7 +105,7 @@ def make_membranes(scale, loc=(0,0,0)):
     bpy.data.objects['Membrane'].name = 'Inner Membrane'
     bpy.data.objects['Membrane.001'].name = 'Outer Membrane'
 
-def make_cristae(name='Cristae', side='right', loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
+def make_cristae(name='Cristae', side='right', loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4, noMat=False):
     # Initial box
     cristae = geom.box(loc=loc, scale=scale, name=name)
 
@@ -88,23 +113,24 @@ def make_cristae(name='Cristae', side='right', loc=(0,0,0), scale=(0.1, 1, 1), l
     face = getPolygonByNormal(cristae, Vector((1, 0, 0)))
 
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 0).index, 2)
-    bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
+    bpy.ops.transform.resize(value=(1, loop_cut_scale_val, 1))
 
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 1).index, 2)
-    bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
+    bpy.ops.transform.resize(value=(1, 1, loop_cut_scale_val))
 
     # Subdivision surface 4x
     modifiers.subsurf(4)
 
-    # Set base material
-    setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
+    if not noMat:
+        # Set base material
+        setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
 
-    if side == 'right':
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
-    elif side == 'left':
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': 0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': 0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+        if side == 'right':
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+        elif side == 'left':
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': 0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': 0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
 
     setMode('OBJECT')
 
@@ -147,16 +173,89 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
         j_2 = (j_spaces[i]-j_1)*random.random()
         y2 = y - j_2 - width*2
 
-        make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1))
+        make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1), noMat=False)
 
-        make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left')
+        make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left', noMat=False)
+
+    # Select all cristaes
+    for i in range(0, num_rows+1):
+        bpy.data.objects['Cristae.' + numToStr(i*2)].select = True
+        bpy.data.objects['Cristae.' + numToStr(i*2 + 1)].select = True
+    # Join Cristaes
+    bpy.ops.object.join()
+
+    bpy.data.objects['Cristae.' + numToStr(num_rows*2 + 1)].name = 'Cristae.All'
+
+    bpy.data.objects['Cristae.All'].select = True
+    modifiers.boolean(bpy.data.objects['Inner Membrane'], 'UNION')
+
+    # TODO fix cristae's ending up outside
+    bpy.ops.mesh.separate(type='LOOSE')
+    unselect_all()
+    for obj in bpy.data.objects:
+        if 'Cristae' in obj.name and obj.name != 'Cristae.All.001':
+            obj.select = True
+    # bpy.data.objects['Cristae.All'].select = True
+    # bpy.data.objects['Cristae.All.002'].select = True
+    bpy.ops.object.delete()
+
+    # Remove top half of outer membrane
+    unselect_all()
+    bpy.context.scene.objects.active = bpy.data.objects['Outer Membrane']
+    bpy.data.objects['Outer Membrane'].select = True
+    remove_top_outer()
+
+    # Remove old inner membrane
+    setMode('OBJECT')
+    unselect_all()
+    bpy.data.objects['Inner Membrane'].select = True
+    bpy.ops.object.delete()
+
+    # Rename
+    bpy.data.objects['Cristae.All.001'].name = 'Inner Membrane'
+
+    bpy.data.objects['Inner Membrane'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Inner Membrane']
+
+    modifiers.subsurf(inner_membrane_subsurf_level)
+    modifiers.corrective_smooth(1, 5, True)
+    if (do_laplace):
+        modifiers.laplacian_smooth(laplace_smooth_factor)
+
+    # === bisect ===
+    setMode('EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.bisect(plane_co=(0,0,0), plane_no=(0,0,1), xstart=10, xend=545, ystart=572, yend=572)
+
+    mesh = bmesh.from_edit_mesh(bpy.context.object.data)
+    zs = []
+
+    for v in mesh.verts:
+        v2 = bpy.context.object.matrix_world * v.co
+        if v.select == True:
+            v.select = False
+            zs.append(v2.z)
+
+    mz = max(zs)
+
+    for v in mesh.verts:
+        v2 = bpy.context.object.matrix_world * v.co
+        if v2.z > mz:
+            v.select = True
+
+    bpy.ops.mesh.delete(type='VERT')
+
+    setMode('OBJECT')
+    unselect_all()
 
 # === START ===
 
+@timeit
 @startClean
 def main():
     make_mitochondria()
 
     # make_cristae(loc=(0,0,0))
 
+random.seed(1000825609)
 main()
