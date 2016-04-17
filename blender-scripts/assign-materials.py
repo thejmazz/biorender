@@ -75,8 +75,9 @@ def getMaterialIndexByName(obj, name):
         if mat.name == name:
             return i
 
+# Creates a vertex group since bmesh data is ephemeral
 @editMode
-def select_vertices(obj, groupName, filters):
+def select_vertices(obj, group, filters):
     mesh = bmesh.from_edit_mesh(obj.data)
     vertices = []
 
@@ -87,26 +88,29 @@ def select_vertices(obj, groupName, filters):
     }
 
     for v in mesh.verts:
-        satisfied = False
+        satisfied = True
         for axis in filters:
             for relation in filters[axis]:
+                mesh_val = v.co[axisMap[axis]]
+                val = filters[axis][relation]
+
                 if relation == 'lt':
-                    if v.co[axisMap[axis]] < filters[axis][relation]:
-                        satisfied = True
+                    if mesh_val >= val:
+                        satisfied = False
                 elif relation == 'lte':
-                    if v.co[axisMap[axis]] <= axis[relation]:
-                        satisfied = True
+                    if mesh_val > val:
+                        satisfied = False
                 elif relation == 'gt':
-                    if v.co[axisMap[axis]] > axis[relation]:
-                        satisfied = True
+                    if mesh_val <= val:
+                        satisfied = False
                 elif relation == 'gte':
-                    if v.co[axisMap[axis]] >= axis[relation]:
-                        satisfied = True
+                    if mesh_val < val:
+                        satisfied = False
 
         if satisfied:
             vertices.append(v.index)
 
-    vertex_group = obj.vertex_groups.new(groupName)
+    vertex_group = obj.vertex_groups.new(group)
 
     # === MODE TOGGLE ===
     setMode('OBJECT')
@@ -117,13 +121,17 @@ def assignMaterialToGroup(obj, group, material):
     setMaterial(obj, material)
     obj.active_material_index = getMaterialIndexByName(obj, material.name)
 
-    bpy.ops.object.vertex_group_set_active(group='Curved')
+    bpy.ops.object.vertex_group_set_active(group=group)
 
     # === MODE TOGGLE ===
     setMode('EDIT')
 
     bpy.ops.object.vertex_group_select()
     bpy.ops.object.material_slot_assign()
+
+def selectVerticesAndAssignMaterial(obj, group, filters, material):
+    select_vertices(obj, group, filters)
+    assignMaterialToGroup(obj, group, material)
 
 # === START ===
 
@@ -149,9 +157,10 @@ def main():
     # Set base material
     setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
 
+    # selectVerticesAndAssignMaterial(cristae, 'Curved', {'y': {'lt': -0.9}}, makeMaterial('Red', (1,0,0), (1,1,1), 1))
 
-    # Select vertices and assign materials to them
-    select_vertices(cristae, 'Curved', {'y': {'lt': -0.9}})
-    assignMaterialToGroup(cristae, 'Curved', makeMaterial('Red', (1,0,0), (1,1,1), 1))
-
+    selectVerticesAndAssignMaterial(cristae, 'Curved', {
+        'y': {'gt': 0},
+        'z': {'gte': 0}
+    }, makeMaterial('Red', (1,0,0), (1,1,1), 1))
 main()
