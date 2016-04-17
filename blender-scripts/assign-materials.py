@@ -128,6 +128,7 @@ def assignMaterialToGroup(obj, group, material):
 
     bpy.ops.object.vertex_group_select()
     bpy.ops.object.material_slot_assign()
+    bpy.ops.object.vertex_group_deselect()
 
 def selectVerticesAndAssignMaterial(obj, group, filters, material):
     select_vertices(obj, group, filters)
@@ -157,10 +158,7 @@ def main():
     # Set base material
     setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
 
-    # selectVerticesAndAssignMaterial(cristae, 'Curved', {'y': {'lt': -0.9}}, makeMaterial('Red', (1,0,0), (1,1,1), 1))
+    selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+    selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
 
-    selectVerticesAndAssignMaterial(cristae, 'Curved', {
-        'y': {'gt': 0},
-        'z': {'gte': 0}
-    }, makeMaterial('Red', (1,0,0), (1,1,1), 1))
 main()
