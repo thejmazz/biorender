@@ -59,6 +59,14 @@ def select_some(obj, center, threshold):
 
     return vertices
 
+def numToStr(num):
+    if num > 99:
+        return str(num)
+    elif num > 9:
+        return '0' + str(num)
+    else:
+        return '00' + str(num)
+
 def make_membranes(scale, loc=(0,0,0)):
     geom.box(loc, scale, name='Membrane')
 
@@ -139,11 +147,9 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
         j_2 = (j_spaces[i]-j_1)*random.random()
         y2 = y - j_2 - width*2
 
-        print('{x: %s, y1: %s, y2: %s}' % (x, y, y2))
+        make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1))
 
-        make_cristae(loc=(x, y, 0), scale=(cristae_width, 1, 1))
-
-        make_cristae(loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left')
+        make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left')
 
 # === START ===
 

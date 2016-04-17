@@ -17,13 +17,13 @@ from operator import itemgetter
 #                     return region, rv3d, v3d
 #     return None, None
 
-def numToStr(num):
-    if num > 99:
-        return str(num)
-    elif num > 9:
-        return '0' + str(num)
-    else:
-        return '00' + str(num)
+# def numToStr(num):
+#     if num > 99:
+#         return str(num)
+#     elif num > 9:
+#         return '0' + str(num)
+#     else:
+#         return '00' + str(num)
 
 # def select_some():
 #     bpy.ops.object.mode_set(mode='EDIT')
