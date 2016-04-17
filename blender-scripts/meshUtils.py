@@ -3,7 +3,7 @@ import bmesh
 
 from blenderutils import setMode
 from blenderDecorators import editMode
-from materials import makeMaterial, setMaterial
+from materials import makeMaterial, setMaterial, getMaterialIndexByName
 
 def getFaceEdgeMap(obj):
     edges = obj.data.edges

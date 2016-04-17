@@ -2,11 +2,12 @@ import bpy
 import bmesh
 import imp
 from operator import itemgetter
+import random
 
 # Utils
 import blenderutils
 imp.reload(blenderutils)
-from blenderutils import unselect_all
+from blenderutils import unselect_all, setMode
 
 # Decorators
 import blenderDecorators
@@ -36,31 +37,25 @@ from meshUtils import getPolygonByNormal, getEdgeForFaceAtIndex, selectVerticesA
 
 # === FUNCTIONS ===
 
-def select_some():
-    bpy.ops.object.mode_set(mode='EDIT')
+# TODO generalize this
+# TODO use Vector object
+def select_some(obj, center, threshold):
+    setMode('EDIT')
+    mesh = bmesh.from_edit_mesh(obj.data)
 
-    active_mesh = bpy.context.object.data
-    mesh = bmesh.from_edit_mesh(active_mesh)
-
-    center = 0.0
-    threshold = 0.01
     vertices = []
 
     for v in mesh.verts:
-        v = bpy.context.object.matrix_world * v.co
+        v = obj.matrix_world * v.co
 
         x = v.x
         y = v.y
         z = v.z
 
         if y >= 0 and z >= center-threshold and z <= center+threshold:
-            # v.select = True
             vertices.append({'x': x, 'y':y, 'z':z})
 
     bpy.ops.object.mode_set(mode='OBJECT')
-
-    # Trigger viewport update
-    #bpy.context.scene.objects.active = bpy.context.scene.objects.active
 
     return vertices
 
@@ -77,7 +72,7 @@ def make_membranes(scale, loc=(0,0,0)):
     bpy.data.objects['Membrane'].name = 'Inner Membrane'
     bpy.data.objects['Membrane.001'].name = 'Outer Membrane'
 
-def make_cristae(loc, scale=(0.1, 1, 1)):
+def make_cristae(loc, scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
     # Initial box
     cristae = geom.box(loc=loc, scale=scale, name='Cristae')
 
@@ -85,10 +80,10 @@ def make_cristae(loc, scale=(0.1, 1, 1)):
     face = getPolygonByNormal(cristae, Vector((1, 0, 0)))
 
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 0).index, 2)
-    bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
+    bpy.ops.transform.resize(value=(1, loop_cut_scale_val, 1))
 
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 1).index, 2)
-    bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
+    bpy.ops.transform.resize(value=(1, 1, loop_cut_scale_val))
 
     # Subdivision surface 4x
     modifiers.subsurf(4)
@@ -99,22 +94,54 @@ def make_cristae(loc, scale=(0.1, 1, 1)):
     selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
     selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
 
-def make_mitochondria(length=3, width=1):
+def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False):
+    # Settings
+    # TODO paramaterize
+    mito_length = 0.8*length
+    row_width = mito_length / num_rows
+    cristae_width = row_width*(1 - 2*padding_factor)
+    cristae_disc_subsurf_level = 2
+    # cristae_disc_loop_cut_scale_val = 2.4
+    inner_membrane_subsurf_level = 2
+    laplace_smooth_factor = 15
+
+
     make_membranes(scale=(length, width, 1))
 
     unselect_all()
 
-# === START ===
+    innerMembane = bpy.data.objects['Inner Membrane']
+    vertices = sorted(select_some(innerMembane, center=0.0, threshold=0.01), key=itemgetter('x'))
+    j_spaces = []
 
-cristae_disc_loop_cut_scale_val = 2.5
+    start = 0 - mito_length
+    for i in range(0, 1):
+    # for i in range(0, num_rows+1):
+        x = start + 2*row_width*i
+        y = -2
+
+        for v in vertices:
+            if v['x'] >= x:
+                j_spaces.append(2*v['y'])
+                y = v['y'] + width
+                break
+
+
+        j_1 = j_spaces[i]*random.random()
+        y -= j_1
+
+        j_2 = (j_spaces[i]-j_1)*random.random()
+        y2 = y - j_2 - width*2
+
+        print('{x: %s, y1: %s, y2: %s}' % (x, y, y2))
+
+        make_cristae(loc=(x, y, 0), scale=(cristae_width, 1, 1))
+
+# === START ===
 
 @startClean
 def main():
     make_mitochondria()
-    bpy.data.objects['Inner Membrane'].select = True
-    vertices = sorted(select_some(), key=itemgetter('x'))
-
-    print(vertices)
 
     # make_cristae(loc=(0,0,0))
 
