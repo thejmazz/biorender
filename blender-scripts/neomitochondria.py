@@ -72,18 +72,18 @@ def make_membranes(scale, loc=(0,0,0)):
     bpy.data.objects['Membrane'].name = 'Inner Membrane'
     bpy.data.objects['Membrane.001'].name = 'Outer Membrane'
 
-def make_cristae(loc, scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
+def make_cristae(name='Cristae', side='right', loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
     # Initial box
-    cristae = geom.box(loc=loc, scale=scale, name='Cristae')
+    cristae = geom.box(loc=loc, scale=scale, name=name)
 
     # Loop cut on front face 2x horizontally and vertically
     face = getPolygonByNormal(cristae, Vector((1, 0, 0)))
 
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 0).index, 2)
-    bpy.ops.transform.resize(value=(1, loop_cut_scale_val, 1))
+    bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
 
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 1).index, 2)
-    bpy.ops.transform.resize(value=(1, 1, loop_cut_scale_val))
+    bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
 
     # Subdivision surface 4x
     modifiers.subsurf(4)
@@ -91,8 +91,14 @@ def make_cristae(loc, scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
     # Set base material
     setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
 
-    selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-    selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+    if side == 'right':
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+    elif side == 'left':
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': 0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': 0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+
+    setMode('OBJECT')
 
 def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False):
     # Settings
@@ -115,8 +121,8 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     j_spaces = []
 
     start = 0 - mito_length
-    for i in range(0, 1):
-    # for i in range(0, num_rows+1):
+    # for i in range(0, 2):
+    for i in range(0, num_rows+1):
         x = start + 2*row_width*i
         y = -2
 
@@ -136,6 +142,8 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
         print('{x: %s, y1: %s, y2: %s}' % (x, y, y2))
 
         make_cristae(loc=(x, y, 0), scale=(cristae_width, 1, 1))
+
+        make_cristae(loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left')
 
 # === START ===
 
