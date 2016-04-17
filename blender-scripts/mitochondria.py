@@ -248,6 +248,33 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     setMode('OBJECT')
     unselect_all()
 
+    # === Solidifiy outer membrane ===
+    bpy.data.objects['Outer Membrane'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Outer Membrane']
+    modifiers.solidify(0, 0.005)
+
+    reset_box = geom.box(loc=(5,5,5), name='Reset Box')
+
+    # Make and join to reset box then fix up
+    unselect_all()
+    bpy.data.objects['Inner Membrane'].select = True
+    bpy.data.objects['Reset Box'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Reset Box']
+    bpy.ops.object.join()
+    setMode('EDIT')
+    bpy.ops.mesh.separate(type='LOOSE')
+    setMode('OBJECT')
+    unselect_all()
+    bpy.data.objects['Reset Box.001'].select = True
+    bpy.ops.object.delete()
+    bpy.data.objects['Reset Box'].name = 'Inner Membrane'
+
+
+    # Solidify Inner Membrane
+    unselect_all()
+    bpy.data.objects['Inner Membrane'].select = True
+    modifiers.solidify(0, 0.005)
+
 # === START ===
 
 @timeit

@@ -16,8 +16,6 @@ def subsurf(level, render_levels=-1, apply=True):
 
 @objectMode
 def solidify(offset, thickness):
-    bpy.ops.object.mode_set(mode='OBJECT')
-
     bpy.ops.object.modifier_add(type='SOLIDIFY')
     bpy.context.object.modifiers['Solidify'].offset = offset
     bpy.context.object.modifiers['Solidify'].thickness = thickness
