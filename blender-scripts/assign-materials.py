@@ -27,6 +27,14 @@ import modifiers
 # Materials
 from materials import makeMaterial, setMaterial
 
+# === Decorators
+
+def editMode(func):
+    def inner(*args, **kwargs):
+        setMode('EDIT')
+        ret = func(*args, **kwargs)
+    return inner
+
 # === FUNCTIONS ===
 
 # Define as variables which values come from obj.data at the top of each scope
@@ -67,14 +75,66 @@ def getMaterialIndexByName(obj, name):
         if mat.name == name:
             return i
 
+@editMode
+def select_vertices(obj, groupName, filters):
+    mesh = bmesh.from_edit_mesh(obj.data)
+    vertices = []
+
+    axisMap = {
+        'x': 0,
+        'y': 1,
+        'z': 2
+    }
+
+    for v in mesh.verts:
+        satisfied = False
+        for axis in filters:
+            for relation in filters[axis]:
+                if relation == 'lt':
+                    if v.co[axisMap[axis]] < filters[axis][relation]:
+                        satisfied = True
+                elif relation == 'lte':
+                    if v.co[axisMap[axis]] <= axis[relation]:
+                        satisfied = True
+                elif relation == 'gt':
+                    if v.co[axisMap[axis]] > axis[relation]:
+                        satisfied = True
+                elif relation == 'gte':
+                    if v.co[axisMap[axis]] >= axis[relation]:
+                        satisfied = True
+
+        if satisfied:
+            vertices.append(v.index)
+
+    vertex_group = obj.vertex_groups.new(groupName)
+
+    # === MODE TOGGLE ===
+    setMode('OBJECT')
+
+    vertex_group.add(vertices, 1.0, 'REPLACE')
+
+def assignMaterialToGroup(obj, group, material):
+    setMaterial(obj, material)
+    obj.active_material_index = getMaterialIndexByName(obj, material.name)
+
+    bpy.ops.object.vertex_group_set_active(group='Curved')
+
+    # === MODE TOGGLE ===
+    setMode('EDIT')
+
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.object.material_slot_assign()
+
 # === START ===
 
 cristae_disc_loop_cut_scale_val = 2.5
 
 @startClean
 def main():
+    # Initial box
     cristae = geom.box(scale=(0.1, 1, 1), name='Cristae')
 
+    # Loop cut on front face 2x horizontally and vertically
     face = getPolygonByNormal(cristae, Vector((1, 0, 0)))
 
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 0).index, 2)
@@ -83,33 +143,15 @@ def main():
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 1).index, 2)
     bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
 
+    # Subdivision surface 4x
     modifiers.subsurf(4)
 
-    baseMat = makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1)
-    setMaterial(cristae, baseMat)
+    # Set base material
+    setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
 
-    setMode('EDIT')
 
-    # Create a vertex group
-    mesh = bmesh.from_edit_mesh(cristae.data)
-    v_indexes = []
+    # Select vertices and assign materials to them
+    select_vertices(cristae, 'Curved', {'y': {'lt': -0.9}})
+    assignMaterialToGroup(cristae, 'Curved', makeMaterial('Red', (1,0,0), (1,1,1), 1))
 
-    for v in mesh.verts:
-        if v.co[1] < -0.9:
-            v_indexes.append(v.index)
-
-    setMode('OBJECT')
-    curved_vg = cristae.vertex_groups.new('Curved')
-    curved_vg.add(v_indexes, 1.0, 'REPLACE')
-
-    # Create a material and assign it to vertex group
-    red = makeMaterial('Red', (1,0,0), (1,1,1), 1)
-    setMaterial(cristae, red)
-
-    cristae.active_material_index = getMaterialIndexByName(cristae, 'Red')
-
-    bpy.ops.object.vertex_group_set_active(group='Curved')
-    setMode('EDIT')
-    bpy.ops.object.vertex_group_select()
-    bpy.ops.object.material_slot_assign()
 main()
