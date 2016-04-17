@@ -1,196 +1,161 @@
-# === Imports ===
-import bpy, bmesh
-import random
+import bpy
+import bmesh
+import imp
 from operator import itemgetter
+import random
 
-# === Functions ===
+# Utils
+import blenderutils
+imp.reload(blenderutils)
+from blenderutils import unselect_all, setMode
 
-# def view3d_find(return_area=False):
-#     # returns first 3d view, normally we get from context
-#     for area in bpy.context.window.screen.areas:
-#         if area.type == 'VIEW_3D':
-#             v3d = area.spaces[0]
-#             rv3d = v3d.region_3d
-#             for region in area.regions:
-#                 if region.type == 'WINDOW':
-#                     if return_area: return region, rv3d, v3d, area
-#                     return region, rv3d, v3d
-#     return None, None
+# Decorators
+import blenderDecorators
+imp.reload(blenderDecorators)
+from blenderDecorators import startClean, editMode
 
-# def numToStr(num):
-#     if num > 99:
-#         return str(num)
-#     elif num > 9:
-#         return '0' + str(num)
-#     else:
-#         return '00' + str(num)
+# Mesh geometries
+import geom
+imp.reload(geom)
 
-# def select_some():
-#     bpy.ops.object.mode_set(mode='EDIT')
-#
-#     active_mesh = bpy.context.object.data
-#     mesh = bmesh.from_edit_mesh(active_mesh)
-#
-#     center = 0.0
-#     threshold = 0.01
-#     vertices = []
-#
-#     for v in mesh.verts:
-#         v = bpy.context.object.matrix_world * v.co
-#
-#         x = v.x
-#         y = v.y
-#         z = v.z
-#
-#         if y >= 0 and z >= center-threshold and z <= center+threshold:
-#             # v.select = True
-#             vertices.append({'x': x, 'y':y, 'z':z})
-#
-#     bpy.ops.object.mode_set(mode='OBJECT')
-#
-#     # Trigger viewport update
-#     #bpy.context.scene.objects.active = bpy.context.scene.objects.active
-#
-#     return vertices
+# Edit mode operators
+import edit
+imp.reload(edit)
 
-# def remove_top_outer():
-#     bpy.context.object.select = False
-#
-#     bpy.ops.object.mode_set(mode='EDIT')
-#
-#     mesh=bmesh.from_edit_mesh(bpy.context.object.data)
-#
-#     for v in mesh.verts:
-#         v2 = bpy.context.object.matrix_world * v.co
-#         if v2.z > 0.01:
-#             v.select = True
-#
-#     bpy.ops.mesh.delete(type='VERT')
+# Modifiers
+import modifiers
+imp.reload(modifiers)
 
-# def loop_cut(edge_index):
-#     bpy.ops.object.mode_set(mode='EDIT')
-#
-#     region, rv3d, v3d, area = view3d_find(True)
-#
-#     override = {
-#         'scene': bpy.context.scene,
-#         'region': region,
-#         'area': area,
-#         'space': v3d
-#     }
-#
-#     bpy.ops.mesh.loopcut_slide(
-#         override,
-#         MESH_OT_loopcut={
-#             "number_cuts":2,
-#             "smoothness":0,
-#             "falloff":'INVERSE_SQUARE',
-#             "edge_index":edge_index,
-#             "mesh_select_mode_init":(True, False, False)
-#         },
-#         TRANSFORM_OT_edge_slide={
-#             "value":0,
-#             "single_side":False,
-#             "mirror":False,
-#             "snap":False,
-#             "snap_target":'CLOSEST',
-#             "snap_point":(0, 0, 0),
-#             "snap_align":False,
-#             "snap_normal":(0, 0, 0),
-#             "correct_uv":False,
-#             "release_confirm":False
-#         }
-#     )
+# Materials
+import materials
+imp.reload(materials)
+from materials import makeMaterial, setMaterial
 
-# def make_box(loc=(0,0,0), scale=(1,1,1), name=''):
-#     bpy.ops.mesh.primitive_cube_add(location=loc)
-#     bpy.ops.transform.resize(value=scale)
-#
-#     if name != '':
-#         bpy.context.object.name = name
+import meshUtils
+imp.reload(meshUtils)
+from meshUtils import getPolygonByNormal, getEdgeForFaceAtIndex, selectVerticesAndAssignMaterial
 
+# === DECORATORS ===
+def timeit(method):
+  from time import time
+  def timed(*args, **kw):
+    ts = time()
+    result = method(*args, **kw)
+    te = time()
+    print('\t{:s} {:2.2f}'.format(method.__name__,te-ts))
+    return result
+  return timed
 
-# def make_row(n, scale, spacing, origin):
-#     x = origin['x']
-#     y = origin['y']
-#     z = origin['z']
-#
-#     cristaes = []
-#
-#     for i in range(1,n):
-#         cY = y + (random.random() - 0.5)*3.57
-#
-#         bpy.ops.mesh.primitive_cube_add(radius=1, location=(x,cY,z))
-#         bpy.ops.transform.resize(value=(scale['x'], 1, 1))
-#         bpy.context.object.name = 'Cristae'
-#
-#         x += spacing
+# === FUNCTIONS ===
 
-# def corrective_smooth(factor, iterations, use_only_smooth):
-#     bpy.ops.object.mode_set(mode='OBJECT')
-#
-#     bpy.ops.object.modifier_add(type='CORRECTIVE_SMOOTH')
-#     bpy.context.object.modifiers['CorrectiveSmooth'].use_only_smooth = use_only_smooth
-#     bpy.context.object.modifiers['CorrectiveSmooth'].iterations = iterations
-#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='CorrectiveSmooth')
-#
-# def laplacian_smooth(lambda_factor):
-#     bpy.ops.object.mode_set(mode='OBJECT')
-#
-#     bpy.ops.object.modifier_add(type='LAPLACIANSMOOTH')
-#     bpy.context.object.modifiers['Laplacian Smooth'].lambda_factor = lambda_factor
-#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Laplacian Smooth')
+# TODO generalize this
+# TODO use Vector object
+def select_some(obj, center, threshold):
+    setMode('EDIT')
+    mesh = bmesh.from_edit_mesh(obj.data)
 
-# def subsurf(level):
-#     bpy.ops.object.mode_set(mode='OBJECT')
-#
-#     bpy.ops.object.modifier_add(type='SUBSURF')
-#     bpy.context.object.modifiers['Subsurf'].levels = level
-#     bpy.context.object.modifiers['Subsurf'].render_levels = level
-#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
+    vertices = []
 
-# def solidify(offset, thickness):
-#     bpy.ops.object.mode_set(mode='OBJECT')
-#
-#     bpy.ops.object.modifier_add(type='SOLIDIFY')
-#     bpy.context.object.modifiers['Solidify'].offset = offset
-#     bpy.context.object.modifiers['Solidify'].thickness = thickness
-#     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Solidify')
+    for v in mesh.verts:
+        v = obj.matrix_world * v.co
 
-# def make_membranes(scale, loc=(0,0,0)):
-#     make_box(loc, scale, name='Membrane')
-#
-#     subsurf(4)
-#     solidify(0, 0.04)
-#
-#     # Seperate Inner and Outer membrane
-#     bpy.ops.mesh.separate(type='LOOSE')
+        x = v.x
+        y = v.y
+        z = v.z
 
-# def unselect_all():
-#     for obj in bpy.data.objects:
-#         obj.select = False
+        if y >= 0 and z >= center-threshold and z <= center+threshold:
+            vertices.append({'x': x, 'y':y, 'z':z})
 
-# TODO width -> radius...
-def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False):
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    return vertices
+
+def remove_top_outer():
+    bpy.context.object.select = False
+
+    bpy.ops.object.mode_set(mode='EDIT')
+
+    mesh=bmesh.from_edit_mesh(bpy.context.object.data)
+
+    for v in mesh.verts:
+        v2 = bpy.context.object.matrix_world * v.co
+        if v2.z > 0.01:
+            v.select = True
+
+    bpy.ops.mesh.delete(type='VERT')
+
+def numToStr(num):
+    if num > 99:
+        return str(num)
+    elif num > 9:
+        return '0' + str(num)
+    else:
+        return '00' + str(num)
+
+def make_membranes(scale, loc=(0,0,0)):
+    geom.box(loc, scale, name='Membrane')
+
+    modifiers.subsurf(4)
+    modifiers.solidify(0, 0.04)
+
+    # Seperate Inner and Outer membrane
+    bpy.ops.mesh.separate(type='LOOSE')
+
+    # Rename
+    bpy.data.objects['Membrane'].name = 'Inner Membrane'
+    bpy.data.objects['Membrane.001'].name = 'Outer Membrane'
+
+def make_cristae(name='Cristae', side='right', loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4, noMat=False):
+    # Initial box
+    cristae = geom.box(loc=loc, scale=scale, name=name)
+
+    # Loop cut on front face 2x horizontally and vertically
+    face = getPolygonByNormal(cristae, Vector((1, 0, 0)))
+
+    edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 0).index, 2)
+    bpy.ops.transform.resize(value=(1, loop_cut_scale_val, 1))
+
+    edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 1).index, 2)
+    bpy.ops.transform.resize(value=(1, 1, loop_cut_scale_val))
+
+    # Subdivision surface 4x
+    modifiers.subsurf(4)
+
+    if not noMat:
+        # Set base material
+        setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
+
+        if side == 'right':
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+        elif side == 'left':
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': 0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+            selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': 0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+
+    setMode('OBJECT')
+
+def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False):
+    # Settings
+    # TODO paramaterize
     mito_length = 0.8*length
     row_width = mito_length / num_rows
     cristae_width = row_width*(1 - 2*padding_factor)
     cristae_disc_subsurf_level = 2
-    cristae_disc_loop_cut_scale_val = 2.4
+    # cristae_disc_loop_cut_scale_val = 2.4
     inner_membrane_subsurf_level = 2
     laplace_smooth_factor = 15
 
 
     make_membranes(scale=(length, width, 1))
 
-    bpy.context.object.select = False
-    bpy.data.objects['Membrane'].select = True
-    bpy.data.objects['Membrane.001'].select = False
+    unselect_all()
 
-    vertices = sorted(select_some(), key=itemgetter('x'))
+    innerMembane = bpy.data.objects['Inner Membrane']
+    vertices = sorted(select_some(innerMembane, center=0.0, threshold=0.01), key=itemgetter('x'))
     j_spaces = []
 
     start = 0 - mito_length
+    # for i in range(0, 2):
     for i in range(0, num_rows+1):
         x = start + 2*row_width*i
         y = -2
@@ -208,66 +173,57 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
         j_2 = (j_spaces[i]-j_1)*random.random()
         y2 = y - j_2 - width*2
 
-        print('{x: %s, y1: %s, y2: %s}' % (x, y, y2))
+        make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1), noMat=False)
 
-        make_box(loc=(x, y, 0), scale=(cristae_width, 1, 1), name='Cristae')
+        make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left', noMat=False)
 
-
-        loop_cut(7)
-        bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
-        loop_cut(8)
-        bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
-        subsurf(cristae_disc_subsurf_level)
-
-        make_box(loc=(x, y2, 0), scale=(cristae_width, 1, 1), name='Cristae')
-        loop_cut(7)
-        bpy.ops.transform.resize(value=(1, cristae_disc_loop_cut_scale_val, 1))
-        loop_cut(8)
-        bpy.ops.transform.resize(value=(1, 1, cristae_disc_loop_cut_scale_val))
-        subsurf(cristae_disc_subsurf_level)
-
-        bpy.context.object.select = False
-
-    # Select all Cristaes
-    for obj in bpy.data.objects:
-        if obj.name.find('Cristae') == 0:
-            obj.select = True
-
+    # Select all cristaes
+    for i in range(0, num_rows+1):
+        bpy.data.objects['Cristae.' + numToStr(i*2)].select = True
+        bpy.data.objects['Cristae.' + numToStr(i*2 + 1)].select = True
     # Join Cristaes
     bpy.ops.object.join()
 
-    # Boolean union -> Membrane
-    bpy.ops.object.modifier_add(type='BOOLEAN')
-    bpy.context.object.modifiers['Boolean'].object = bpy.data.objects['Membrane']
-    bpy.context.object.modifiers['Boolean'].operation = 'UNION'
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Boolean')
+    bpy.data.objects['Cristae.' + numToStr(num_rows*2 + 1)].name = 'Cristae.All'
+
+    bpy.data.objects['Cristae.All'].select = True
+    modifiers.boolean(bpy.data.objects['Inner Membrane'], 'UNION')
 
     # TODO fix cristae's ending up outside
     bpy.ops.mesh.separate(type='LOOSE')
-
     unselect_all()
-    bpy.data.objects['Membrane'].select = True
+    for obj in bpy.data.objects:
+        if 'Cristae' in obj.name and obj.name != 'Cristae.All.001':
+            obj.select = True
+    # bpy.data.objects['Cristae.All'].select = True
+    # bpy.data.objects['Cristae.All.002'].select = True
     bpy.ops.object.delete()
 
+    # Remove top half of outer membrane
     unselect_all()
-    bpy.context.scene.objects.active = bpy.data.objects['Membrane.001']
-    bpy.data.objects['Membrane.001'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Outer Membrane']
+    bpy.data.objects['Outer Membrane'].select = True
     remove_top_outer()
 
-    #bpy.ops.object.mode_set(mode='OBJECT')
+    # Remove old inner membrane
+    setMode('OBJECT')
+    unselect_all()
+    bpy.data.objects['Inner Membrane'].select = True
+    bpy.ops.object.delete()
 
-    bpy.ops.object.mode_set(mode='OBJECT')
-    bpy.data.objects['Cristae'].select = True
-    bpy.context.scene.objects.active = bpy.data.objects['Cristae']
+    # Rename
+    bpy.data.objects['Cristae.All.001'].name = 'Inner Membrane'
 
-    subsurf(inner_membrane_subsurf_level)
-    corrective_smooth(1, 5, True)
+    bpy.data.objects['Inner Membrane'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Inner Membrane']
+
+    modifiers.subsurf(inner_membrane_subsurf_level)
+    modifiers.corrective_smooth(1, 5, True)
     if (do_laplace):
-        laplacian_smooth(laplace_smooth_factor)
+        modifiers.laplacian_smooth(laplace_smooth_factor)
 
-
-    # bisect
-    bpy.ops.object.mode_set(mode='EDIT')
+    # === bisect ===
+    setMode('EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(plane_co=(0,0,0), plane_no=(0,0,1), xstart=10, xend=545, ystart=572, yend=572)
 
@@ -289,9 +245,17 @@ def make_mitochondria(loc=(0,0,0), length=3, width=1, num_rows=30, padding_facto
 
     bpy.ops.mesh.delete(type='VERT')
 
-    bpy.ops.object.mode_set(mode='OBJECT')
+    setMode('OBJECT')
     unselect_all()
 
-# === Main ===
+# === START ===
+
+@timeit
+@startClean
+def main():
+    make_mitochondria()
+
+    # make_cristae(loc=(0,0,0))
+
 random.seed(1000825609)
-make_mitochondria()
+main()
