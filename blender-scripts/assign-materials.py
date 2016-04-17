@@ -30,9 +30,9 @@ from meshUtils import getPolygonByNormal, getEdgeForFaceAtIndex, selectVerticesA
 
 cristae_disc_loop_cut_scale_val = 2.5
 
-def make_cristae(loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
+def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
     # Initial box
-    cristae = geom.box(loc=loc, scale=(0.1, 1, 1), name='Cristae')
+    cristae = geom.box(loc=loc, scale=(0.1, 1, 1), name=name)
 
     # Loop cut on front face 2x horizontally and vertically
     face = getPolygonByNormal(cristae, Vector((1, 0, 0)))
@@ -52,11 +52,16 @@ def make_cristae(loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4):
     selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
     selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
 
+    setMode('OBJECT')
     # === SECOND ===
 
 @startClean
 def main():
-    make_cristae(loc=(-1,0,0))
+    make_cristae(name='Cristae.001', loc=(-1,0,0))
+
+    make_cristae(name='Cristae.002', loc=(1, 0, 0))
+    # loc = (1, 0, 0)
+    # cristae = geom.box(loc=loc, scale=(0.1, 1, 1), name='Cristae.002')
 
     # crashes..
     #make_cristae(loc=(1,0,0))
