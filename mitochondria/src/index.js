@@ -199,9 +199,25 @@ async function init() {
   // // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
   // populateCristae(cristaeModel, lod, etcLOD)
 
+  const rand = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+  }
+
+  const generateShades = (hue, numOfShades) => {
+    let shades = [`hsl(${hue}, 100%, 50%)`]
+
+    for (let i=0; i < numOfShades; i++) {
+      shades.push(`hsl(${hue}, ${rand(10,90)}%, ${rand(10,90)}%)`)
+    }
+
+    return shades
+  }
+
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
   let meshes = []
+  let pinchAngle = rand(0,360)
+  let wallAngle = rand(0,360)
   for (let i=1; i < mitochondria.children.length; i++) {
     const mesh = mitochondria.children[i]
     let pushable = true
@@ -210,10 +226,24 @@ async function init() {
       case 'Outer_Membrane_Cube.1266':
         pushable = false
         break
-      default:
+      case 'Outer_Membrane_Cube.1266_None':
         mesh.material = new THREE.MeshPhongMaterial({
-          color: flatUIHexColors[Math.floor(Math.random() *  flatUIHexColors.length)],
-          side: THREE.DoubleSide
+          color: 0xf39c12,
+          transparent: true,
+          opacity: 0.8
+        })
+        break
+      default:
+        let angle = rand(0, 360)
+        if (mesh.name.indexOf('Pinch') !== -1) {
+          angle = pinchAngle
+        } else if (mesh.name.indexOf('Wall') !== -1) {
+          angle = wallAngle
+        }
+        const shades = generateShades(angle, 20)
+
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: shades[Math.floor(Math.random() *  shades.length)]
         })
     }
 
