@@ -124,12 +124,17 @@ def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', l
     # Set base material
     setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
 
+    # TODO figure out what these numbers should be procedurally
+    # was 0.89, 0.91 with 4x subdiv.
+    pinchThreshold = 0.90
+    wallThreshold = 0.95
+
     if side == 'right':
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -pinchThreshold}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -wallThreshold}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
     elif side == 'left':
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': 0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': 0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': pinchThreshold}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': wallThreshold}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
 
     setMode('OBJECT')
 
@@ -282,8 +287,6 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
 @startClean
 def main():
     make_mitochondria()
-
-    # make_cristae(loc=(0,0,0))
 
 random.seed(1000825609)
 main()

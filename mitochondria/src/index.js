@@ -222,25 +222,32 @@ async function init() {
     const mesh = mitochondria.children[i]
     let pushable = true
 
+    // console.log(mesh.name)
+
     switch (mesh.name) {
-      case 'Outer_Membrane_Cube.1266':
+      case 'Outer_Membrane_Cube.337':
         pushable = false
         break
-      case 'Outer_Membrane_Cube.1266_None':
+      case 'Outer_Membrane_Cube.337_MAT.Outer-Membrane':
         mesh.material = new THREE.MeshPhongMaterial({
           color: 0xf39c12,
           transparent: true,
           opacity: 0.8
         })
         break
+      case 'Inner_Membrane_Cube.400_Cristae.Base.061':
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: 0xE037E7
+        })
+        break
       default:
         let angle = rand(0, 360)
         if (mesh.name.indexOf('Pinch') !== -1) {
-          angle = pinchAngle
+          angle = 0
         } else if (mesh.name.indexOf('Wall') !== -1) {
-          angle = wallAngle
+          angle = 240
         }
-        const shades = generateShades(angle, 20)
+        const shades = generateShades(angle, 0)
 
         mesh.material = new THREE.MeshPhongMaterial({
           color: shades[Math.floor(Math.random() *  shades.length)]
