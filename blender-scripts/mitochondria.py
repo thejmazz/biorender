@@ -105,7 +105,7 @@ def make_membranes(scale, loc=(0,0,0)):
     bpy.data.objects['Membrane'].name = 'Inner Membrane'
     bpy.data.objects['Membrane.001'].name = 'Outer Membrane'
 
-def make_cristae(name='Cristae', side='right', loc=(0,0,0), scale=(0.1, 1, 1), loop_cut_scale_val=2.4, noMat=False):
+def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', loop_cut_scale_val=2.4, subsurf_level=2):
     # Initial box
     cristae = geom.box(loc=loc, scale=scale, name=name)
 
@@ -118,19 +118,18 @@ def make_cristae(name='Cristae', side='right', loc=(0,0,0), scale=(0.1, 1, 1), l
     edit.loop_cut(getEdgeForFaceAtIndex(cristae, face, 1).index, 2)
     bpy.ops.transform.resize(value=(1, 1, loop_cut_scale_val))
 
-    # Subdivision surface 4x
-    modifiers.subsurf(4)
+    # Subdivision surface
+    modifiers.subsurf(subsurf_level)
 
-    if not noMat:
-        # Set base material
-        setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
+    # Set base material
+    setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
 
-        if side == 'right':
-            selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-            selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
-        elif side == 'left':
-            selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': 0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-            selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': 0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+    if side == 'right':
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+    elif side == 'left':
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': 0.89}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': 0.91}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
 
     setMode('OBJECT')
 
@@ -173,9 +172,9 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
         j_2 = (j_spaces[i]-j_1)*random.random()
         y2 = y - j_2 - width*2
 
-        make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1), noMat=False)
+        make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1), subsurf_level=cristae_disc_subsurf_level)
 
-        make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left', noMat=False)
+        make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left', subsurf_level=cristae_disc_subsurf_level)
 
     # Select all cristaes
     for i in range(0, num_rows+1):
@@ -190,14 +189,15 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     modifiers.boolean(bpy.data.objects['Inner Membrane'], 'UNION')
 
     # TODO fix cristae's ending up outside
-    bpy.ops.mesh.separate(type='LOOSE')
-    unselect_all()
-    for obj in bpy.data.objects:
-        if 'Cristae' in obj.name and obj.name != 'Cristae.All.001':
-            obj.select = True
-    # bpy.data.objects['Cristae.All'].select = True
-    # bpy.data.objects['Cristae.All.002'].select = True
-    bpy.ops.object.delete()
+    # bpy.ops.mesh.separate(type='LOOSE')
+    # unselect_all()
+    #
+    # for obj in bpy.data.objects:
+    #     if 'Cristae' in obj.name and obj.name != 'Cristae.All.001':
+    #         obj.select = True
+    # # bpy.data.objects['Cristae.All'].select = True
+    # # bpy.data.objects['Cristae.All.002'].select = True
+    # bpy.ops.object.delete()
 
     # Remove top half of outer membrane
     unselect_all()
@@ -212,7 +212,8 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     bpy.ops.object.delete()
 
     # Rename
-    bpy.data.objects['Cristae.All.001'].name = 'Inner Membrane'
+    # bpy.data.objects['Cristae.All.001'].name = 'Inner Membrane'
+    bpy.data.objects['Cristae.All'].name = 'Inner Membrane'
 
     bpy.data.objects['Inner Membrane'].select = True
     bpy.context.scene.objects.active = bpy.data.objects['Inner Membrane']
