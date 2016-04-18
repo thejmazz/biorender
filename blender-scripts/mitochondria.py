@@ -102,11 +102,11 @@ def make_membranes(scale, loc=(0,0,0)):
     bpy.ops.mesh.separate(type='LOOSE')
 
     # Rename
-    bpy.data.objects['Membrane'].name = 'Inner Membrane'
-    bpy.data.objects['Membrane.001'].name = 'Outer Membrane'
+    bpy.data.objects['Membrane'].name = 'Inner-Membrane'
+    bpy.data.objects['Membrane.001'].name = 'Outer-Membrane'
 
-    # Materialize Outer Membrane
-    setMaterial(bpy.data.objects['Outer Membrane'], makeMaterial('MAT.Outer-Membrane', (0,1,0), (1,1,1), 1))
+    # Materialize Outer-Membrane
+    setMaterial(bpy.data.objects['Outer-Membrane'], makeMaterial('MAT.Outer-Membrane', (0,1,0), (1,1,1), 1))
 
 def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', loop_cut_scale_val=2.4, subsurf_level=2):
     # Initial box
@@ -157,7 +157,7 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
 
     unselect_all()
 
-    innerMembane = bpy.data.objects['Inner Membrane']
+    innerMembane = bpy.data.objects['Inner-Membrane']
     vertices = sorted(select_some(innerMembane, center=0.0, threshold=0.01), key=itemgetter('x'))
     j_spaces = []
 
@@ -194,7 +194,7 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     bpy.data.objects['Cristae.' + numToStr(num_rows*2 + 1)].name = 'Cristae.All'
 
     bpy.data.objects['Cristae.All'].select = True
-    modifiers.boolean(bpy.data.objects['Inner Membrane'], 'UNION')
+    modifiers.boolean(bpy.data.objects['Inner-Membrane'], 'UNION')
 
     # TODO fix cristae's ending up outside
     # bpy.ops.mesh.separate(type='LOOSE')
@@ -209,22 +209,22 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
 
     # Remove top half of outer membrane
     unselect_all()
-    bpy.context.scene.objects.active = bpy.data.objects['Outer Membrane']
-    bpy.data.objects['Outer Membrane'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Outer-Membrane']
+    bpy.data.objects['Outer-Membrane'].select = True
     remove_top_outer()
 
     # Remove old inner membrane
     setMode('OBJECT')
     unselect_all()
-    bpy.data.objects['Inner Membrane'].select = True
+    bpy.data.objects['Inner-Membrane'].select = True
     bpy.ops.object.delete()
 
     # Rename
-    # bpy.data.objects['Cristae.All.001'].name = 'Inner Membrane'
-    bpy.data.objects['Cristae.All'].name = 'Inner Membrane'
+    # bpy.data.objects['Cristae.All.001'].name = 'Inner-Membrane'
+    bpy.data.objects['Cristae.All'].name = 'Inner-Membrane'
 
-    bpy.data.objects['Inner Membrane'].select = True
-    bpy.context.scene.objects.active = bpy.data.objects['Inner Membrane']
+    bpy.data.objects['Inner-Membrane'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Inner-Membrane']
 
     modifiers.subsurf(inner_membrane_subsurf_level)
     modifiers.corrective_smooth(1, 5, True)
@@ -258,34 +258,34 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     unselect_all()
 
     # === Solidifiy outer membrane ===
-    bpy.data.objects['Outer Membrane'].select = True
-    bpy.context.scene.objects.active = bpy.data.objects['Outer Membrane']
+    bpy.data.objects['Outer-Membrane'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Outer-Membrane']
     modifiers.solidify(0, 0.005)
 
-    reset_box = geom.box(loc=(5,5,5), name='Reset Box')
+    reset_box = geom.box(loc=(5,5,5), name='Reset-Box')
 
     # Make and join to reset box then fix up
     unselect_all()
-    bpy.data.objects['Inner Membrane'].select = True
-    bpy.data.objects['Reset Box'].select = True
-    bpy.context.scene.objects.active = bpy.data.objects['Reset Box']
+    bpy.data.objects['Inner-Membrane'].select = True
+    bpy.data.objects['Reset-Box'].select = True
+    bpy.context.scene.objects.active = bpy.data.objects['Reset-Box']
     bpy.ops.object.join()
     setMode('EDIT')
     bpy.ops.mesh.separate(type='LOOSE')
     setMode('OBJECT')
     unselect_all()
-    bpy.data.objects['Reset Box.001'].select = True
+    bpy.data.objects['Reset-Box.001'].select = True
     bpy.ops.object.delete()
-    bpy.data.objects['Reset Box'].name = 'Inner Membrane'
+    bpy.data.objects['Reset-Box'].name = 'Inner-Membrane'
 
 
-    # Solidify Inner Membrane
+    # Solidify Inner-Membrane
     unselect_all()
-    bpy.data.objects['Inner Membrane'].select = True
+    bpy.data.objects['Inner-Membrane'].select = True
     modifiers.solidify(0, 0.005)
 
     # Clean up materials
-    remove_unused_materials(bpy.data.objects['Inner Membrane'])
+    remove_unused_materials(bpy.data.objects['Inner-Membrane'])
 
 # === START ===
 

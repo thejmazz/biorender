@@ -169,26 +169,30 @@ async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
   let meshes = []
+
   let pinchAngle = rand(0,360)
   let wallAngle = rand(0,360)
   for (let i=1; i < mitochondria.children.length; i++) {
     const mesh = mitochondria.children[i]
     let pushable = true
 
-    // console.log(mesh.name)
+    const name = mesh.name.replace(/Cube\.\d+_?/, '')
+    const objectName = mesh.name.split('_')[0]
 
-    switch (mesh.name) {
-      case 'Outer_Membrane_Cube.337':
+    console.log(name)
+
+    switch (name) {
+      case 'Outer-Membrane_':
         pushable = false
         break
-      case 'Outer_Membrane_Cube.337_MAT.Outer-Membrane':
+      case 'Outer-Membrane_MAT.Outer-Membrane':
         mesh.material = new THREE.MeshPhongMaterial({
           color: 0xf39c12,
           transparent: true,
           opacity: 0.8
         })
         break
-      case 'Inner_Membrane_Cube.400_Cristae.Base.061':
+      case 'Inner-Membrane_Cristae.Base.061':
         mesh.material = new THREE.MeshPhongMaterial({
           color: 0xE037E7
         })
@@ -278,8 +282,8 @@ async function init() {
   // // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
   // populateCristae(cristaeModel, lod, etcLOD)
 
-  // await makePiecesMito()
-  await makeUnifiedMito()
+  await makePiecesMito()
+  // await makeUnifiedMito()
 }
 
 
