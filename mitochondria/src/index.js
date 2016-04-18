@@ -151,6 +151,84 @@ const populateCristae = (object, dimer, etcProteins) => {
   // lods.push(etcProteins)
 }
 
+const rand = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+const generateShades = (hue, numOfShades) => {
+  let shades = [`hsl(${hue}, 100%, 50%)`]
+
+  for (let i=0; i < numOfShades; i++) {
+    shades.push(`hsl(${hue}, ${rand(10,90)}%, ${rand(10,90)}%)`)
+  }
+
+  return shades
+}
+
+async function makePiecesMito() {
+  const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
+
+  let meshes = []
+  let pinchAngle = rand(0,360)
+  let wallAngle = rand(0,360)
+  for (let i=1; i < mitochondria.children.length; i++) {
+    const mesh = mitochondria.children[i]
+    let pushable = true
+
+    // console.log(mesh.name)
+
+    switch (mesh.name) {
+      case 'Outer_Membrane_Cube.337':
+        pushable = false
+        break
+      case 'Outer_Membrane_Cube.337_MAT.Outer-Membrane':
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: 0xf39c12,
+          transparent: true,
+          opacity: 0.8
+        })
+        break
+      case 'Inner_Membrane_Cube.400_Cristae.Base.061':
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: 0xE037E7
+        })
+        break
+      default:
+        let angle = rand(0, 360)
+        if (mesh.name.indexOf('Pinch') !== -1) {
+          angle = 0
+        } else if (mesh.name.indexOf('Wall') !== -1) {
+          angle = 240
+        }
+        const shades = generateShades(angle, 0)
+
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: shades[Math.floor(Math.random() *  shades.length)]
+        })
+    }
+
+    if (pushable) {
+      meshes.push(mesh)
+    }
+  }
+
+  meshes.forEach(mesh => scene.add(mesh))
+}
+
+async function makeUnifiedMito() {
+  const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria_unified.obj')
+  // console.log(mitochondria)
+
+  let meshes = []
+  for (let i=0; i < mitochondria.children.length; i++) {
+    const mesh = mitochondria.children[i]
+
+    meshes.push(mesh)
+  }
+
+  meshes.forEach(mesh => scene.add(mesh))
+}
+
 let lods = []
 
 async function init() {
@@ -199,67 +277,8 @@ async function init() {
   // // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
   // populateCristae(cristaeModel, lod, etcLOD)
 
-  const rand = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min
-  }
-
-  const generateShades = (hue, numOfShades) => {
-    let shades = [`hsl(${hue}, 100%, 50%)`]
-
-    for (let i=0; i < numOfShades; i++) {
-      shades.push(`hsl(${hue}, ${rand(10,90)}%, ${rand(10,90)}%)`)
-    }
-
-    return shades
-  }
-
-  const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
-
-  let meshes = []
-  let pinchAngle = rand(0,360)
-  let wallAngle = rand(0,360)
-  for (let i=1; i < mitochondria.children.length; i++) {
-    const mesh = mitochondria.children[i]
-    let pushable = true
-
-    // console.log(mesh.name)
-
-    switch (mesh.name) {
-      case 'Outer_Membrane_Cube.337':
-        pushable = false
-        break
-      case 'Outer_Membrane_Cube.337_MAT.Outer-Membrane':
-        mesh.material = new THREE.MeshPhongMaterial({
-          color: 0xf39c12,
-          transparent: true,
-          opacity: 0.8
-        })
-        break
-      case 'Inner_Membrane_Cube.400_Cristae.Base.061':
-        mesh.material = new THREE.MeshPhongMaterial({
-          color: 0xE037E7
-        })
-        break
-      default:
-        let angle = rand(0, 360)
-        if (mesh.name.indexOf('Pinch') !== -1) {
-          angle = 0
-        } else if (mesh.name.indexOf('Wall') !== -1) {
-          angle = 240
-        }
-        const shades = generateShades(angle, 0)
-
-        mesh.material = new THREE.MeshPhongMaterial({
-          color: shades[Math.floor(Math.random() *  shades.length)]
-        })
-    }
-
-    if (pushable) {
-      meshes.push(mesh)
-    }
-  }
-
-  meshes.forEach(mesh => scene.add(mesh))
+  // await makePiecesMito()
+  await makeUnifiedMito()
 }
 
 
