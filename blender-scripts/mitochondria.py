@@ -92,6 +92,11 @@ def numToStr(num):
     else:
         return '00' + str(num)
 
+def smooth_shade_everything():
+    bpy.ops.object.select_all()
+    bpy.ops.object.shade_smooth()
+
+
 def make_membranes(scale, loc=(0,0,0)):
     geom.box(loc, scale, name='Membrane')
 
@@ -106,7 +111,7 @@ def make_membranes(scale, loc=(0,0,0)):
     bpy.data.objects['Membrane.001'].name = 'Outer-Membrane'
 
     # Materialize Outer-Membrane
-    setMaterial(bpy.data.objects['Outer-Membrane'], makeMaterial('MAT.Outer-Membrane', (0,1,0), (1,1,1), 1))
+    setMaterial(bpy.data.objects['Outer-Membrane'], makeMaterial('Membrane.Outer', (0,1,0), (1,1,1), 1))
 
 def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', loop_cut_scale_val=2.4, subsurf_level=2):
     # Initial box
@@ -125,7 +130,7 @@ def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', l
     modifiers.subsurf(subsurf_level)
 
     # Set base material
-    setMaterial(cristae, makeMaterial('Cristae.Base', (1,1,1), (1,1,1), 1))
+    setMaterial(cristae, makeMaterial('Membrane.Inner.Base', (1,1,1), (1,1,1), 1))
 
     # TODO figure out what these numbers should be procedurally
     # was 0.89, 0.91 with 4x subdiv.
@@ -133,15 +138,15 @@ def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', l
     wallThreshold = 0.95
 
     if side == 'right':
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'lt': -pinchThreshold}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'gte': -wallThreshold}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Membrane.Inner.Pinch', {'y': {'lt': -pinchThreshold}}, makeMaterial('Membrane.Inner.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Membrane.Inner.Wall', {'y': {'gte': -wallThreshold}}, makeMaterial('Membrane.Inner.Wall', (0,0,1), (1,1,1), 1))
     elif side == 'left':
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Pinch', {'y': {'gte': pinchThreshold}}, makeMaterial('Cristae.Pinch', (1,0,0), (1,1,1), 1))
-        selectVerticesAndAssignMaterial(cristae, 'Cristae.Wall', {'y': {'lt': wallThreshold}}, makeMaterial('Cristae.Wall', (0,0,1), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Membrane.Inner.Pinch', {'y': {'gte': pinchThreshold}}, makeMaterial('Membrane.Inner.Pinch', (1,0,0), (1,1,1), 1))
+        selectVerticesAndAssignMaterial(cristae, 'Membrane.Inner.Wall', {'y': {'lt': wallThreshold}}, makeMaterial('Membrane.Inner.Wall', (0,0,1), (1,1,1), 1))
 
     setMode('OBJECT')
 
-def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False):
+def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False, skip_material_cleaning=False):
     # Settings
     # TODO paramaterize
     mito_length = 0.8*length
@@ -285,14 +290,28 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     modifiers.solidify(0, 0.005)
 
     # Clean up materials
-    remove_unused_materials(bpy.data.objects['Inner-Membrane'])
+    if not skip_material_cleaning:
+        remove_unused_materials(bpy.data.objects['Inner-Membrane'])
+
+    unselect_all()
+    bpy.data.objects['Inner-Membrane'].select = True
+    bpy.data.objects['Outer-Membrane'].select = True
+
+    bpy.ops.object.join()
+
+    bpy.data.objects['Inner-Membrane'].name = 'Mitochondria'
+
+    unselect_all()
+    bpy.data.objects['Mitochondria'].select = True
+
+    bpy.ops.object.shade_smooth()
 
 # === START ===
 
 @timeit
 @startClean
 def main():
-    make_mitochondria()
+    make_mitochondria(skip_material_cleaning=True)
 
 random.seed(1000825609)
 main()
