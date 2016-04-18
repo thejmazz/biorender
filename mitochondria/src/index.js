@@ -71,6 +71,8 @@ ground.position.set(0,-2,0)
 ground.rotation.x = Math.PI/2
 scene.add(ground)
 
+const flatUIHexColors = [ 0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x2980b9, 0x9b59b6, 0x8e44ad, 0x34495e, 0x2c3e50, 0xf1c40f, 0xf39c12, 0xe67e22, 0xd35400, 0xe74c3c, 0xc0392b, 0xecf0f1, 0xbdc3c7, 0x95a5a6, 0x7f8c8d]
+
 const populateCristae = (object, dimer, etcProteins) => {
   const { curved, etc, rim } = constructCristae(object)
 
@@ -155,47 +157,56 @@ async function init() {
   // TODO dont delay loading of models with
 
   // === Dimer ===
-  const synthaseModels = ['/models/ATP-synthase_d0.05.obj', '/models/ATP-synthase_d0.01.obj']
-  const synthaseGeoms = await Promise.all(synthaseModels.map(model => OBJLoaderAsync(model)))
+  // const synthaseModels = ['/models/ATP-synthase_d0.05.obj', '/models/ATP-synthase_d0.01.obj']
+  // const synthaseGeoms = await Promise.all(synthaseModels.map(model => OBJLoaderAsync(model)))
+  //
+  // const lod = makeLOD({
+  //   meshes: synthaseGeoms.map(geom => constructDimer(geom)),
+  //   distances: [0.2, 0.21]
+  // })
+  // lod.position.set(0, 0, 1)
+  // lod.updateMatrix()
+  // // scene.add(lod)
+  // // lods.push(lod)
+  //
+  // // === ETC ===
+  // const ETCModels = [
+  //   // '/models/ETC/ETC.obj',
+  //   '/models/ETC/ETC_d0.1.obj',
+  //   '/models/ETC/ETC_d0.05.obj',
+  //   '/models/ETC/ETC_d0.01.obj'
+  // ]
+  // const ETCGeoms = await Promise.all(ETCModels.map(model => OBJLoaderAsync(model)))
+  //
+  //
+  // const etcScale = 0.0045
+  // const etcLOD = makeLOD({
+  //   meshes: ETCGeoms.map(geom => constructETC(geom)),
+  //   distances: [20, 40, 60].map(num => num*etcScale)
+  // })
+  //
+  // etcLOD.rotation.x = Math.PI/2
+  // etcLOD.rotation.y = Math.PI
+  // etcLOD.position.set(0,0,1)
+  // etcLOD.scale.set(1*etcScale, 1*etcScale, 1*etcScale)
+  //
+  // // scene.add(etcLOD)
+  // // lods.push(etcLOD)
+  //
+  //
+  // // === Cristae ===
+  // const cristaeModel = await OBJLoaderAsync('/models/cristae_polygroups.obj')
+  // // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
+  // populateCristae(cristaeModel, lod, etcLOD)
 
-  const lod = makeLOD({
-    meshes: synthaseGeoms.map(geom => constructDimer(geom)),
-    distances: [0.2, 0.21]
+  const mitochondriaGroup = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
+  // console.log(mitochondriaGroup)
+
+  mitochondriaGroup.children.forEach( (mesh) => {
+    const colour = flatUIHexColors[Math.floor(Math.random() *  flatUIHexColors.length)]
+    mesh.material = new THREE.MeshPhongMaterial({color: colour})
+    scene.add(mesh)
   })
-  lod.position.set(0, 0, 1)
-  lod.updateMatrix()
-  // scene.add(lod)
-  // lods.push(lod)
-
-  // === ETC ===
-  const ETCModels = [
-    // '/models/ETC/ETC.obj',
-    '/models/ETC/ETC_d0.1.obj',
-    '/models/ETC/ETC_d0.05.obj',
-    '/models/ETC/ETC_d0.01.obj'
-  ]
-  const ETCGeoms = await Promise.all(ETCModels.map(model => OBJLoaderAsync(model)))
-
-
-  const etcScale = 0.0045
-  const etcLOD = makeLOD({
-    meshes: ETCGeoms.map(geom => constructETC(geom)),
-    distances: [20, 40, 60].map(num => num*etcScale)
-  })
-
-  etcLOD.rotation.x = Math.PI/2
-  etcLOD.rotation.y = Math.PI
-  etcLOD.position.set(0,0,1)
-  etcLOD.scale.set(1*etcScale, 1*etcScale, 1*etcScale)
-
-  // scene.add(etcLOD)
-  // lods.push(etcLOD)
-
-
-  // === Cristae ===
-  const cristaeModel = await OBJLoaderAsync('/models/cristae_polygroups.obj')
-  // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
-  populateCristae(cristaeModel, lod, etcLOD)
 }
 
 init()
