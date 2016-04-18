@@ -29,7 +29,7 @@ imp.reload(modifiers)
 # Materials
 import materials
 imp.reload(materials)
-from materials import makeMaterial, setMaterial
+from materials import makeMaterial, setMaterial, remove_unused_materials
 
 import meshUtils
 imp.reload(meshUtils)
@@ -104,6 +104,9 @@ def make_membranes(scale, loc=(0,0,0)):
     # Rename
     bpy.data.objects['Membrane'].name = 'Inner Membrane'
     bpy.data.objects['Membrane.001'].name = 'Outer Membrane'
+
+    # Materialize Outer Membrane
+    setMaterial(bpy.data.objects['Outer Membrane'], makeMaterial('MAT.Outer-Membrane', (0,1,0), (1,1,1), 1))
 
 def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', loop_cut_scale_val=2.4, subsurf_level=2):
     # Initial box
@@ -280,6 +283,9 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     unselect_all()
     bpy.data.objects['Inner Membrane'].select = True
     modifiers.solidify(0, 0.005)
+
+    # Clean up materials
+    remove_unused_materials(bpy.data.objects['Inner Membrane'])
 
 # === START ===
 
