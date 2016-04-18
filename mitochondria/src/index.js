@@ -199,15 +199,34 @@ async function init() {
   // // populateCristae(cristaeModel, crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator()))
   // populateCristae(cristaeModel, lod, etcLOD)
 
-  const mitochondriaGroup = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
-  // console.log(mitochondriaGroup)
+  const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
-  mitochondriaGroup.children.forEach( (mesh) => {
-    const colour = flatUIHexColors[Math.floor(Math.random() *  flatUIHexColors.length)]
-    mesh.material = new THREE.MeshPhongMaterial({color: colour})
-    scene.add(mesh)
-  })
+  let meshes = []
+  for (let i=1; i < mitochondria.children.length; i++) {
+    const mesh = mitochondria.children[i]
+    let pushable = true
+
+    switch (mesh.name) {
+      case 'Outer_Membrane_Cube.1266':
+        pushable = false
+        break
+      default:
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: flatUIHexColors[Math.floor(Math.random() *  flatUIHexColors.length)],
+          side: THREE.DoubleSide
+        })
+    }
+
+    if (pushable) {
+      meshes.push(mesh)
+    }
+  }
+
+  meshes.forEach(mesh => scene.add(mesh))
 }
+
+
+
 
 init()
 
