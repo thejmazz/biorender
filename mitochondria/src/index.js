@@ -55,7 +55,7 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement)
 // controls.autoForward = false
 // controls.dragToLook = false
 
-const cLight = new THREE.PointLight(0xffffff, 1, 1000)
+const cLight = new THREE.PointLight(0xffffff, 1, 5)
 camera.add(cLight)
 cLight.position.set(0,0,-0.001)
 scene.add(camera)
@@ -222,6 +222,7 @@ async function makeUnifiedMito() {
   let meshes = []
   for (let i=0; i < mitochondria.children.length; i++) {
     const mesh = mitochondria.children[i]
+    mesh.material.wireframe = true
 
     meshes.push(mesh)
   }
