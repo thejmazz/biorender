@@ -179,20 +179,17 @@ async function makePiecesMito() {
     const name = mesh.name.replace(/Cube\.\d+_?/, '')
     const objectName = mesh.name.split('_')[0]
 
-    console.log(name)
+    // console.log(name)
 
     switch (name) {
-      case 'Outer-Membrane_':
-        pushable = false
-        break
-      case 'Outer-Membrane_MAT.Outer-Membrane':
+      case 'Mitochondria_Membrane.Outer':
         mesh.material = new THREE.MeshPhongMaterial({
           color: 0xf39c12,
           transparent: true,
           opacity: 0.8
         })
         break
-      case 'Inner-Membrane_Cristae.Base.061':
+      case 'Mitochondria_Membrane.Inner.Base.061':
         mesh.material = new THREE.MeshPhongMaterial({
           color: 0xE037E7
         })

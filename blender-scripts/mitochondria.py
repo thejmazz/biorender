@@ -146,7 +146,7 @@ def make_cristae(name='Cristae', loc=(0,0,0), scale=(0.1, 1, 1), side='right', l
 
     setMode('OBJECT')
 
-def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False, skip_material_cleaning=False):
+def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_laplace=False, skip_material_cleaning=True, export=False):
     # Settings
     # TODO paramaterize
     mito_length = 0.8*length
@@ -306,12 +306,27 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
 
     bpy.ops.object.shade_smooth()
 
+    unselect_all()
+    bpy.data.objects['Mitochondria'].select = True
+
+    if export:
+        bpy.ops.export_scene.obj(
+            filepath='/Users/jmazz/Desktop/mitochondria.obj',
+            check_existing=False,
+            axis_forward='-Z',
+            axis_up='Y',
+            use_selection=True,
+            use_uvs=False,
+            use_materials=False,
+            group_by_material=True
+        )
+
 # === START ===
 
 @timeit
 @startClean
 def main():
-    make_mitochondria(skip_material_cleaning=True)
+    make_mitochondria()
 
 random.seed(1000825609)
 main()
