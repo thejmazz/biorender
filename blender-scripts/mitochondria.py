@@ -31,9 +31,13 @@ import materials
 imp.reload(materials)
 from materials import makeMaterial, setMaterial, remove_unused_materials
 
+# Mesh utils
 import meshUtils
 imp.reload(meshUtils)
 from meshUtils import getPolygonByNormal, getEdgeForFaceAtIndex, selectVerticesAndAssignMaterial
+
+# Math
+from mathutils import Vector
 
 # === DECORATORS ===
 def timeit(method):
@@ -151,7 +155,8 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     # TODO paramaterize
     mito_length = 0.8*length
     row_width = mito_length / num_rows
-    cristae_width = row_width*(1 - 2*padding_factor)
+    # cristae_width = row_width*(1 - 2*padding_factor)
+    cristae_width = 12.67 * 0.002
     cristae_disc_subsurf_level = 2
     # cristae_disc_loop_cut_scale_val = 2.4
     inner_membrane_subsurf_level = 2
@@ -185,20 +190,27 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
         j_2 = (j_spaces[i]-j_1)*random.random()
         y2 = y - j_2 - width*2
 
+        spacage  = j_2 / j_spaces[i]
+
         make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1), subsurf_level=cristae_disc_subsurf_level)
 
-        make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left', subsurf_level=cristae_disc_subsurf_level)
+        if spacage >= 0.4:
+            make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left', subsurf_level=cristae_disc_subsurf_level)
 
     # Select all cristaes
-    for i in range(0, num_rows+1):
-        bpy.data.objects['Cristae.' + numToStr(i*2)].select = True
-        bpy.data.objects['Cristae.' + numToStr(i*2 + 1)].select = True
+    # for i in range(0, num_rows+1):
+    #     bpy.data.objects['Cristae.' + numToStr(i*2)].select = True
+    #     bpy.data.objects['Cristae.' + numToStr(i*2 + 1)].select = True
+    for obj in bpy.data.objects:
+        if 'Cristae' in obj.name:
+            obj.select = True
+
     # Join Cristaes
     bpy.ops.object.join()
 
-    bpy.data.objects['Cristae.' + numToStr(num_rows*2 + 1)].name = 'Cristae.All'
+    # bpy.data.objects['Cristae.' + numToStr(num_rows*2 + 1)].name = 'Cristae.All'
 
-    bpy.data.objects['Cristae.All'].select = True
+    # bpy.data.objects['Cristae.All'].select = True
     modifiers.boolean(bpy.data.objects['Inner-Membrane'], 'UNION')
 
     # TODO fix cristae's ending up outside
@@ -226,7 +238,11 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
 
     # Rename
     # bpy.data.objects['Cristae.All.001'].name = 'Inner-Membrane'
-    bpy.data.objects['Cristae.All'].name = 'Inner-Membrane'
+    # bpy.data.objects['Cristae.All'].name = 'Inner-Membrane'
+    # Should be only one Cristae\.d+
+    for obj in bpy.data.objects:
+        if 'Cristae' in obj.name:
+            obj.name = 'Inner-Membrane'
 
     bpy.data.objects['Inner-Membrane'].select = True
     bpy.context.scene.objects.active = bpy.data.objects['Inner-Membrane']
@@ -265,7 +281,7 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     # === Solidifiy outer membrane ===
     bpy.data.objects['Outer-Membrane'].select = True
     bpy.context.scene.objects.active = bpy.data.objects['Outer-Membrane']
-    modifiers.solidify(0, 0.005)
+    modifiers.solidify(0, 4 * 0.002)
 
     reset_box = geom.box(loc=(5,5,5), name='Reset-Box')
 
@@ -287,7 +303,7 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     # Solidify Inner-Membrane
     unselect_all()
     bpy.data.objects['Inner-Membrane'].select = True
-    modifiers.solidify(0, 0.005)
+    modifiers.solidify(0, 4 * 0.002)
 
     # Clean up materials
     if not skip_material_cleaning:
@@ -326,7 +342,7 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
 @timeit
 @startClean
 def main():
-    make_mitochondria()
+    make_mitochondria(export=False)
 
 random.seed(1000825609)
 main()
