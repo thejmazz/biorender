@@ -197,7 +197,7 @@ const fillRandomly = (width, height, rectWidth, rectHeight) => {
   }
 }
 
-
+let box, wall, caster
 async function init() {
   initGlobalLights()
 
@@ -212,11 +212,78 @@ async function init() {
 
   initMembrane(x + padding, y + padding, thickness, false)
 
-  fillRandomly(100, 100, 4, 4)
+  // fillRandomly(100, 100, 4, 4)
+
+  box = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+  )
+  box.scale.set(4, 6, 4)
+  box.userData.directions = ['r', 'l', 'u', 'd']
+  box.userData.currentDirection = 'r'
+  box.userData.rays = [
+    new THREE.Vector3(1, 0, 0),
+    // new THREE.Vector3(-1, 0, 0)
+  ]
+  caster = new THREE.Raycaster()
+
+  scene.add(box)
+
+
+  wall = new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+  )
+  wall.scale.set(1,6,10)
+  wall.position.set(25, 0, 0)
+  scene.add(wall)
 }
 
 
+const updateBox = (delta, bounds) => {
+  const speed = 20
 
+  switch(box.userData.currentDirection) {
+    case 'r':
+      box.position.x += delta*speed
+      break
+    case 'l':
+      box.position.x -= delta*speed
+      break
+    case 'u':
+      box.position.z -= delta*speed
+      break
+    case 'd':
+      box.position.z += delta*speed
+      break
+    default: break
+  }
+
+  for (let i=0; i < box.userData.rays.length; i++) {
+    const ray = box.userData.rays[i]
+
+    caster.set(box.position, ray)
+    const collisions = caster.intersectObjects([wall])
+    if (collisions.length > 0 && collisions[0].distance <= box.scale.x/2) {
+      if (box.userData.currentDirection === 'r') {
+        box.userData.currentDirection = 'l'
+      }
+    }
+  }
+
+
+  if (box.position.x >= bounds.maxX - box.scale.x/2) {
+    box.userData.currentDirection = 'l'
+  } else if (box.position.x <= bounds.minX + box.scale.x/2) {
+    box.userData.currentDirection = 'r'
+  }
+
+  if (box.position.z <= bounds.minZ + box.scale.z/2) {
+    box.userData.currentDirection = 'd'
+  } else if (box.position.z >= bounds.maxZ - box.scale.z/2) {
+    box.userData.currentDirection = 'u'
+  }
+}
 
 init()
 
@@ -224,13 +291,14 @@ init()
 
 // window.capturer = new CCapture( { format: 'png' } )
 
-// const clock = new THREE.Clock()
+const clock = new THREE.Clock()
 
 const stats = createStats()
 const render = () => {
   stats.begin()
 
-  // const delta = clock.getDelta()
+  const delta = clock.getDelta()
+  updateBox(delta, {maxX: 50, minX: -50, maxZ: 50, minZ: -50})
 
   // for (let keyframe of keyframes) {
   //   keyframe()
