@@ -11,7 +11,7 @@ window.scene = scene
 
 // ===========================================================================
 
-camera.position.set(0,0,1.5)
+camera.position.set(0,75,0)
 
 // ===========================================================================
 
@@ -80,7 +80,6 @@ const initGlobalLights = () => {
   camera.add(cLight)
   cLight.position.set(0,0,-0.001)
 
-  camera.position.set(0, 55, 80)
   camera.lookAt(new THREE.Vector3(0,0,0))
   scene.add(camera)
 
@@ -123,68 +122,54 @@ const TMProtein = (w, d) => {
   )
 }
 
-
-async function init() {
-  initGlobalLights()
-
-  const membraneDimensions = {
-    x: 100,
-    y: 100,
-    thickness: 4,
-    padding: 2,
-  }
-
-  const { x, y, thickness, padding } = membraneDimensions
-
-  initMembrane(x + padding, y + padding, thickness, true)
-
-  const fills = []
-  for (let i=0; i<100; i++) {
-    for (let j=0; j<100; j++) {
-      fills.push([i, j])
-    }
-  }
-
+const fillRandomly = (width, height, rectWidth, rectHeight) => {
+  // Flag for each discretized spot
   // true if spot taken
   const flags = []
-  for (let i=0; i<100; i++) {
+  for (let i=0; i < width; i++) {
     flags[i] = []
-    for (let j=0; j<100; j++) {
+    for (let j=0; j < height; j++) {
       flags[i][j] = false
     }
   }
 
-  const checkAvailable = (x, y, width, height) => {
-    if (x+width >= 100 || y+height >= 100) {
+  // Check for true flags starting from top left in 2d array
+  const checkAvailable = (x, y, w, h) => {
+    if (x+w > width || y+h > height) {
       return false
     }
 
-    for (let i=x; i<=x+width; i++) {
-      for (let j=y; j<=y+height; j++) {
+    for (let i=x; i < x+w; i++) {
+      for (let j=y; j < y+h; j++) {
         if (flags[i][j]) {
           return false
         }
       }
     }
+
     return true
   }
 
+  // Switch flags to true given a rectangles starting point and its dimensions
   const fillSpaces = (x, y, width, height) => {
-    for (let i=x; i<x+width; i++) {
-      for (let j=y; j<y+height; j++) {
+    for (let i=x; i < x+width; i++) {
+      for (let j=y; j < y+height; j++) {
         flags[i][j] = true
       }
     }
   }
 
-  const checkIfAnyAvailable = (width, height) => {
+  // Go through all available spaces for a given pair of rectangle dimensions
+  // Return an array of good x,y spots. If no more spots left, array is empty.
+  const getGoodSpots = (w, h) => {
     let goodSpots = []
 
-    for (let i=0; i < 100; i++) {
-      for (let j=0; j < 100; j++) {
+    for (let i=0; i < width; i++) {
+      for (let j=0; j < height; j++) {
         if (!flags[i][j]) {
-          if (checkAvailable(i, j, width, height)) {
+          if (checkAvailable(i, j, w, h)) {
             goodSpots.push([i, j])
+            goodSpots.push({x: i, y: j})
           }
         }
       }
@@ -193,47 +178,41 @@ async function init() {
     return goodSpots
   }
 
-  // console.log(checkIfAnyAvailable(4,4).length)
-  // fillSpaces(0,0,4,4)
-  // console.log(checkIfAnyAvailable(4,4).length)
+  // Add rectangles until we cant
+  let spots = getGoodSpots(rectWidth, rectHeight)
+  while (spots.length > 0) {
+    // Can probably just take spots[0] here,
+    // maybe not look as random?
+    const spot = spots[Math.floor(Math.random()*spots.length)]
 
-  let fillsCounter = fills.length
-  while (fillsCounter > 0) {
-    // const randomPoint = fills[Math.floor(Math.random()*fills.length)]
-    const randomPoint = [Math.floor(Math.random()*100), Math.floor(Math.random()*100)]
+    // Switch flags
+    fillSpaces(spot.x, spot.y, rectWidth, rectHeight)
 
-    if (checkAvailable(randomPoint[0], randomPoint[1], 4, 4)) {
-      fillSpaces(randomPoint[0], randomPoint[1], 4, 4)
+    // Add mesh to scene
+    const protein = TMProtein(rectWidth,rectHeight)
+    protein.position.set(spot.x - width/2 + rectWidth/2, 0, spot.y - height/2 + rectHeight/2)
+    scene.add(protein)
 
-      const protein = TMProtein(4,4)
-      protein.position.set(randomPoint[0]-50+2, 0, randomPoint[1]-50+2)
-      scene.add(protein)
-    }
-
-    // console.log(checkIfAnyAvailable(4, 4))
+    spots = getGoodSpots(rectWidth, rectHeight)
+  }
+}
 
 
-    fillsCounter--
+async function init() {
+  initGlobalLights()
+
+  const membraneDimensions = {
+    x: 100,
+    y: 100,
+    thickness: 4,
+    padding: 0,
   }
 
-  // let spots = checkIfAnyAvailable(4, 4)
-  // let counter = 100
-  // while (spots.length > 0 && counter > 0) {
-  //   // const spot = spots[Math.floor(Math.random()*spots.length)]
-  //
-  //   const spot = fills[Math.floor(Math.random()*fills.length)]
-  //
-  //   if (checkAvailable(spot[0], spot[1], 4, 4)) {
-  //     fillSpaces[spot[0], spot[1], 4, 4]
-  //
-  //     const protein = TMProtein(4,4)
-  //     protein.position.set(spot[0]-50+2, 0, spot[1]-50+2)
-  //     scene.add(protein)
-  //   }
-  //
-  //   spots = checkIfAnyAvailable(4, 4)
-  //   counter--
-  // }
+  const { x, y, thickness, padding } = membraneDimensions
+
+  initMembrane(x + padding, y + padding, thickness, false)
+
+  fillRandomly(100, 100, 4, 4)
 }
 
 
