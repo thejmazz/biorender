@@ -155,8 +155,12 @@ async function init() {
   }
 
   const checkAvailable = (x, y, width, height) => {
-    for (let i=x; i<x+width; i++) {
-      for (let j=y; j<y+height; j++) {
+    if (x+width >= 100 || y+height >= 100) {
+      return false
+    }
+
+    for (let i=x; i<=x+width; i++) {
+      for (let j=y; j<=y+height; j++) {
         if (flags[i][j]) {
           return false
         }
@@ -165,43 +169,70 @@ async function init() {
     return true
   }
 
+  const fillSpaces = (x, y, width, height) => {
+    for (let i=x; i<x+width; i++) {
+      for (let j=y; j<y+height; j++) {
+        flags[i][j] = true
+      }
+    }
+  }
+
+  const checkIfAnyAvailable = (width, height) => {
+    let goodSpots = []
+
+    for (let i=0; i < 100; i++) {
+      for (let j=0; j < 100; j++) {
+        if (!flags[i][j]) {
+          if (checkAvailable(i, j, width, height)) {
+            goodSpots.push([i, j])
+          }
+        }
+      }
+    }
+
+    return goodSpots
+  }
+
+  // console.log(checkIfAnyAvailable(4,4).length)
+  // fillSpaces(0,0,4,4)
+  // console.log(checkIfAnyAvailable(4,4).length)
+
   let fillsCounter = fills.length
   while (fillsCounter > 0) {
-    const randomPoint = fills[Math.floor(Math.random()*fillsCounter)]
+    // const randomPoint = fills[Math.floor(Math.random()*fills.length)]
+    const randomPoint = [Math.floor(Math.random()*100), Math.floor(Math.random()*100)]
 
-    if (checkAvailable(randomPoint[0], randomPoint[1], 4, 4) && randomPoint[0] < 100-4 && randomPoint[1] < 100-4) {
-      flags[randomPoint[0]][randomPoint[1]] = true
-      flags[randomPoint[0]+1][randomPoint[1]] = true
-      flags[randomPoint[0]+2][randomPoint[1]] = true
-      flags[randomPoint[0]+3][randomPoint[1]] = true
-
-      flags[randomPoint[0]+1][randomPoint[1]+1] = true
-      flags[randomPoint[0]+2][randomPoint[1]+1] = true
-      flags[randomPoint[0]+3][randomPoint[1]+1] = true
-
-      flags[randomPoint[0]+1][randomPoint[1]+2] = true
-      flags[randomPoint[0]+2][randomPoint[1]+2] = true
-      flags[randomPoint[0]+3][randomPoint[1]+2] = true
-
-      flags[randomPoint[0]+1][randomPoint[1]+3] = true
-      flags[randomPoint[0]+2][randomPoint[1]+3] = true
-      flags[randomPoint[0]+3][randomPoint[1]+3] = true
+    if (checkAvailable(randomPoint[0], randomPoint[1], 4, 4)) {
+      fillSpaces(randomPoint[0], randomPoint[1], 4, 4)
 
       const protein = TMProtein(4,4)
       protein.position.set(randomPoint[0]-50+2, 0, randomPoint[1]-50+2)
       scene.add(protein)
     }
 
+    // console.log(checkIfAnyAvailable(4, 4))
 
 
     fillsCounter--
   }
 
-  // for (let i=0; i<fills.length; i++) {
-  //   const protein = TMProtein(1,1)
-  //   protein.position.set(fills[i][0]-50+0.5, 0, fills[i][1]-50+0.5)
+  // let spots = checkIfAnyAvailable(4, 4)
+  // let counter = 100
+  // while (spots.length > 0 && counter > 0) {
+  //   // const spot = spots[Math.floor(Math.random()*spots.length)]
   //
-  //   scene.add(protein)
+  //   const spot = fills[Math.floor(Math.random()*fills.length)]
+  //
+  //   if (checkAvailable(spot[0], spot[1], 4, 4)) {
+  //     fillSpaces[spot[0], spot[1], 4, 4]
+  //
+  //     const protein = TMProtein(4,4)
+  //     protein.position.set(spot[0]-50+2, 0, spot[1]-50+2)
+  //     scene.add(protein)
+  //   }
+  //
+  //   spots = checkIfAnyAvailable(4, 4)
+  //   counter--
   // }
 }
 
