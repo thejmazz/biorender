@@ -92,6 +92,7 @@ const initGlobalLights = () => {
   )
 }
 
+let topLayer
 const initMembrane = (length, width, thickness, useWireframe=true) => {
   const planeGeom = new THREE.PlaneGeometry(length, width, length, width)
   const mat = new THREE.MeshLambertMaterial({color: 0xbababa, side: THREE.DoubleSide})
@@ -104,7 +105,7 @@ const initMembrane = (length, width, thickness, useWireframe=true) => {
     materials = mat
   }
 
-  const topLayer = mesh(planeGeom, materials)
+  topLayer = mesh(planeGeom, materials)
   topLayer.rotation.x = Math.PI/2
   topLayer.position.set(0, thickness/2, 0)
   scene.add(topLayer)
@@ -197,6 +198,65 @@ const fillRandomly = (width, height, rectWidth, rectHeight) => {
   }
 }
 
+const fillWithRays = (mesh) => {
+  let caster = new THREE.Raycaster()
+
+  const box = new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+  )
+  box.scale.set(4, 6, 4)
+  scene.add(box)
+  let watching = [box]
+
+  const rays = [
+    new THREE.Vector3(1, 1, 1),
+    new THREE.Vector3(1, 1, -1),
+    new THREE.Vector3(1, -1, 1),
+    new THREE.Vector3(1, -1, -1),
+    new THREE.Vector3(-1, 1, 1),
+    new THREE.Vector3(-1, 1, -1),
+    new THREE.Vector3(-1, -1, 1),
+    new THREE.Vector3(-1, -1, -1)
+  ]
+
+  const getAvailableVertices = () => {
+    let availables = []
+
+    for (let i=0; i < mesh.geometry.vertices.length; i+=99) {
+      const vert = mesh.geometry.vertices[i]
+
+      for (let j=0; j < rays.length; j++) {
+        const ray = rays[j]
+
+        // console.log(vert, ray)
+        caster.set(vert, ray)
+        const collisions = caster.intersectObjects(scene.children)
+        // TODO proper distancing for different rays
+        if (collisions.length > 0 && collisions[0].distance <= box.scale.x/2) {
+          availables.push(vert)
+        }
+      }
+    }
+
+    return availables
+  }
+
+  let counter = 10
+  while (counter > 0) {
+    const availableVerts = getAvailableVertices()
+    console.log(availableVerts.length)
+    const pos = availableVerts[Math.floor(Math.random()*availableVerts.length)]
+
+    const newBox = box.clone()
+    newBox.position.set(pos.x, 0, pos.y)
+    watching.push(newBox)
+    scene.add(newBox)
+
+    counter--
+  }
+}
+
 let box, wall, caster
 async function init() {
   initGlobalLights()
@@ -212,24 +272,6 @@ async function init() {
 
   initMembrane(x + padding, y + padding, thickness, false)
 
-  // fillRandomly(100, 100, 4, 4)
-
-  box = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
-  )
-  box.scale.set(4, 6, 4)
-  box.userData.directions = ['r', 'l', 'u', 'd']
-  box.userData.currentDirection = 'r'
-  box.userData.rays = [
-    new THREE.Vector3(1, 0, 0),
-    // new THREE.Vector3(-1, 0, 0)
-  ]
-  caster = new THREE.Raycaster()
-
-  scene.add(box)
-
-
   wall = new THREE.Mesh(
     new THREE.BoxGeometry(1,1,1),
     new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
@@ -237,52 +279,83 @@ async function init() {
   wall.scale.set(1,6,10)
   wall.position.set(25, 0, 0)
   scene.add(wall)
-}
 
+  console.time('fillage')
+  // 600 - 700 ms
+  // fillRandomly(100, 100, 4, 4)
 
-const updateBox = (delta, bounds) => {
-  const speed = 20
+  fillWithRays(topLayer)
+  console.timeEnd('fillage')
 
-  switch(box.userData.currentDirection) {
-    case 'r':
-      box.position.x += delta*speed
-      break
-    case 'l':
-      box.position.x -= delta*speed
-      break
-    case 'u':
-      box.position.z -= delta*speed
-      break
-    case 'd':
-      box.position.z += delta*speed
-      break
-    default: break
-  }
-
-  for (let i=0; i < box.userData.rays.length; i++) {
-    const ray = box.userData.rays[i]
-
-    caster.set(box.position, ray)
-    const collisions = caster.intersectObjects([wall])
-    if (collisions.length > 0 && collisions[0].distance <= box.scale.x/2) {
-      if (box.userData.currentDirection === 'r') {
-        box.userData.currentDirection = 'l'
-      }
-    }
-  }
-
-
-  if (box.position.x >= bounds.maxX - box.scale.x/2) {
-    box.userData.currentDirection = 'l'
-  } else if (box.position.x <= bounds.minX + box.scale.x/2) {
-    box.userData.currentDirection = 'r'
-  }
-
-  if (box.position.z <= bounds.minZ + box.scale.z/2) {
-    box.userData.currentDirection = 'd'
-  } else if (box.position.z >= bounds.maxZ - box.scale.z/2) {
-    box.userData.currentDirection = 'u'
-  }
+//   box = new THREE.Mesh(
+//     new THREE.BoxGeometry(1, 1, 1),
+//     new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+//   )
+//   box.scale.set(4, 6, 4)
+//   box.userData.directions = ['r', 'l', 'u', 'd']
+//   box.userData.currentDirection = 'r'
+//   box.userData.rays = [
+//     new THREE.Vector3(1, 0, 0),
+//     // new THREE.Vector3(-1, 0, 0)
+//   ]
+//   caster = new THREE.Raycaster()
+//
+//   scene.add(box)
+//
+//
+//   wall = new THREE.Mesh(
+//     new THREE.BoxGeometry(1,1,1),
+//     new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+//   )
+//   wall.scale.set(1,6,10)
+//   wall.position.set(25, 0, 0)
+//   scene.add(wall)
+// }
+//
+//
+// const updateBox = (delta, bounds) => {
+//   const speed = 20
+//
+//   switch(box.userData.currentDirection) {
+//     case 'r':
+//       box.position.x += delta*speed
+//       break
+//     case 'l':
+//       box.position.x -= delta*speed
+//       break
+//     case 'u':
+//       box.position.z -= delta*speed
+//       break
+//     case 'd':
+//       box.position.z += delta*speed
+//       break
+//     default: break
+//   }
+//
+//   for (let i=0; i < box.userData.rays.length; i++) {
+//     const ray = box.userData.rays[i]
+//
+//     caster.set(box.position, ray)
+//     const collisions = caster.intersectObjects([wall])
+//     if (collisions.length > 0 && collisions[0].distance <= box.scale.x/2) {
+//       if (box.userData.currentDirection === 'r') {
+//         box.userData.currentDirection = 'l'
+//       }
+//     }
+//   }
+//
+//
+//   if (box.position.x >= bounds.maxX - box.scale.x/2) {
+//     box.userData.currentDirection = 'l'
+//   } else if (box.position.x <= bounds.minX + box.scale.x/2) {
+//     box.userData.currentDirection = 'r'
+//   }
+//
+//   if (box.position.z <= bounds.minZ + box.scale.z/2) {
+//     box.userData.currentDirection = 'd'
+//   } else if (box.position.z >= bounds.maxZ - box.scale.z/2) {
+//     box.userData.currentDirection = 'u'
+//   }
 }
 
 init()
@@ -297,8 +370,8 @@ const stats = createStats()
 const render = () => {
   stats.begin()
 
-  const delta = clock.getDelta()
-  updateBox(delta, {maxX: 50, minX: -50, maxZ: 50, minZ: -50})
+  // const delta = clock.getDelta()
+  // updateBox(delta, {maxX: 50, minX: -50, maxZ: 50, minZ: -50})
 
   // for (let keyframe of keyframes) {
   //   keyframe()
