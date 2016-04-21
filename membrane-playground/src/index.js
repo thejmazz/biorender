@@ -280,26 +280,88 @@ async function init() {
     return new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
   }
 
+
+
   box1 = new THREE.Mesh(boxGeom, new THREE.MeshLambertMaterial({color: flatUIHexColors[3]}))
   box1.scale.set(4,6,4)
   scene.add(box1)
 
+
   box2 = new THREE.Mesh(boxGeom, new THREE.MeshLambertMaterial({color: flatUIHexColors[7]}))
   box2.scale.set(4,6,4)
   box2.position.set(10,0,0)
+
   scene.add(box2)
 
   box3 = new THREE.Mesh(boxGeom, new THREE.MeshLambertMaterial({color: flatUIHexColors[10]}))
   box3.scale.set(4,6,4)
   box3.position.set(2,0,2)
+
   scene.add(box3)
 
-  console.time('fillage')
+  console.time('makingGoblin')
+  box1.goblin = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2),1)
+  box2.goblin = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2),1)
+  box3.goblin = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2),1)
+  console.timeEnd('makingGoblin')
+
+  console.time('settingGoblinPositions')
+  box1.goblin.position = new Goblin.Vector3(0, 0, 0)
+  box2.goblin.position = new Goblin.Vector3(10, 0, 0)
+  box3.goblin.position = new Goblin.Vector3(2, 0, 2)
+  console.timeEnd('settingGoblinPositions')
+
+  console.time('updateDerived')
+  box1.goblin.updateDerived()
+  box2.goblin.updateDerived()
+  box3.goblin.updateDerived()
+  console.timeEnd('updateDerived')
+
+  let contact
+  console.time('testContact')
+  // box1 and box2 dont collide
+  contact = Goblin.GjkEpa.testCollision(box1.goblin, box2.goblin)
+  console.log(contact)
+  console.timeEnd('testContact')
+
+  console.time('testContact')
+  // box1 and box3 do collide
+  contact = Goblin.GjkEpa.testCollision(box1.goblin, box3.goblin)
+  console.log(contact)
+  console.timeEnd('testContact')
+
+  console.log('============================================================')
+
+  // Assumes for a set of intersection comparisons, we will compare one box
+  // (goblinBox), to an array of other boxes. So creating this box is
+  // irrelevant when there are 10s of other boxes to test collision with.
+  const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
+  goblinBox.position = new Goblin.Vector3(0, 0, 0)
+  goblinBox.updateDerived()
+  let collidee, contactDetails
+
+  console.time('goblinRunNoCollision')
+  collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
+  collidee.position = new Goblin.Vector3(10, 0, 0)
+  collidee.updateDerived()
+  contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee)
+  console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
+  console.timeEnd('goblinRunNoCollision')
+
+  console.time('goblinRunWithCollision')
+  collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
+  collidee.position = new Goblin.Vector3(2, 0, 0)
+  collidee.updateDerived()
+  contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee)
+  console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
+  console.timeEnd('goblinRunWithCollision')
+
+  // console.time('fillage')
   // 600 - 700 ms
   // fillRandomly(100, 100, 4, 4)
 
   // fillWithRays(topLayer)
-  console.timeEnd('fillage')
+  // console.timeEnd('fillage')
 }
 
 init()
