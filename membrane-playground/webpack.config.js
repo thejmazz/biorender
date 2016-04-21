@@ -40,6 +40,9 @@ module.exports = {
     },  {
       from: 'node_modules/three/examples/js/controls/FlyControls.js',
       to: 'js'
+    }, {
+      from: 'node_modules/goblinphysics/build/goblin.js',
+      to: 'js'
     }])
   ]
 }

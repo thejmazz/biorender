@@ -116,9 +116,10 @@ const initMembrane = (length, width, thickness, useWireframe=true) => {
   scene.add(bottomLayer)
 }
 
+const TMProteinBox = new THREE.BoxBufferGeometry(4, 6, 4)
 const TMProtein = (w, d) => {
   return mesh(
-    new THREE.BoxGeometry(w, 6, d),
+    TMProteinBox,
     new THREE.MeshLambertMaterial({color: flatUIHexColors[rand(0, flatUIHexColors.length-1)]})
   )
 }
@@ -258,6 +259,8 @@ const fillWithRays = (mesh) => {
 }
 
 let box, wall, caster
+
+let box1, box2, box3
 async function init() {
   initGlobalLights()
 
@@ -272,90 +275,31 @@ async function init() {
 
   initMembrane(x + padding, y + padding, thickness, false)
 
-  wall = new THREE.Mesh(
-    new THREE.BoxGeometry(1,1,1),
-    new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
-  )
-  wall.scale.set(1,6,10)
-  wall.position.set(25, 0, 0)
-  scene.add(wall)
+  const boxGeom = new THREE.BoxGeometry(1,1,1)
+  const randFlatUILambert = () => {
+    return new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
+  }
+
+  box1 = new THREE.Mesh(boxGeom, new THREE.MeshLambertMaterial({color: flatUIHexColors[3]}))
+  box1.scale.set(4,6,4)
+  scene.add(box1)
+
+  box2 = new THREE.Mesh(boxGeom, new THREE.MeshLambertMaterial({color: flatUIHexColors[7]}))
+  box2.scale.set(4,6,4)
+  box2.position.set(10,0,0)
+  scene.add(box2)
+
+  box3 = new THREE.Mesh(boxGeom, new THREE.MeshLambertMaterial({color: flatUIHexColors[10]}))
+  box3.scale.set(4,6,4)
+  box3.position.set(2,0,2)
+  scene.add(box3)
 
   console.time('fillage')
   // 600 - 700 ms
   // fillRandomly(100, 100, 4, 4)
 
-  fillWithRays(topLayer)
+  // fillWithRays(topLayer)
   console.timeEnd('fillage')
-
-//   box = new THREE.Mesh(
-//     new THREE.BoxGeometry(1, 1, 1),
-//     new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
-//   )
-//   box.scale.set(4, 6, 4)
-//   box.userData.directions = ['r', 'l', 'u', 'd']
-//   box.userData.currentDirection = 'r'
-//   box.userData.rays = [
-//     new THREE.Vector3(1, 0, 0),
-//     // new THREE.Vector3(-1, 0, 0)
-//   ]
-//   caster = new THREE.Raycaster()
-//
-//   scene.add(box)
-//
-//
-//   wall = new THREE.Mesh(
-//     new THREE.BoxGeometry(1,1,1),
-//     new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
-//   )
-//   wall.scale.set(1,6,10)
-//   wall.position.set(25, 0, 0)
-//   scene.add(wall)
-// }
-//
-//
-// const updateBox = (delta, bounds) => {
-//   const speed = 20
-//
-//   switch(box.userData.currentDirection) {
-//     case 'r':
-//       box.position.x += delta*speed
-//       break
-//     case 'l':
-//       box.position.x -= delta*speed
-//       break
-//     case 'u':
-//       box.position.z -= delta*speed
-//       break
-//     case 'd':
-//       box.position.z += delta*speed
-//       break
-//     default: break
-//   }
-//
-//   for (let i=0; i < box.userData.rays.length; i++) {
-//     const ray = box.userData.rays[i]
-//
-//     caster.set(box.position, ray)
-//     const collisions = caster.intersectObjects([wall])
-//     if (collisions.length > 0 && collisions[0].distance <= box.scale.x/2) {
-//       if (box.userData.currentDirection === 'r') {
-//         box.userData.currentDirection = 'l'
-//       }
-//     }
-//   }
-//
-//
-//   if (box.position.x >= bounds.maxX - box.scale.x/2) {
-//     box.userData.currentDirection = 'l'
-//   } else if (box.position.x <= bounds.minX + box.scale.x/2) {
-//     box.userData.currentDirection = 'r'
-//   }
-//
-//   if (box.position.z <= bounds.minZ + box.scale.z/2) {
-//     box.userData.currentDirection = 'd'
-//   } else if (box.position.z >= bounds.maxZ - box.scale.z/2) {
-//     box.userData.currentDirection = 'u'
-//   }
 }
 
 init()
