@@ -199,8 +199,16 @@ const fillRandomly = (width, height, rectWidth, rectHeight) => {
   }
 }
 
+const randMaterial = () => {
+  return new THREE.MeshLambertMaterial({
+    color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)],
+    transparent: true,
+    opacity: 0.6
+  })
+}
+
 const fillWithGoblin = (mesh) => {
-  console.log(mesh)
+  // console.log(mesh)
   const verts = mesh.geometry.vertices
 
   const sphere = new THREE.Mesh(
@@ -223,10 +231,20 @@ const fillWithGoblin = (mesh) => {
   //   scene.add(vertSphere)
   // }
 
+  const allTrue = (arr) => {
+    for (let i=0; i < arr.length; i++) {
+      if (!arr[i]) {
+        return false
+      }
+    }
+    return true
+  }
+
   let addedBlocks = []
   // uses half dimensions
   let currentBlock = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
-  for (let i=0; i < 100; i+= 1) {
+  let stopForever = false
+  for (let i=0; i < verts.length; i+= 1) {
     // Rotate and realign vertex
     const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
     vert.x = vert.x + mesh.position.x
@@ -234,72 +252,45 @@ const fillWithGoblin = (mesh) => {
     vert.z = vert.z + mesh.position.z
 
     const vertSphere = sphere.clone()
-    if (i % 10 === 0) {
+    if (i % 4 === 0) {
       vertSphere.material = new THREE.MeshLambertMaterial({color: 0x1a22ee})
     }
     vertSphere.position.set(vert.x, vert.y, vert.z)
     scene.add(vertSphere)
 
-    const goblinVert = new Goblin.Vector3(vert.x, vert.y, vert.z)
-    currentBlock.position = goblinVert
-    currentBlock.updateDerived()
+    // const goblinVert = new Goblin.Vector3(vert.x, vert.y, vert.z)
+    // currentBlock.position = goblinVert
+    // currentBlock.updateDerived()
 
-    let contact
-    // let keepGoing = true
-    // let
+    const contacts = []
     for (let j=0; j < addedBlocks.length; j++) {
-      // const collidee = addedBlocks[j]
-      // collidee.updateDerived()
-      // // console.log(collidee)
-      // // console.log(currentBlock)
-      //
-      // contact = Goblin.GjkEpa.testCollision(currentBlock, collidee)
-      // // console.log(contact)
-      //
-      // if (contact === undefined) {
-      //   console.log('no collision')
-      //
-      //   const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
-      //   newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
-      //   newBlock.updateDerived()
-      //
-      //   addedBlocks.push(newBlock)
-      //
-      //   const newProtein = new THREE.Mesh(
-      //     new THREE.BoxGeometry(4, 6, 4),
-      //     new THREE.MeshLambertMaterial({color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)]})
-      //   )
-      //   newProtein.position.set(vert.x, vert.y-2, vert.z)
-      //
-      //   scene.add(newProtein)
-      //
-      //   break
-      // }
       const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
       goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
-      // goblinBox.position = new Goblin.Vector3(0, 0, 0)
       goblinBox.updateDerived()
 
       const collidee = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
       collidee.position = addedBlocks[j]
-      // collidee.position = new Goblin.Vector3(2, 0, 0)
-      // collidee.position = new Goblin.Vector3(10, 0, 0)
       collidee.updateDerived()
 
       const contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee)
-      console.log(contactDetails)
 
-      if (contactDetails === undefined) {
-        addedBlocks.push(goblinBox.position)
+      contacts.push(contactDetails === undefined)
+    }
+    // console.log(contacts.length)
+    if (allTrue(contacts)) {
+      const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
+      newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
+      newBlock.updateDerived()
 
-        const newProtein = new THREE.Mesh(
-          new THREE.BoxGeometry(4, 6, 4),
-          new THREE.MeshLambertMaterial({color: 0x14602e})
-        )
-        newProtein.position.set(vert.x, vert.y, vert.z)
+      addedBlocks.push(newBlock.position)
 
-        break
-      }
+      const newProtein = new THREE.Mesh(
+        new THREE.BoxGeometry(4, 6, 4),
+        randMaterial()
+      )
+      newProtein.position.set(vert.x, vert.y, vert.z)
+
+      scene.add(newProtein)
     }
 
     if (addedBlocks.length === 0) {
@@ -311,13 +302,65 @@ const fillWithGoblin = (mesh) => {
 
       const newProtein = new THREE.Mesh(
         new THREE.BoxGeometry(4, 6, 4),
-        new THREE.MeshLambertMaterial({color: 0x14602e})
+        randMaterial()
       )
       newProtein.position.set(vert.x, vert.y, vert.z)
 
       scene.add(newProtein)
     }
+
+    if (stopForever) {
+      break
+    }
   }
+
+  // if (stopForever) {
+  //   console.log('stopped forever')
+  //   for (let i=5; i < 10; i++) {
+  //     const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
+  //     vert.x = vert.x + mesh.position.x
+  //     vert.y = vert.y + mesh.position.y
+  //     vert.z = vert.z + mesh.position.z
+  //
+  //     const vertSphere = sphere.clone()
+  //     vertSphere.material = new THREE.MeshLambertMaterial({color: 0xff0000})
+  //     if (i % 4 === 0) {
+  //       vertSphere.material = new THREE.MeshLambertMaterial({color: 0x1a22ee})
+  //     }
+  //     vertSphere.position.set(vert.x, vert.y, vert.z)
+  //     scene.add(vertSphere)
+  //
+  //     for (let j=1; j < addedBlocks.length; j++) {
+  //       const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
+  //       goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
+  //       // goblinBox.position = new Goblin.Vector3(0, 0, 0)
+  //       goblinBox.updateDerived()
+  //
+  //       const collidee = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
+  //       collidee.position = addedBlocks[1]
+  //       // collidee.position = new Goblin.Vector3(2, 0, 0)
+  //       // collidee.position = new Goblin.Vector3(10, 0, 0)
+  //       collidee.updateDerived()
+  //
+  //       const contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee)
+  //       // console.log(contactDetails)
+  //       if (contactDetails === undefined) {
+  //         console.log('new at %d, length is %d', i, addedBlocks.length)
+  //         addedBlocks.push(new Goblin.Vector3(vert.x, vert.y, vert.z))
+  //
+  //         const newProtein = new THREE.Mesh(
+  //           new THREE.BoxGeometry(4, 6, 4),
+  //           randMaterial()
+  //         )
+  //         newProtein.position.set(vert.x, vert.y, vert.z)
+  //         scene.add(newProtein)
+  //
+  //         stopForever = true
+  //         break
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 let box, wall, caster
@@ -337,36 +380,38 @@ async function init() {
 
   initMembrane(x + padding, y + padding, thickness, false)
 
+  console.time('goblinFill')
   fillWithGoblin(topLayer)
+  console.timeEnd('goblinFill')
 
-  console.log('============================================================')
+  // console.log('============================================================')
 
   // Assumes for a set of intersection comparisons, we will compare one box
   // (goblinBox), to an array of other boxes. So creating this box is
   // irrelevant when there are 10s of other boxes to test collision with.
-  const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
-  goblinBox.position = new Goblin.Vector3(0, 0, 0)
-  goblinBox.updateDerived()
-  let collidee, contactDetails
-  const EPA_INFO = false
-
-  console.time('goblinRunNoCollision')
-  collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
-  collidee.position = new Goblin.Vector3(10, 0, 0)
-  collidee.updateDerived()
-  contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee, EPA_INFO)
-  console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
-  // console.log(contactDetails)
-  console.timeEnd('goblinRunNoCollision')
-
-  console.time('goblinRunWithCollision')
-  collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
-  collidee.position = new Goblin.Vector3(2, 0, 0)
-  collidee.updateDerived()
-  contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee, EPA_INFO)
-  console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
-  // console.log(contactDetails)
-  console.timeEnd('goblinRunWithCollision')
+  // const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
+  // goblinBox.position = new Goblin.Vector3(0, 0, 0)
+  // goblinBox.updateDerived()
+  // let collidee, contactDetails
+  // const EPA_INFO = false
+  //
+  // console.time('goblinRunNoCollision')
+  // collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
+  // collidee.position = new Goblin.Vector3(10, 0, 0)
+  // collidee.updateDerived()
+  // contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee, EPA_INFO)
+  // console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
+  // // console.log(contactDetails)
+  // console.timeEnd('goblinRunNoCollision')
+  //
+  // console.time('goblinRunWithCollision')
+  // collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
+  // collidee.position = new Goblin.Vector3(2, 0, 0)
+  // collidee.updateDerived()
+  // contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee, EPA_INFO)
+  // console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
+  // // console.log(contactDetails)
+  // console.timeEnd('goblinRunWithCollision')
 }
 
 init()
