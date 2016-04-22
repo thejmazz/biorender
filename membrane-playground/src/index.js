@@ -100,7 +100,7 @@ const initGlobalLights = () => {
   )
 }
 
-let topLayer
+let topLayer, octree
 const initMembrane = (length, width, thickness, useWireframe=true) => {
   const planeGeom = new THREE.PlaneGeometry(length, width, length, width)
   const mat = new THREE.MeshLambertMaterial({color: 0xbababa, side: THREE.DoubleSide})
@@ -141,6 +141,8 @@ const fillWithGoblin = (mesh) => {
     newProtein.position.set(vert.x, vert.y, vert.z)
 
     scene.add(newProtein)
+    octree.add({x: vert.x, y: vert.y, z: vert.z, radius: 4, id: addedBlocks.length})
+    // octree.update()
   }
 
   for (let i=0; i < verts.length; i+= 1) {
@@ -186,6 +188,8 @@ async function init() {
 
   initMembrane(x + padding, y + padding, thickness, false)
 
+  octree = new THREE.Octree({scene: scene})
+
   console.time('goblinFill')
   fillWithGoblin(topLayer)
   console.timeEnd('goblinFill')
@@ -216,6 +220,7 @@ const render = () => {
 
   // controls.update(delta*0.1)
   renderer.render(scene, camera)
+  octree.update()
   // capturer.capture(renderer.domElement)
 
   stats.end()
