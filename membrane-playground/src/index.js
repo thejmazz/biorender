@@ -142,7 +142,7 @@ const fillWithGoblin = (mesh) => {
 
     scene.add(newProtein)
     octree.add({x: vert.x, y: vert.y, z: vert.z, radius: 4, id: addedBlocks.length})
-    // octree.update()
+    octree.update()
   }
 
   for (let i=0; i < verts.length; i+= 1) {
@@ -220,7 +220,7 @@ const render = () => {
 
   // controls.update(delta*0.1)
   renderer.render(scene, camera)
-  octree.update()
+  // octree.update()
   // capturer.capture(renderer.domElement)
 
   stats.end()
