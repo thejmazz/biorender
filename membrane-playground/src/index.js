@@ -60,6 +60,14 @@ const mesh = (geometry, materials) => {
   }
 }
 
+const randMaterial = () => {
+  return new THREE.MeshLambertMaterial({
+    color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)],
+    transparent: true,
+    opacity: 0.6
+  })
+}
+
 // === LOADERS ===
 
 const OBJLoader = new THREE.OBJLoader()
@@ -116,129 +124,13 @@ const initMembrane = (length, width, thickness, useWireframe=true) => {
   scene.add(bottomLayer)
 }
 
-const TMProteinBox = new THREE.BoxBufferGeometry(4, 6, 4)
-const TMProtein = (w, d) => {
-  return mesh(
-    TMProteinBox,
-    new THREE.MeshLambertMaterial({color: flatUIHexColors[rand(0, flatUIHexColors.length-1)]})
-  )
-}
-
-const fillRandomly = (width, height, rectWidth, rectHeight) => {
-  // Flag for each discretized spot
-  // true if spot taken
-  const flags = []
-  for (let i=0; i < width; i++) {
-    flags[i] = []
-    for (let j=0; j < height; j++) {
-      flags[i][j] = false
-    }
-  }
-
-  // Check for true flags starting from top left in 2d array
-  const checkAvailable = (x, y, w, h) => {
-    if (x+w > width || y+h > height) {
-      return false
-    }
-
-    for (let i=x; i < x+w; i++) {
-      for (let j=y; j < y+h; j++) {
-        if (flags[i][j]) {
-          return false
-        }
-      }
-    }
-
-    return true
-  }
-
-  // Switch flags to true given a rectangles starting point and its dimensions
-  const fillSpaces = (x, y, width, height) => {
-    for (let i=x; i < x+width; i++) {
-      for (let j=y; j < y+height; j++) {
-        flags[i][j] = true
-      }
-    }
-  }
-
-  // Go through all available spaces for a given pair of rectangle dimensions
-  // Return an array of good x,y spots. If no more spots left, array is empty.
-  const getGoodSpots = (w, h) => {
-    let goodSpots = []
-
-    for (let i=0; i < width; i++) {
-      for (let j=0; j < height; j++) {
-        if (!flags[i][j]) {
-          if (checkAvailable(i, j, w, h)) {
-            goodSpots.push([i, j])
-            goodSpots.push({x: i, y: j})
-          }
-        }
-      }
-    }
-
-    return goodSpots
-  }
-
-  // Add rectangles until we cant
-  let spots = getGoodSpots(rectWidth, rectHeight)
-  while (spots.length > 0) {
-    // Can probably just take spots[0] here,
-    // maybe not look as random?
-    const spot = spots[Math.floor(Math.random()*spots.length)]
-
-    // Switch flags
-    fillSpaces(spot.x, spot.y, rectWidth, rectHeight)
-
-    // Add mesh to scene
-    const protein = TMProtein(rectWidth,rectHeight)
-    protein.position.set(spot.x - width/2 + rectWidth/2, 0, spot.y - height/2 + rectHeight/2)
-    scene.add(protein)
-
-    spots = getGoodSpots(rectWidth, rectHeight)
-  }
-}
-
-const randMaterial = () => {
-  return new THREE.MeshLambertMaterial({
-    color: flatUIHexColors[Math.floor(Math.random()*flatUIHexColors.length)],
-    transparent: true,
-    opacity: 0.6
-  })
-}
-
 const fillWithGoblin = (mesh) => {
-  // console.log(mesh)
   const verts = mesh.geometry.vertices
 
   const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(0.25, 16, 16),
     new THREE.MeshLambertMaterial({color: 0xd990c4})
   )
-
-  // Spheres for demonstration
-  // for (let i=0; i < verts.length; i++) {
-  //   const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
-  //   vert.x = vert.x + mesh.position.x
-  //   vert.y = vert.y + mesh.position.y
-  //   vert.z = vert.z + mesh.position.z
-  //
-  //   const vertSphere = sphere.clone()
-  //   if (i % 10 === 0) {
-  //     vertSphere.material = new THREE.MeshLambertMaterial({color: 0x1a22ee})
-  //   }
-  //   vertSphere.position.set(vert.x, vert.y, vert.z)
-  //   scene.add(vertSphere)
-  // }
-
-  const allTrue = (arr) => {
-    for (let i=0; i < arr.length; i++) {
-      if (!arr[i]) {
-        return false
-      }
-    }
-    return true
-  }
 
   let addedBlocks = []
   // uses half dimensions
@@ -251,18 +143,19 @@ const fillWithGoblin = (mesh) => {
     vert.y = vert.y + mesh.position.y
     vert.z = vert.z + mesh.position.z
 
-    const vertSphere = sphere.clone()
-    if (i % 4 === 0) {
-      vertSphere.material = new THREE.MeshLambertMaterial({color: 0x1a22ee})
-    }
-    vertSphere.position.set(vert.x, vert.y, vert.z)
-    scene.add(vertSphere)
+    // const vertSphere = sphere.clone()
+    // if (i % 4 === 0) {
+    //   vertSphere.material = new THREE.MeshLambertMaterial({color: 0x1a22ee})
+    // }
+    // vertSphere.position.set(vert.x, vert.y, vert.z)
+    // scene.add(vertSphere)
 
     // const goblinVert = new Goblin.Vector3(vert.x, vert.y, vert.z)
     // currentBlock.position = goblinVert
     // currentBlock.updateDerived()
 
     const contacts = []
+    let noCollisions = true
     for (let j=0; j < addedBlocks.length; j++) {
       const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
       goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
@@ -274,10 +167,13 @@ const fillWithGoblin = (mesh) => {
 
       const contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee)
 
-      contacts.push(contactDetails === undefined)
+      // contacts.push(contactDetails === undefined)
+      if (contactDetails !== undefined) {
+        noCollisions = false
+      }
     }
-    // console.log(contacts.length)
-    if (allTrue(contacts)) {
+
+    if (noCollisions) {
       const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
       newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
       newBlock.updateDerived()
@@ -313,54 +209,6 @@ const fillWithGoblin = (mesh) => {
       break
     }
   }
-
-  // if (stopForever) {
-  //   console.log('stopped forever')
-  //   for (let i=5; i < 10; i++) {
-  //     const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
-  //     vert.x = vert.x + mesh.position.x
-  //     vert.y = vert.y + mesh.position.y
-  //     vert.z = vert.z + mesh.position.z
-  //
-  //     const vertSphere = sphere.clone()
-  //     vertSphere.material = new THREE.MeshLambertMaterial({color: 0xff0000})
-  //     if (i % 4 === 0) {
-  //       vertSphere.material = new THREE.MeshLambertMaterial({color: 0x1a22ee})
-  //     }
-  //     vertSphere.position.set(vert.x, vert.y, vert.z)
-  //     scene.add(vertSphere)
-  //
-  //     for (let j=1; j < addedBlocks.length; j++) {
-  //       const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
-  //       goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
-  //       // goblinBox.position = new Goblin.Vector3(0, 0, 0)
-  //       goblinBox.updateDerived()
-  //
-  //       const collidee = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
-  //       collidee.position = addedBlocks[1]
-  //       // collidee.position = new Goblin.Vector3(2, 0, 0)
-  //       // collidee.position = new Goblin.Vector3(10, 0, 0)
-  //       collidee.updateDerived()
-  //
-  //       const contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee)
-  //       // console.log(contactDetails)
-  //       if (contactDetails === undefined) {
-  //         console.log('new at %d, length is %d', i, addedBlocks.length)
-  //         addedBlocks.push(new Goblin.Vector3(vert.x, vert.y, vert.z))
-  //
-  //         const newProtein = new THREE.Mesh(
-  //           new THREE.BoxGeometry(4, 6, 4),
-  //           randMaterial()
-  //         )
-  //         newProtein.position.set(vert.x, vert.y, vert.z)
-  //         scene.add(newProtein)
-  //
-  //         stopForever = true
-  //         break
-  //       }
-  //     }
-  //   }
-  // }
 }
 
 let box, wall, caster
@@ -370,8 +218,8 @@ async function init() {
   initGlobalLights()
 
   const membraneDimensions = {
-    x: 100,
-    y: 100,
+    x: 50,
+    y: 50,
     thickness: 4,
     padding: 0,
   }
@@ -383,35 +231,6 @@ async function init() {
   console.time('goblinFill')
   fillWithGoblin(topLayer)
   console.timeEnd('goblinFill')
-
-  // console.log('============================================================')
-
-  // Assumes for a set of intersection comparisons, we will compare one box
-  // (goblinBox), to an array of other boxes. So creating this box is
-  // irrelevant when there are 10s of other boxes to test collision with.
-  // const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
-  // goblinBox.position = new Goblin.Vector3(0, 0, 0)
-  // goblinBox.updateDerived()
-  // let collidee, contactDetails
-  // const EPA_INFO = false
-  //
-  // console.time('goblinRunNoCollision')
-  // collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
-  // collidee.position = new Goblin.Vector3(10, 0, 0)
-  // collidee.updateDerived()
-  // contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee, EPA_INFO)
-  // console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
-  // // console.log(contactDetails)
-  // console.timeEnd('goblinRunNoCollision')
-  //
-  // console.time('goblinRunWithCollision')
-  // collidee = new Goblin.RigidBody(new Goblin.BoxShape(2,3,2))
-  // collidee.position = new Goblin.Vector3(2, 0, 0)
-  // collidee.updateDerived()
-  // contactDetails = Goblin.GjkEpa.testCollision(goblinBox, collidee, EPA_INFO)
-  // console.log(contactDetails === undefined ? 'No Collision' : 'Collision')
-  // // console.log(contactDetails)
-  // console.timeEnd('goblinRunWithCollision')
 }
 
 init()
