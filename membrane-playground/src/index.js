@@ -137,12 +137,13 @@ const fillWithGoblin = (mesh) => {
 
     addedBlocks.push(newBlock)
 
+    octree.add({x: vert.x, y: vert.y, z: vert.z, radius: 4, id: addedBlocks.length - 1})
+    octree.update()
+
     const newProtein = new THREE.Mesh(new THREE.BoxGeometry(4, 6, 4), randMaterial())
     newProtein.position.set(vert.x, vert.y, vert.z)
 
     scene.add(newProtein)
-    octree.add({x: vert.x, y: vert.y, z: vert.z, radius: 4, id: addedBlocks.length})
-    octree.update()
   }
 
   for (let i=0; i < verts.length; i+= 1) {
@@ -156,10 +157,11 @@ const fillWithGoblin = (mesh) => {
     goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
     goblinBox.updateDerived()
 
-    // Look for collisions
+    // Look for collisions in nearby area using octree search
+    const searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), 8)
     let noCollisions = true
-    for (let j=0; j < addedBlocks.length; j++) {
-      const collidee = addedBlocks[j]
+    for (let j=0; j < searchResults.length; j++) {
+      const collidee = addedBlocks[searchResults[j].object.id]
       const contact = Goblin.GjkEpa.testCollision(goblinBox, collidee)
 
       if (contact !== undefined) {
@@ -188,7 +190,7 @@ async function init() {
 
   initMembrane(x + padding, y + padding, thickness, false)
 
-  octree = new THREE.Octree({scene: scene})
+  octree = new THREE.Octree({scene: null})
 
   console.time('goblinFill')
   fillWithGoblin(topLayer)
