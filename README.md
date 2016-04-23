@@ -6,7 +6,7 @@ Thanks for [Smart Biology](https://www.smart-biology.com/) for providing several
 
 ## Abstract
 
-Cellular processes are difficult to understand as illustrations, and animations are limited in their capacity to provide students with the oppurtunity to investigate questions through direct interaction. BioRender is a WebGL based engine for creating properly scaled cell models accessible from any modern web browser. Large components such as the mitochondria are procedurally generated and then populated using PDB models. BioRender aims to lower the barrier to entry to understanding biology by providing a platform for real-time interaction with cellular structures and biochemical processes.
+Cellular processes are difficult to understand as illustrations, and animations are limited in their capacity to provide students with the oppurtunity to investigate questions through direct interaction. BioRender is a WebGL based engine for creating properly scaled cell models accessible from any modern web browser. Large components such as the mitochondria are procedurally generated and then [populated](https://github.com/biorender/biorender/issues/26) using PDB models. BioRender aims to lower the barrier to entry to understanding biology by providing a platform for real-time interaction with cellular structures and biochemical processes.
 
 *WIP screen*
 <img width="1093" alt="screen shot 2016-04-23 at 4 18 05 pm" src="https://cloud.githubusercontent.com/assets/1270998/14763784/100a49c8-096f-11e6-8f50-28987be4daeb.png">
