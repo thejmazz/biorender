@@ -11,7 +11,7 @@ window.scene = scene
 
 // ===========================================================================
 
-camera.position.set(150, 75, 0)
+camera.position.set(0, 1, 0)
 
 // Cam
 
@@ -141,8 +141,6 @@ const initVesicle = ({radius=50, thickness=20}) => {
     })
   )
 
-  innerMembrane.position.set(100, 0, 0)
-
   return innerMembrane
 }
 
@@ -211,14 +209,8 @@ async function init() {
 
   const { x, y, thickness, padding } = membraneDimensions
 
-  initMembrane(x + padding, y + padding, thickness, false)
-
-  console.time('goblinFill')
-  fillWithGoblin(topLayer)
-  console.timeEnd('goblinFill')
-
   const innerMembrane = initVesicle({})
-  camera.lookAt(innerMembrane.position)
+  // camera.lookAt(innerMembrane.position)
   console.time('goblinFill')
   fillWithGoblin(innerMembrane)
   console.timeEnd('goblinFill')
