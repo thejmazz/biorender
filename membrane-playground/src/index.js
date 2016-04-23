@@ -105,7 +105,7 @@ const initGlobalLights = () => {
   )
 }
 
-let topLayer, octree
+let topLayer
 const initMembrane = (length, width, thickness, useWireframe=true) => {
   const planeGeom = new THREE.PlaneGeometry(length, width, length, width)
   const mat = new THREE.MeshLambertMaterial({color: 0xbababa, side: THREE.DoubleSide})
@@ -147,6 +147,7 @@ const initVesicle = ({radius=50, thickness=20}) => {
 }
 
 const fillWithGoblin = (mesh) => {
+  const octree = new THREE.Octree()
   const verts = mesh.geometry.vertices
   // uses half dimensions
   const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
@@ -212,16 +213,15 @@ async function init() {
 
   initMembrane(x + padding, y + padding, thickness, false)
 
-  octree = new THREE.Octree({scene: null})
-
   console.time('goblinFill')
   fillWithGoblin(topLayer)
   console.timeEnd('goblinFill')
 
-  octree = new THREE.Octree({scene: null})
   const innerMembrane = initVesicle({})
   camera.lookAt(innerMembrane.position)
+  console.time('goblinFill')
   fillWithGoblin(innerMembrane)
+  console.timeEnd('goblinFill')
   scene.add(innerMembrane)
 }
 
