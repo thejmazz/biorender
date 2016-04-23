@@ -11,7 +11,12 @@ window.scene = scene
 
 // ===========================================================================
 
-camera.position.set(0,75,0)
+camera.position.set(150, 75, 0)
+
+// Cam
+
+
+
 
 // ===========================================================================
 
@@ -124,6 +129,23 @@ const initMembrane = (length, width, thickness, useWireframe=true) => {
   scene.add(bottomLayer)
 }
 
+const TWOPI = Math.PI*2
+
+const initVesicle = ({radius=50, thickness=20}) => {
+  const innerMembrane = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 32, 32, 0, TWOPI, 0, TWOPI),
+    new THREE.MeshLambertMaterial({
+      color: 0x2f81db,
+      transparent: true,
+      opacity: 0.6
+    })
+  )
+
+  innerMembrane.position.set(100, 0, 0)
+
+  return innerMembrane
+}
+
 const fillWithGoblin = (mesh) => {
   const verts = mesh.geometry.vertices
   // uses half dimensions
@@ -195,6 +217,12 @@ async function init() {
   console.time('goblinFill')
   fillWithGoblin(topLayer)
   console.timeEnd('goblinFill')
+
+  octree = new THREE.Octree({scene: null})
+  const innerMembrane = initVesicle({})
+  camera.lookAt(innerMembrane.position)
+  fillWithGoblin(innerMembrane)
+  scene.add(innerMembrane)
 }
 
 init()
