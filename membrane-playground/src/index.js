@@ -1,6 +1,8 @@
 'use strict'
 
 import { createScene, createStats } from './lib/create.js'
+import { quat, vec3 } from 'gl-matrix'
+console.log(quat, vec3)
 
 const { scene, camera, renderer } = createScene({
   clearColor: 0x393939,
@@ -147,11 +149,12 @@ const initVesicle = ({radius=50, thickness=20}) => {
 const fillWithGoblin = (mesh) => {
   const octree = new THREE.Octree()
   const verts = mesh.geometry.vertices
+  const faces = mesh.geometry.faces
   // uses half dimensions
   const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
   let addedBlocks = []
 
-  const addNewBox = (vert) => {
+  const addNewBox = (vert, q) => {
     const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
     newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
     newBlock.updateDerived()
@@ -163,9 +166,34 @@ const fillWithGoblin = (mesh) => {
 
     const newProtein = new THREE.Mesh(new THREE.BoxGeometry(4, 6, 4), randMaterial())
     newProtein.position.set(vert.x, vert.y, vert.z)
+    newProtein.rotation.setFromQuaternion(q)
 
     scene.add(newProtein)
   }
+
+  // for (let i=0; i < faces.length; i++) {
+  //   const { a, b, c, vertexNormals } = faces[i]
+  //
+  //   const faceVerts = [verts[a], verts[b], verts[c]].map( (vert, i) => {
+  //     // const v = (new THREE.Vector3(vert.x, verts.y, verts.z)).applyEuler(mesh.rotation)
+  //     // v.x = v.x + mesh.position.x
+  //     // v.y = v.y + mesh.position.y
+  //     // v.z = v.z + mesh.position.z
+  //
+  //     const obj = {
+  //       vert,
+  //       normal: vertexNormals[i]
+  //     }
+  //
+  //     return obj
+  //   })
+  //
+  //   if (i === 0) {
+  //     console.log(faceVerts)
+  //   }
+  // }
+
+  console.log(mesh.position)
 
   for (let i=0; i < verts.length; i+= 1) {
     // Rotate and realign vertex
@@ -192,7 +220,17 @@ const fillWithGoblin = (mesh) => {
     }
 
     if (noCollisions || addedBlocks.length === 0) {
-      addNewBox(vert)
+      // Get angle from mesh position to this vertex
+      const v = vec3.fromValues(vert.x, vert.y, vert.z)
+      const origin = vec3.fromValues(mesh.position.x, mesh.position.y, mesh.position.z)
+
+      const q = quat.create()
+      // quat.rotationTo(q, origin, v)
+      quat.rotationTo(q, vec3.fromValues(50, 50, 50), v)
+
+      const threeQ = new THREE.Quaternion(q[0], q[1], q[2], q[3])
+
+      addNewBox(vert, threeQ)
     }
   }
 }
@@ -210,6 +248,7 @@ async function init() {
   const { x, y, thickness, padding } = membraneDimensions
 
   const innerMembrane = initVesicle({})
+  console.log(innerMembrane)
   // camera.lookAt(innerMembrane.position)
   console.time('goblinFill')
   fillWithGoblin(innerMembrane)
