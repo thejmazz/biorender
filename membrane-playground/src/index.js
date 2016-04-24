@@ -39,6 +39,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
 import { makeLOD } from './lib/lod.js'
 import { flatUIHexColors, generateShades } from './lib/colour-utils.js'
+import { getBBoxDimensions, getBoundingRadius } from './lib/geometry-utils.js'
 
 import {
   crudeSynthaseCreator,
@@ -50,6 +51,7 @@ import {
 
 import { constructCristae } from './scene/meshes/cristae.js'
 import { constructETC } from './scene/meshes/etc.js'
+import { constructPorin } from './scene/meshes/porin.js'
 
 // === CONSTANTS ===
 
@@ -147,32 +149,6 @@ const initVesicle = ({radius=50, thickness=20}) => {
   return innerMembrane
 }
 
-// === geometry utils ===
-
-const getBBoxDimensions = (geometry) => {
-  if (!geometry.boundingBox) {
-    geometry.computeBoundingBox()
-  }
-
-  const { max, min } = geometry.boundingBox
-  const bbox = {
-    width: max.x - min.x,
-    height: max.y - min.y,
-    depth: max.z - min.z
-  }
-
-  return bbox
-}
-
-const getBoundingRadius = (geometry) => {
-  if (!geometry.boundingSphere) {
-    geometry.computeBoundingSphere()
-  }
-
-  const radius = geometry.boundingSphere.radius
-
-  return radius
-}
 
 const fillWithGoblin = (mesh, block, offset) => {
   // if (block instanceof THREE.Group) {
@@ -296,6 +272,7 @@ const fillWithGoblin = (mesh, block, offset) => {
 let innerMembrane, ETC
 async function init() {
   initGlobalLights()
+  initMembrane()
 
   const membraneDimensions = {
     x: 100,
@@ -310,14 +287,11 @@ async function init() {
 
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
 
-  ETC = await OBJLoaderAsync('/models/ETC/ETC_d0.01.obj')
-  const ETCGroup = constructETC(ETC)
-  // ETC = ETCGroup.children[0].geometry
-  // for (let i=1; i < ETCGroup.children.length; i++) {
-  //   ETC.merge(ETCGroup.children[i].geometry)
-  // }
-  // scene.add(ETC)
-
+  const porin = constructPorin(
+    await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'),
+    await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin-unified.obj')
+  )
+  scene.add(porin)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
