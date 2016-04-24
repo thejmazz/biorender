@@ -2,7 +2,7 @@
 
 import { getBBoxDimensions } from '../../lib/geometry-utils.js'
 
-export const constructPorin = (group, unified) => {
+export const constructPorin = (group) => {
   const bilayerWidth = 4
 
   let scale = 1
@@ -20,27 +20,22 @@ export const constructPorin = (group, unified) => {
       scale = bilayerWidth / bbox.height
     }
 
-    if (i === 2) {
-      geometry = mesh.geometry
+    if (i === 1) {
+      geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
     } else if (i > 1) {
-      components.push(mesh.geometry)
+      components.push(new THREE.Geometry().fromBufferGeometry(mesh.geometry))
     }
   }
 
+  for (let i=0; i < components.length; i++) {
+    geometry.merge(components[i])
+  }
 
-  // for (let i=0; i < components.length; i++) {
-  //   geometry.merge(components[i], 1)
-  // }
-
-  const geom = unified.children[0].geometry
   const porin = new THREE.Mesh(
-    geom,
+    geometry,
     new THREE.MeshLambertMaterial({color: 0xb04921, side: THREE.DoubleSide})
   )
-
   porin.scale.set(scale, scale, scale)
-
-
 
   return porin
 }

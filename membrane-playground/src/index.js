@@ -287,10 +287,7 @@ async function init() {
 
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
 
-  const porin = constructPorin(
-    await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'),
-    await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin-unified.obj')
-  )
+  const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   scene.add(porin)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
