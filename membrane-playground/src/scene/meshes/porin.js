@@ -39,7 +39,5 @@ export const constructPorin = (group) => {
   )
   porin.scale.set(scale, scale, scale)
 
-  console.log(porin)
-
   return porin
 }

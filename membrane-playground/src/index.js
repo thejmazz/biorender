@@ -36,9 +36,10 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 
 // ===========================================================================
 
+// === IMPORTS ===
+
 import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
 import { makeLOD } from './lib/lod.js'
-// import { flatUIHexColors, generateShades } from './lib/colour-utils.js'
 import { populateMesh } from './lib/geometry-utils.js'
 
 import {
@@ -52,6 +53,8 @@ import {
 import { constructCristae } from './scene/meshes/cristae.js'
 import { constructETC } from './scene/meshes/etc.js'
 import { constructPorin } from './scene/meshes/porin.js'
+
+import { randMaterial } from './lib/material-utils.js'
 
 // === CONSTANTS ===
 
@@ -71,7 +74,16 @@ const mesh = (geometry, materials) => {
   }
 }
 
-import { randMaterial } from './lib/material-utils.js'
+const getChildIndexByName = (name, group) => {
+  group.children.forEach( (child, i) => {
+    console.log(child.name, name)
+    if (child.name === name) {
+      return i
+    }
+  })
+
+  return -1
+}
 
 // === LOADERS ===
 
@@ -129,20 +141,35 @@ const initMembrane = (length, width, thickness, useWireframe=true) => {
   scene.add(bottomLayer)
 }
 
-const initVesicle = ({radius=50, thickness=20}) => {
+const initVesicle = ({radius=50, thickness=4}) => {
   const innerMembrane = new THREE.Mesh(
-    new THREE.SphereGeometry(radius, 32, 32, 0, TWOPI, 0, TWOPI),
+    new THREE.SphereGeometry(radius - thickness/2, 32, 32, 0, TWOPI, 0, TWOPI),
     new THREE.MeshLambertMaterial({
       color: 0x2f81db,
       transparent: true,
       opacity: 0.6
     })
   )
+  innerMembrane.name = 'Inner-Membrane'
 
-  return innerMembrane
+  const outerMembrane = new THREE.Mesh(
+    new THREE.SphereGeometry(radius + thickness/2, 32, 32, 0, TWOPI, 0, TWOPI),
+    new THREE.MeshLambertMaterial({
+      color: 0x2f81db,
+      transparent: true,
+      opacity: 0.6
+    })
+  )
+  outerMembrane.name = 'Outer-Membrane'
+
+  const vesicle = new THREE.Group()
+  vesicle.add(innerMembrane)
+  vesicle.add(outerMembrane)
+
+  return vesicle
 }
 
-let innerMembrane, ETC
+let vesicle, ETC
 async function init() {
   initGlobalLights()
   initMembrane()
@@ -156,7 +183,8 @@ async function init() {
 
   const { x, y, thickness, padding } = membraneDimensions
 
-  innerMembrane = initVesicle({})
+  vesicle = initVesicle({})
+  // console.log(getChildIndexByName('Inner-Membrane', vesicle))
 
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
 
@@ -165,9 +193,10 @@ async function init() {
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
-  const innerMembraneProteins = populateMesh(innerMembrane, porin, 0)
+  const innerMembraneProteins = populateMesh(vesicle.children[0], porin, 2)
   console.timeEnd('goblinFill')
-  scene.add(innerMembrane)
+  // scene.add(innerMembrane)
+  scene.add(vesicle)
   scene.add(innerMembraneProteins)
 }
 

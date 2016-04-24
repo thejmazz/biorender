@@ -106,6 +106,7 @@ export const populateMesh = (mesh, block, offset) => {
 
 
   for (let i=0; i < verts.length; i+= 1) {
+  // for (let i=0; i < 30; i++ ) {
     // Rotate and realign vertex
     const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
     vert.x = vert.x + mesh.position.x
@@ -142,12 +143,14 @@ export const populateMesh = (mesh, block, offset) => {
       const contact = Goblin.GjkEpa.testCollision(goblinBox, collidee)
 
       if (contact !== undefined) {
+        // console.log('collision with vertex %d', i)
         noCollisions = false
         break
       }
     }
 
     if (noCollisions || addedBlocks.length === 0) {
+      // console.log('no collision with vertex %d', i)
       addNewBox(goblinBox)
     }
   }
