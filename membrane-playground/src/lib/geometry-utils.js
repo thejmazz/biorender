@@ -1,5 +1,8 @@
 'use strict'
 
+import { Y_AXIS } from './constants.js'
+import { randMaterial } from './material-utils.js'
+
 export const getBBoxDimensions = (geometry) => {
   if (!geometry.boundingBox) {
     geometry.computeBoundingBox()
@@ -23,4 +26,131 @@ export const getBoundingRadius = (geometry) => {
   const radius = geometry.boundingSphere.radius
 
   return radius
+}
+
+const applyScaleToBBox = (bbox, scale) => {
+  const { x, y, z } = scale
+
+  bbox.width *= x
+  bbox.height *= y
+  bbox.depth *= z
+
+  return bbox
+}
+
+export const populateMesh = (mesh, block, offset) => {
+  // if (block instanceof THREE.Group) {
+  //
+  // }
+
+  const octree = new THREE.Octree()
+  const verts = mesh.geometry.vertices
+  const faces = mesh.geometry.faces
+  const bbox = applyScaleToBBox(getBBoxDimensions(block.geometry), block.scale)
+  const boundingRadius = getBoundingRadius(block.geometry)
+  // uses half dimensions
+  const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
+
+  // Array of previously used bounding boxes
+  let addedBlocks = []
+  // Group to build
+  const proteins = new THREE.Group()
+
+  const addNewBox = (goblinBox) => {
+    const vert = goblinBox.position
+    const { x, y, z, w } = goblinBox.rotation
+    const { half_width, half_height, half_depth } = goblinBox.shape
+
+    const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(half_width, half_height, half_depth))
+    newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
+    newBlock.rotation.set(x, y, z, w)
+    newBlock.updateDerived()
+
+    addedBlocks.push(newBlock)
+
+    octree.add({x: vert.x, y: vert.y, z: vert.z, radius: 4, id: addedBlocks.length - 1})
+    octree.update()
+
+    const newProtein = block.clone()
+    newProtein.material = randMaterial()
+    newProtein.position.set(vert.x, vert.y, vert.z)
+    newProtein.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
+
+    // console.log(newProtein.rotation)
+    // newProtein.rotation.y = Math.PI/4
+
+    proteins.add(newProtein)
+  }
+
+  // for (let i=0; i < faces.length; i++) {
+  //   const { a, b, c, vertexNormals } = faces[i]
+  //
+  //   const faceVerts = [verts[a], verts[b], verts[c]].map( (vert, i) => {
+  //     // const v = (new THREE.Vector3(vert.x, verts.y, verts.z)).applyEuler(mesh.rotation)
+  //     // v.x = v.x + mesh.position.x
+  //     // v.y = v.y + mesh.position.y
+  //     // v.z = v.z + mesh.position.z
+  //
+  //     const obj = {
+  //       vert,
+  //       normal: vertexNormals[i]
+  //     }
+  //
+  //     return obj
+  //   })
+  //
+  //   if (i === 0) {
+  //     console.log(faceVerts)
+  //   }
+  // }
+
+
+  for (let i=0; i < verts.length; i+= 1) {
+    // Rotate and realign vertex
+    const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
+    vert.x = vert.x + mesh.position.x
+    vert.y = vert.y + mesh.position.y
+    vert.z = vert.z + mesh.position.z
+
+    const direction = (new THREE.Vector3())
+      .copy(vert)
+      .sub(mesh.position)
+      .normalize()
+
+    vert.x = vert.x + offset*direction.x
+    vert.y = vert.y + offset*direction.y
+    vert.z = vert.z + offset*direction.z
+
+    // Get angle from mesh position to this vertex
+    const quat = (new THREE.Quaternion()).setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      (new THREE.Vector3()).copy(vert).normalize()
+    )
+
+    quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
+
+    // Update goblinBox position to current vertex
+    goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
+    goblinBox.rotation.set(quat.x, quat.y, quat.z, quat.w)
+    goblinBox.updateDerived()
+
+    // Look for collisions in nearby area using octree search
+    const searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), boundingRadius*2)
+    let noCollisions = true
+    for (let j=0; j < searchResults.length; j++) {
+      const collidee = addedBlocks[searchResults[j].object.id]
+      const contact = Goblin.GjkEpa.testCollision(goblinBox, collidee)
+
+      if (contact !== undefined) {
+        noCollisions = false
+        break
+      }
+    }
+
+    if (noCollisions || addedBlocks.length === 0) {
+      addNewBox(goblinBox)
+    }
+  }
+
+  return proteins
 }
