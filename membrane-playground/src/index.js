@@ -193,8 +193,6 @@ const fillWithGoblin = (mesh) => {
   //   }
   // }
 
-  console.log(mesh.position)
-
   for (let i=0; i < verts.length; i+= 1) {
     // Rotate and realign vertex
     const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
@@ -222,11 +220,11 @@ const fillWithGoblin = (mesh) => {
     if (noCollisions || addedBlocks.length === 0) {
       // Get angle from mesh position to this vertex
       const v = vec3.fromValues(vert.x, vert.y, vert.z)
-      const origin = vec3.fromValues(mesh.position.x, mesh.position.y, mesh.position.z)
+      vec3.normalize(v, v)
+      const up = vec3.fromValues(0, 1, 0)
 
       const q = quat.create()
-      // quat.rotationTo(q, origin, v)
-      quat.rotationTo(q, vec3.fromValues(50, 50, 50), v)
+      quat.rotationTo(q, up, v)
 
       const threeQ = new THREE.Quaternion(q[0], q[1], q[2], q[3])
 
@@ -235,6 +233,7 @@ const fillWithGoblin = (mesh) => {
   }
 }
 
+let innerMembrane
 async function init() {
   initGlobalLights()
 
@@ -247,8 +246,7 @@ async function init() {
 
   const { x, y, thickness, padding } = membraneDimensions
 
-  const innerMembrane = initVesicle({})
-  console.log(innerMembrane)
+  innerMembrane = initVesicle({})
   // camera.lookAt(innerMembrane.position)
   console.time('goblinFill')
   fillWithGoblin(innerMembrane)
@@ -269,6 +267,7 @@ const render = () => {
   stats.begin()
 
   // const delta = clock.getDelta()
+  // innerMembrane.rotation.y = innerMembrane.rotation.y + 10
   // updateBox(delta, {maxX: 50, minX: -50, maxZ: 50, minZ: -50})
 
   // for (let keyframe of keyframes) {
