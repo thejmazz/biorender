@@ -1,8 +1,6 @@
 'use strict'
 
 import { createScene, createStats } from './lib/create.js'
-import { quat, vec3 } from 'gl-matrix'
-console.log(quat, vec3)
 
 const { scene, camera, renderer } = createScene({
   clearColor: 0x393939,
@@ -200,6 +198,12 @@ const fillWithGoblin = (mesh) => {
     vert.y = vert.y + mesh.position.y
     vert.z = vert.z + mesh.position.z
 
+    // Get angle from mesh position to this vertex
+    const threeQ = (new THREE.Quaternion()).setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      (new THREE.Vector3()).copy(vert).normalize()
+    )
+
     // Update goblinBox position to current vertex
     goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
     goblinBox.updateDerived()
@@ -218,16 +222,6 @@ const fillWithGoblin = (mesh) => {
     }
 
     if (noCollisions || addedBlocks.length === 0) {
-      // Get angle from mesh position to this vertex
-      const v = vec3.fromValues(vert.x, vert.y, vert.z)
-      vec3.normalize(v, v)
-      const up = vec3.fromValues(0, 1, 0)
-
-      const q = quat.create()
-      quat.rotationTo(q, up, v)
-
-      const threeQ = new THREE.Quaternion(q[0], q[1], q[2], q[3])
-
       addNewBox(vert, threeQ)
     }
   }
@@ -259,7 +253,7 @@ init()
 // ===========================================================================
 
 // window.capturer = new CCapture( { format: 'gif', workersPath: 'js/workers' } )
-window.capturer = new CCapture({format: 'png'})
+// window.capturer = new CCapture({format: 'png'})
 
 const clock = new THREE.Clock()
 
@@ -268,29 +262,28 @@ const stats = createStats()
 const render = () => {
   stats.begin()
 
-  const delta = clock.getDelta()
-  innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4
-  innerMembrane.rotation.z = innerMembrane.rotation.z + delta*0.4
-  innerMembrane.rotation.x = innerMembrane.rotation.x + delta*0.4
-  // updateBox(delta, {maxX: 50, minX: -50, maxZ: 50, minZ: -50})
+  // const delta = clock.getDelta()
+  // innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4
+  // innerMembrane.rotation.z = innerMembrane.rotation.z + delta*0.4
+  // innerMembrane.rotation.x = innerMembrane.rotation.x + delta*0.4
 
-  if (innerMembrane.rotation.y % TWOPI > 0 && innerMembrane.rotation.y % TWOPI < 0.01 &&
-      innerMembrane.rotation.z % TWOPI > 0 && innerMembrane.rotation.z % TWOPI < 0.01 &&
-      innerMembrane.rotation.x % TWOPI > 0 && innerMembrane.rotation.x % TWOPI < 0.01 &&
-      (capturerGo === 0 || capturerGo === 1)
-  ) {
-    if (capturerGo === 0) {
-      capturerGo++
-      console.log('starting')
-      capturer.start()
-    } else if (capturerGo === 1) {
-      capturerGo++
-      console.log('ending')
-      capturer.stop()
-      capturer.save()
-    }
-    console.log('full Y')
-  }
+  // if (innerMembrane.rotation.y % TWOPI > 0 && innerMembrane.rotation.y % TWOPI < 0.01 &&
+  //     innerMembrane.rotation.z % TWOPI > 0 && innerMembrane.rotation.z % TWOPI < 0.01 &&
+  //     innerMembrane.rotation.x % TWOPI > 0 && innerMembrane.rotation.x % TWOPI < 0.01 &&
+  //     (capturerGo === 0 || capturerGo === 1)
+  // ) {
+  //   if (capturerGo === 0) {
+  //     capturerGo++
+  //     console.log('starting')
+  //     capturer.start()
+  //   } else if (capturerGo === 1) {
+  //     capturerGo++
+  //     console.log('ending')
+  //     capturer.stop()
+  //     capturer.save()
+  //   }
+  //   console.log('full Y')
+  // }
 
   // for (let keyframe of keyframes) {
   //   keyframe()
@@ -302,8 +295,7 @@ const render = () => {
 
   // controls.update(delta*0.1)
   renderer.render(scene, camera)
-  // octree.update()
-  capturer.capture(renderer.domElement)
+  // capturer.capture(renderer.domElement)
 
   stats.end()
 
