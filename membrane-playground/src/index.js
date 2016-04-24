@@ -168,7 +168,7 @@ const fillWithGoblin = (mesh) => {
     newProtein.position.set(vert.x, vert.y, vert.z)
     newProtein.rotation.setFromQuaternion(q)
 
-    scene.add(newProtein)
+    mesh.add(newProtein)
   }
 
   // for (let i=0; i < faces.length; i++) {
@@ -258,17 +258,39 @@ init()
 
 // ===========================================================================
 
-// window.capturer = new CCapture( { format: 'png' } )
+// window.capturer = new CCapture( { format: 'gif', workersPath: 'js/workers' } )
+window.capturer = new CCapture({format: 'png'})
 
 const clock = new THREE.Clock()
 
+window.capturerGo = -1
 const stats = createStats()
 const render = () => {
   stats.begin()
 
-  // const delta = clock.getDelta()
-  // innerMembrane.rotation.y = innerMembrane.rotation.y + 10
+  const delta = clock.getDelta()
+  innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4
+  innerMembrane.rotation.z = innerMembrane.rotation.z + delta*0.4
+  innerMembrane.rotation.x = innerMembrane.rotation.x + delta*0.4
   // updateBox(delta, {maxX: 50, minX: -50, maxZ: 50, minZ: -50})
+
+  if (innerMembrane.rotation.y % TWOPI > 0 && innerMembrane.rotation.y % TWOPI < 0.01 &&
+      innerMembrane.rotation.z % TWOPI > 0 && innerMembrane.rotation.z % TWOPI < 0.01 &&
+      innerMembrane.rotation.x % TWOPI > 0 && innerMembrane.rotation.x % TWOPI < 0.01 &&
+      (capturerGo === 0 || capturerGo === 1)
+  ) {
+    if (capturerGo === 0) {
+      capturerGo++
+      console.log('starting')
+      capturer.start()
+    } else if (capturerGo === 1) {
+      capturerGo++
+      console.log('ending')
+      capturer.stop()
+      capturer.save()
+    }
+    console.log('full Y')
+  }
 
   // for (let keyframe of keyframes) {
   //   keyframe()
@@ -281,7 +303,7 @@ const render = () => {
   // controls.update(delta*0.1)
   renderer.render(scene, camera)
   // octree.update()
-  // capturer.capture(renderer.domElement)
+  capturer.capture(renderer.domElement)
 
   stats.end()
 
