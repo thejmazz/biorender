@@ -144,20 +144,53 @@ const initVesicle = ({radius=50, thickness=20}) => {
   return innerMembrane
 }
 
-const fillWithGoblin = (mesh) => {
+// === geometry utils ===
+
+const getBBoxDimensions = (geometry) => {
+  if (!geometry.boundingBox) {
+    geometry.computeBoundingBox()
+  }
+
+  const { max, min } = geometry.boundingBox
+  const bbox = {
+    width: max.x - min.x,
+    height: max.y - min.y,
+    depth: max.z - min.z
+  }
+
+  return bbox
+}
+
+const getBoundingRadius = (geometry) => {
+  if (!geometry.boundingSphere) {
+    geometry.computeBoundingSphere()
+  }
+
+  const radius = geometry.boundingSphere.radius
+
+  return radius
+}
+
+const fillWithGoblin = (mesh, block) => {
   const octree = new THREE.Octree()
   const verts = mesh.geometry.vertices
   const faces = mesh.geometry.faces
+  const bbox = getBBoxDimensions(block.geometry)
+  const boundingRadius = getBoundingRadius(block.geometry)
   // uses half dimensions
-  const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
+  const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
+
+  // Array of previously used bounding boxes
   let addedBlocks = []
+  // Group to build
   const proteins = new THREE.Group()
 
   const addNewBox = (goblinBox) => {
     const vert = goblinBox.position
     const { x, y, z, w } = goblinBox.rotation
+    const { half_width, half_height, half_depth } = goblinBox.shape
 
-    const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
+    const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(half_width, half_height, half_depth))
     newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
     newBlock.rotation.set(x, y, z, w)
     newBlock.updateDerived()
@@ -167,7 +200,8 @@ const fillWithGoblin = (mesh) => {
     octree.add({x: vert.x, y: vert.y, z: vert.z, radius: 4, id: addedBlocks.length - 1})
     octree.update()
 
-    const newProtein = new THREE.Mesh(new THREE.BoxGeometry(4, 6, 4), randMaterial())
+    const newProtein = block.clone()
+    newProtein.material = randMaterial()
     newProtein.position.set(vert.x, vert.y, vert.z)
     newProtein.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
 
@@ -204,18 +238,18 @@ const fillWithGoblin = (mesh) => {
     vert.z = vert.z + mesh.position.z
 
     // Get angle from mesh position to this vertex
-    const threeQ = (new THREE.Quaternion()).setFromUnitVectors(
+    const quat = (new THREE.Quaternion()).setFromUnitVectors(
       new THREE.Vector3(0, 1, 0),
       (new THREE.Vector3()).copy(vert).normalize()
     )
 
     // Update goblinBox position to current vertex
     goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
-    goblinBox.rotation.set(threeQ.x, threeQ.y, threeQ.z, threeQ.w)
+    goblinBox.rotation.set(quat.x, quat.y, quat.z, quat.w)
     goblinBox.updateDerived()
 
     // Look for collisions in nearby area using octree search
-    const searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), 8)
+    const searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), boundingRadius*2)
     let noCollisions = true
     for (let j=0; j < searchResults.length; j++) {
       const collidee = addedBlocks[searchResults[j].object.id]
@@ -249,9 +283,8 @@ async function init() {
   const { x, y, thickness, padding } = membraneDimensions
 
   innerMembrane = initVesicle({})
-  // camera.lookAt(innerMembrane.position)
   console.time('goblinFill')
-  const innerMembraneProteins = fillWithGoblin(innerMembrane)
+  const innerMembraneProteins = fillWithGoblin(innerMembrane, new THREE.Mesh(new THREE.BoxGeometry(40, 6, 40), randMaterial()))
   console.timeEnd('goblinFill')
   scene.add(innerMembrane)
   scene.add(innerMembraneProteins)
