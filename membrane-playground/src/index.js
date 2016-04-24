@@ -151,10 +151,15 @@ const fillWithGoblin = (mesh) => {
   // uses half dimensions
   const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
   let addedBlocks = []
+  const proteins = new THREE.Group()
 
-  const addNewBox = (vert, q) => {
+  const addNewBox = (goblinBox) => {
+    const vert = goblinBox.position
+    const { x, y, z, w } = goblinBox.rotation
+
     const newBlock = new Goblin.RigidBody(new Goblin.BoxShape(2, 3, 2))
     newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
+    newBlock.rotation.set(x, y, z, w)
     newBlock.updateDerived()
 
     addedBlocks.push(newBlock)
@@ -164,9 +169,9 @@ const fillWithGoblin = (mesh) => {
 
     const newProtein = new THREE.Mesh(new THREE.BoxGeometry(4, 6, 4), randMaterial())
     newProtein.position.set(vert.x, vert.y, vert.z)
-    newProtein.rotation.setFromQuaternion(q)
+    newProtein.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
 
-    mesh.add(newProtein)
+    proteins.add(newProtein)
   }
 
   // for (let i=0; i < faces.length; i++) {
@@ -206,6 +211,7 @@ const fillWithGoblin = (mesh) => {
 
     // Update goblinBox position to current vertex
     goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
+    goblinBox.rotation.set(threeQ.x, threeQ.y, threeQ.z, threeQ.w)
     goblinBox.updateDerived()
 
     // Look for collisions in nearby area using octree search
@@ -222,9 +228,11 @@ const fillWithGoblin = (mesh) => {
     }
 
     if (noCollisions || addedBlocks.length === 0) {
-      addNewBox(vert, threeQ)
+      addNewBox(goblinBox)
     }
   }
+
+  return proteins
 }
 
 let innerMembrane
@@ -243,9 +251,10 @@ async function init() {
   innerMembrane = initVesicle({})
   // camera.lookAt(innerMembrane.position)
   console.time('goblinFill')
-  fillWithGoblin(innerMembrane)
+  const innerMembraneProteins = fillWithGoblin(innerMembrane)
   console.timeEnd('goblinFill')
   scene.add(innerMembrane)
+  scene.add(innerMembraneProteins)
 }
 
 init()
