@@ -174,7 +174,11 @@ const getBoundingRadius = (geometry) => {
   return radius
 }
 
-const fillWithGoblin = (mesh, block) => {
+const fillWithGoblin = (mesh, block, offset) => {
+  // if (block instanceof THREE.Group) {
+  //
+  // }
+
   const octree = new THREE.Octree()
   const verts = mesh.geometry.vertices
   const faces = mesh.geometry.faces
@@ -182,6 +186,8 @@ const fillWithGoblin = (mesh, block) => {
   const boundingRadius = getBoundingRadius(block.geometry)
   // uses half dimensions
   const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
+
+
 
   // Array of previously used bounding boxes
   let addedBlocks = []
@@ -244,6 +250,15 @@ const fillWithGoblin = (mesh, block) => {
     vert.y = vert.y + mesh.position.y
     vert.z = vert.z + mesh.position.z
 
+    const direction = (new THREE.Vector3())
+      .copy(vert)
+      .sub(mesh.position)
+      .normalize()
+
+    vert.x = vert.x + offset*direction.x
+    vert.y = vert.y + offset*direction.y
+    vert.z = vert.z + offset*direction.z
+
     // Get angle from mesh position to this vertex
     const quat = (new THREE.Quaternion()).setFromUnitVectors(
       new THREE.Vector3(0, 1, 0),
@@ -278,7 +293,7 @@ const fillWithGoblin = (mesh, block) => {
   return proteins
 }
 
-let innerMembrane
+let innerMembrane, ETC
 async function init() {
   initGlobalLights()
 
@@ -292,16 +307,28 @@ async function init() {
   const { x, y, thickness, padding } = membraneDimensions
 
   innerMembrane = initVesicle({})
-  console.time('goblinFill')
+
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
-  const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 6, 4), randMaterial())
-  const innerMembraneProteins = fillWithGoblin(innerMembrane, objy)
+
+  ETC = await OBJLoaderAsync('/models/ETC/ETC_d0.01.obj')
+  const ETCGroup = constructETC(ETC)
+  // ETC = ETCGroup.children[0].geometry
+  // for (let i=1; i < ETCGroup.children.length; i++) {
+  //   ETC.merge(ETCGroup.children[i].geometry)
+  // }
+  // scene.add(ETC)
+
+
+  const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
+  console.time('goblinFill')
+  const innerMembraneProteins = fillWithGoblin(innerMembrane, objy, 10)
   console.timeEnd('goblinFill')
   scene.add(innerMembrane)
   scene.add(innerMembraneProteins)
 }
 
 init()
+
 
 // ===========================================================================
 
