@@ -51,6 +51,11 @@ import {
 import { constructCristae } from './scene/meshes/cristae.js'
 import { constructETC } from './scene/meshes/etc.js'
 
+// === CONSTANTS ===
+
+const TWOPI = Math.PI*2
+const Y_AXIS = new THREE.Vector3(0, 1, 0)
+
 // === FUNCTIONS ===
 
 const rand = (min, max) => {
@@ -129,8 +134,6 @@ const initMembrane = (length, width, thickness, useWireframe=true) => {
   scene.add(bottomLayer)
 }
 
-const TWOPI = Math.PI*2
-
 const initVesicle = ({radius=50, thickness=20}) => {
   const innerMembrane = new THREE.Mesh(
     new THREE.SphereGeometry(radius, 32, 32, 0, TWOPI, 0, TWOPI),
@@ -205,6 +208,9 @@ const fillWithGoblin = (mesh, block) => {
     newProtein.position.set(vert.x, vert.y, vert.z)
     newProtein.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
 
+    // console.log(newProtein.rotation)
+    // newProtein.rotation.y = Math.PI/4
+
     proteins.add(newProtein)
   }
 
@@ -230,6 +236,7 @@ const fillWithGoblin = (mesh, block) => {
   //   }
   // }
 
+
   for (let i=0; i < verts.length; i+= 1) {
     // Rotate and realign vertex
     const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
@@ -242,6 +249,8 @@ const fillWithGoblin = (mesh, block) => {
       new THREE.Vector3(0, 1, 0),
       (new THREE.Vector3()).copy(vert).normalize()
     )
+
+    quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
 
     // Update goblinBox position to current vertex
     goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
@@ -284,7 +293,9 @@ async function init() {
 
   innerMembrane = initVesicle({})
   console.time('goblinFill')
-  const innerMembraneProteins = fillWithGoblin(innerMembrane, new THREE.Mesh(new THREE.BoxGeometry(40, 6, 40), randMaterial()))
+  // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
+  const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 6, 4), randMaterial())
+  const innerMembraneProteins = fillWithGoblin(innerMembrane, objy)
   console.timeEnd('goblinFill')
   scene.add(innerMembrane)
   scene.add(innerMembraneProteins)
