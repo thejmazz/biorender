@@ -38,10 +38,27 @@ const applyScaleToBBox = (bbox, scale) => {
   return bbox
 }
 
-export const populateMesh = (mesh, block, offset) => {
-  // if (block instanceof THREE.Group) {
-  //
-  // }
+export const populateMembrane = (mesh, block, type) => {
+  const { thickness } = mesh.userData
+
+  if (mesh instanceof THREE.Group) {
+    mesh.children.forEach( (child) => {
+      if (child.name.indexOf('inner') !== -1 && type === 'inner') {
+        console.log('using inner')
+        mesh = child
+      } else if (child.name.indexOf('outer') !== -1 && type === 'outer') {
+        console.log('using outer')
+        mesh = child
+      }
+    })
+  }
+
+  let offset
+  if (type === 'inner') {
+    offset = thickness/2
+  } else if (type === 'outer') {
+    offset = -(thickness/2)
+  }
 
   const octree = new THREE.Octree()
   const verts = mesh.geometry.vertices
@@ -75,9 +92,6 @@ export const populateMesh = (mesh, block, offset) => {
     newProtein.material = randMaterial()
     newProtein.position.set(vert.x, vert.y, vert.z)
     newProtein.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
-
-    // console.log(newProtein.rotation)
-    // newProtein.rotation.y = Math.PI/4
 
     proteins.add(newProtein)
   }

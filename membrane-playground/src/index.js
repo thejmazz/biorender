@@ -40,7 +40,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 
 import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
 import { makeLOD } from './lib/lod.js'
-import { populateMesh } from './lib/geometry-utils.js'
+import { populateMembrane } from './lib/geometry-utils.js'
 
 import {
   crudeSynthaseCreator,
@@ -141,8 +141,10 @@ const initMembrane = (length, width, thickness, useWireframe=true) => {
   scene.add(bottomLayer)
 }
 
-const initVesicle = ({radius=50, thickness=4}) => {
-  const innerMembrane = new THREE.Mesh(
+const initVesicle = ({radius=50, thickness=4, name}) => {
+  const baseName = `${name}_membrane`
+
+  const innerLayer = new THREE.Mesh(
     new THREE.SphereGeometry(radius - thickness/2, 32, 32, 0, TWOPI, 0, TWOPI),
     new THREE.MeshLambertMaterial({
       color: 0x2f81db,
@@ -150,9 +152,9 @@ const initVesicle = ({radius=50, thickness=4}) => {
       opacity: 0.6
     })
   )
-  innerMembrane.name = 'Inner-Membrane'
+  innerLayer.name = `${baseName}_inner`
 
-  const outerMembrane = new THREE.Mesh(
+  const outerLayer = new THREE.Mesh(
     new THREE.SphereGeometry(radius + thickness/2, 32, 32, 0, TWOPI, 0, TWOPI),
     new THREE.MeshLambertMaterial({
       color: 0x2f81db,
@@ -160,11 +162,13 @@ const initVesicle = ({radius=50, thickness=4}) => {
       opacity: 0.6
     })
   )
-  outerMembrane.name = 'Outer-Membrane'
+  outerLayer.name = `${baseName}_outer`
 
   const vesicle = new THREE.Group()
-  vesicle.add(innerMembrane)
-  vesicle.add(outerMembrane)
+  vesicle.add(innerLayer)
+  vesicle.add(outerLayer)
+  vesicle.name = baseName
+  vesicle.userData.thickness = thickness
 
   return vesicle
 }
@@ -183,7 +187,7 @@ async function init() {
 
   const { x, y, thickness, padding } = membraneDimensions
 
-  vesicle = initVesicle({})
+  vesicle = initVesicle({name: 'test-vesicle'})
   // console.log(getChildIndexByName('Inner-Membrane', vesicle))
 
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
@@ -193,7 +197,7 @@ async function init() {
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
-  const innerMembraneProteins = populateMesh(vesicle.children[0], porin, 2)
+  const innerMembraneProteins = populateMembrane(vesicle, porin, 'outer')
   console.timeEnd('goblinFill')
   // scene.add(innerMembrane)
   scene.add(vesicle)
