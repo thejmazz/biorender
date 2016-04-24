@@ -31,11 +31,15 @@ export const constructPorin = (group) => {
     geometry.merge(components[i])
   }
 
+  geometry = (new THREE.BufferGeometry()).fromGeometry(geometry)
+
   const porin = new THREE.Mesh(
     geometry,
     new THREE.MeshLambertMaterial({color: 0xb04921, side: THREE.DoubleSide})
   )
   porin.scale.set(scale, scale, scale)
+
+  console.log(porin)
 
   return porin
 }
