@@ -52,6 +52,7 @@ import {
 
 import { constructCristae } from './scene/meshes/cristae.js'
 import { constructETC } from './scene/meshes/etc.js'
+import { constructETC2 } from './scene/meshes/etc-centered.js'
 import { constructPorin } from './scene/meshes/porin.js'
 
 import { randMaterial } from './lib/material-utils.js'
@@ -194,10 +195,12 @@ async function init() {
 
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // scene.add(porin)
+  const etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
+  // scene.add(etc2)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
-  const innerMembraneProteins = populateMembrane(vesicle, porin, 'outer')
+  const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
   console.timeEnd('goblinFill')
   // scene.add(innerMembrane)
   scene.add(vesicle)
