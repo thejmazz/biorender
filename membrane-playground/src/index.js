@@ -40,7 +40,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 
 import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
 import { makeLOD } from './lib/lod.js'
-import { populateMembrane } from './lib/geometry-utils.js'
+import { populateMembrane, getBBoxDimensions } from './lib/geometry-utils.js'
 
 import {
   crudeSynthaseCreator,
@@ -102,7 +102,7 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement)
 // === INIT METHODS ===
 
 const initGlobalLights = () => {
-  const cLight = new THREE.PointLight(0xffffff, 1, 50)
+  const cLight = new THREE.PointLight(0xffffff, 1, 500)
   camera.add(cLight)
   cLight.position.set(0,0,-0.001)
 
@@ -176,12 +176,14 @@ const initVesicle = ({radius=50, thickness=4, name}) => {
 
 let pinchesBoxes = []
 let wallsBoxes = []
+let walls = []
 async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
   let pinches = []
+  let desiredWidth = 1500
+  let scale
 
-  let walls = []
   let outerMembrane, base
 
   for (let i=1; i < mitochondria.children.length; i++) {
@@ -194,10 +196,13 @@ async function makePiecesMito() {
       pinches.push(mesh)
     } else if (name.indexOf('Wall') !== -1) {
       // console.log('wall: ', name)
+      mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
       walls.push(mesh)
     } else if (name.indexOf('Membrane.Outer') !== -1) {
       // console.log('outer membrane: ', name)
       outerMembrane = mesh
+      const bbox = getBBoxDimensions(outerMembrane.geometry)
+      scale = desiredWidth / bbox.width
     } else if (name.indexOf('Base') !== -1) {
       // console.log('base: ', name)
       base = mesh
@@ -205,6 +210,8 @@ async function makePiecesMito() {
       console.log('else: ', name)
     }
   }
+
+  console.log(scale)
 
   pinches.forEach( (mesh) => {
     // scene.add(mesh)
@@ -214,23 +221,27 @@ async function makePiecesMito() {
     // scene.add(bbox)
 
     mesh.material = randMaterial()
+    mesh.scale.set(scale, scale, scale)
     scene.add(mesh)
   })
 
   walls.forEach( (wall) => {
+    wall.material = randMaterial()
+    wall.scale.set(scale, scale, scale)
+    scene.add(wall)
+
     const bbox = new THREE.BoundingBoxHelper(wall, 0x000000)
     bbox.update()
     wallsBoxes.push(bbox)
-    scene.add(bbox)
-
-    wall.material = randMaterial()
-    scene.add(wall)
+    // scene.add(bbox)
   })
 
-  outerMembrane.material = randMaterial()
+  outerMembrane.material = randMaterial({transparency: true})
+  outerMembrane.scale.set(scale, scale, scale)
   scene.add(outerMembrane)
 
   base.material = randMaterial()
+  base.scale.set(scale, scale, scale)
   scene.add(base)
 }
 
@@ -250,6 +261,42 @@ async function makeUnifiedMito() {
   meshes.forEach(mesh => scene.add(mesh))
 }
 
+const useWalls = (walls) => {
+  // for (let i=0; i < walls.length; i++) {
+  //   console.log(walls[i])
+  // }
+
+  const sphereHelp = new THREE.Mesh(
+    new THREE.SphereGeometry(2, 32, 32),
+    randMaterial()
+  )
+  const wall = walls[17]
+  // console.log(wall)
+  const pos = wall.geometry.vertices[0]
+  pos.x = pos.x * wall.scale.x
+  pos.y = pos.y * wall.scale.y
+  pos.z = pos.z * wall.scale.x
+
+  sphereHelp.position.set(pos.x, pos.y, pos.z)
+  scene.add(sphereHelp)
+
+  const threshold = 0.01
+  for (let i=0; i < wall.geometry.faces.length; i++) {
+    const face = wall.geometry.faces[i]
+
+    if (face.normal.x > 1 - threshold && face.normal.x < 1 +  threshold) {
+      // console.log(face)
+      const aSphere = sphereHelp.clone()
+      const aVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.a])
+      aVert.x = aVert.x * wall.scale.x
+      aVert.y = aVert.y * wall.scale.y
+      aVert.z = aVert.z * wall.scale.x
+      aSphere.material = randMaterial()
+      aSphere.position.set(aVert.x, aVert.y, aVert.z)
+      scene.add(aSphere)
+    }
+  }
+}
 
 let vesicle, ETC
 async function init() {
@@ -273,7 +320,8 @@ async function init() {
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // scene.add(porin)
   const etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
-  // scene.add(etc2)
+  etc2.position.set(0, 2, 0)
+  scene.add(etc2)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
@@ -285,6 +333,8 @@ async function init() {
 
   // await makeUnifiedMito()
   await makePiecesMito()
+
+  useWalls(walls)
 }
 
 init()
