@@ -181,7 +181,7 @@ async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
   let pinches = []
-  let desiredWidth = 1500
+  let desiredWidth = 3000
   let scale
 
   let outerMembrane, base
@@ -211,7 +211,7 @@ async function makePiecesMito() {
     }
   }
 
-  console.log(scale)
+  // console.log(scale)
 
   pinches.forEach( (mesh) => {
     // scene.add(mesh)
@@ -227,6 +227,7 @@ async function makePiecesMito() {
 
   walls.forEach( (wall) => {
     wall.material = randMaterial()
+    // wall.material.wireframe = true
     wall.scale.set(scale, scale, scale)
     scene.add(wall)
 
@@ -261,13 +262,14 @@ async function makeUnifiedMito() {
   meshes.forEach(mesh => scene.add(mesh))
 }
 
+let etc2
 const useWalls = (walls) => {
   // for (let i=0; i < walls.length; i++) {
   //   console.log(walls[i])
   // }
 
   const sphereHelp = new THREE.Mesh(
-    new THREE.SphereGeometry(2, 32, 32),
+    new THREE.SphereGeometry(0.5, 32, 32),
     randMaterial()
   )
   const wall = walls[17]
@@ -281,6 +283,7 @@ const useWalls = (walls) => {
   scene.add(sphereHelp)
 
   const threshold = 0.01
+  const goodVerts = []
   for (let i=0; i < wall.geometry.faces.length; i++) {
     const face = wall.geometry.faces[i]
 
@@ -294,8 +297,36 @@ const useWalls = (walls) => {
       aSphere.material = randMaterial()
       aSphere.position.set(aVert.x, aVert.y, aVert.z)
       scene.add(aSphere)
+
+      const bSphere = sphereHelp.clone()
+      const bVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.b])
+      bVert.x = bVert.x * wall.scale.x
+      bVert.y = bVert.y * wall.scale.y
+      bVert.z = bVert.z * wall.scale.x
+      bSphere.material = randMaterial()
+      bSphere.position.set(bVert.x, bVert.y, bVert.z)
+      scene.add(bSphere)
+
+      const cSphere = sphereHelp.clone()
+      const cVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.c])
+      cVert.x = cVert.x * wall.scale.x
+      cVert.y = cVert.y * wall.scale.y
+      cVert.z = cVert.z * wall.scale.x
+      cSphere.material = randMaterial()
+      cSphere.position.set(cVert.x, cVert.y, cVert.z)
+      scene.add(cSphere)
+
+      goodVerts.push(face.a)
+      goodVerts.push(face.b)
+      goodVerts.push(face.c)
     }
   }
+
+
+  wall.userData.thickness = 4
+  // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
+  const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0))
+  scene.add(etcs)
 }
 
 let vesicle, ETC
@@ -319,13 +350,13 @@ async function init() {
 
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // scene.add(porin)
-  const etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
+  etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
   etc2.position.set(0, 2, 0)
-  scene.add(etc2)
+  // scene.add(etc2)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
-  const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
+  // const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
   console.timeEnd('goblinFill')
   // scene.add(innerMembrane)
   // scene.add(vesicle)

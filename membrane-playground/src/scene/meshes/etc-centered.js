@@ -38,7 +38,6 @@ export const constructETC2 = (group) => {
     new THREE.MeshLambertMaterial({color: 0xb04921, side: THREE.DoubleSide})
   )
   porin.scale.set(scale, scale, scale)
-  console.log(scale)
 
   return porin
 }
