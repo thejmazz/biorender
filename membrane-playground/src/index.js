@@ -174,6 +174,83 @@ const initVesicle = ({radius=50, thickness=4, name}) => {
   return vesicle
 }
 
+let pinchesBoxes = []
+let wallsBoxes = []
+async function makePiecesMito() {
+  const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
+
+  let pinches = []
+
+  let walls = []
+  let outerMembrane, base
+
+  for (let i=1; i < mitochondria.children.length; i++) {
+    const mesh = mitochondria.children[i]
+
+    const name = mesh.name.replace(/Cube\.\d+_?/, '')
+
+    if (name.indexOf('Pinch') !== -1) {
+      // console.log('pinch: ', name)
+      pinches.push(mesh)
+    } else if (name.indexOf('Wall') !== -1) {
+      // console.log('wall: ', name)
+      walls.push(mesh)
+    } else if (name.indexOf('Membrane.Outer') !== -1) {
+      // console.log('outer membrane: ', name)
+      outerMembrane = mesh
+    } else if (name.indexOf('Base') !== -1) {
+      // console.log('base: ', name)
+      base = mesh
+    } else {
+      console.log('else: ', name)
+    }
+  }
+
+  pinches.forEach( (mesh) => {
+    // scene.add(mesh)
+    const bbox = new THREE.BoundingBoxHelper(mesh, 0x000000)
+    bbox.update()
+    pinchesBoxes.push(bbox)
+    // scene.add(bbox)
+
+    mesh.material = randMaterial()
+    scene.add(mesh)
+  })
+
+  walls.forEach( (wall) => {
+    const bbox = new THREE.BoundingBoxHelper(wall, 0x000000)
+    bbox.update()
+    wallsBoxes.push(bbox)
+    scene.add(bbox)
+
+    wall.material = randMaterial()
+    scene.add(wall)
+  })
+
+  outerMembrane.material = randMaterial()
+  scene.add(outerMembrane)
+
+  base.material = randMaterial()
+  scene.add(base)
+}
+
+async function makeUnifiedMito() {
+  const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria_unified.obj')
+  // console.log(mitochondria)
+
+  let meshes = []
+  for (let i=0; i < mitochondria.children.length; i++) {
+    const mesh = mitochondria.children[i]
+    mesh.material = new THREE.MeshLambertMaterial({color: 0x84dd72})
+    mesh.material.wireframe = false
+
+    meshes.push(mesh)
+  }
+
+  meshes.forEach(mesh => scene.add(mesh))
+}
+
+
 let vesicle, ETC
 async function init() {
   initGlobalLights()
@@ -203,8 +280,11 @@ async function init() {
   const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
   console.timeEnd('goblinFill')
   // scene.add(innerMembrane)
-  scene.add(vesicle)
-  scene.add(innerMembraneProteins)
+  // scene.add(vesicle)
+  // scene.add(innerMembraneProteins)
+
+  // await makeUnifiedMito()
+  await makePiecesMito()
 }
 
 init()
