@@ -100,13 +100,57 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
     newProtein.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
 
     proteins.add(newProtein)
-    console.log(`adding a protein for ${mesh.name} at (${vert.x}, ${vert.y}, ${vert.z})`)
+    // console.log(`adding a protein for ${mesh.name} at (${vert.x}, ${vert.y}, ${vert.z})`)
+  }
+
+  const fixVert = (vert) => {
+    const newVert = (new THREE.Vector3())
+      .copy(vert)
+      .applyEuler(mesh.rotation)
+
+    newVert.x = newVert.x * mesh.scale.x
+    newVert.y = newVert.y * mesh.scale.y
+    newVert.z = newVert.z * mesh.scale.z
+
+    newVert.x = newVert.x + mesh.position.x
+    newVert.y = newVert.y + mesh.position.y
+    newVert.z = newVert.z + mesh.position.z
+
+    return newVert
   }
 
   for (let j=0; j < faces.length; j++) {
     const face = faces[j]
     const faceVerts = [verts[face.a], verts[face.b], verts[face.c]]
     // console.log(face, faceVerts)
+
+    // const avgVert = fixVert(new THREE.Vector3(
+    //   (faceVerts[0].x + faceVerts[1].x + faceVerts[2].x) / 3,
+    //   (faceVerts[0].y + faceVerts[1].y + faceVerts[2].y) / 3,
+    //   (faceVerts[0].z + faceVerts[1].z + faceVerts[2].z) / 3
+    // ))
+    //
+    // // avgVert.x = avgVert.x * mesh.scale.x
+    // // avgVert.y = avgVert.y * mesh.scale.y
+    // // avgVert.z = avgVert.z * mesh.scale.z
+    // //
+    // //
+    // // avgVert.x = avgVert.x + mesh.position.x
+    // // avgVert.y = avgVert.y + mesh.position.y
+    // // avgVert.z = avgVert.z + mesh.position.z
+    //
+    // const minySphere = new THREE.Mesh(
+    //   new THREE.SphereGeometry(0.1, 16, 16),
+    //   randMaterial()
+    // )
+    // minySphere.position.set(avgVert.x, avgVert.y, avgVert.z)
+    // scene.add(minySphere)
+    //
+    // const faceVertsFixed = faceVerts.map(vert => fixVert(vert))
+    // const vertSphere = minySphere.clone()
+    // vertSphere.material = new THREE.MeshNormalMaterial()
+    // vertSphere.position.set(faceVertsFixed[0].x, faceVertsFixed[0].y, faceVertsFixed[1].z)
+    // scene.add(vertSphere)
 
     for (let i=0; i < faceVerts.length; i++) {
       const faceVert = faceVerts[i]
@@ -132,10 +176,24 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
       vert.z = vert.z + offset*direction.z
 
       // Get angle from mesh position to this vertex
-      const quat = (new THREE.Quaternion()).setFromUnitVectors(
-        desiredRotation,
-        (new THREE.Vector3()).copy(vert).normalize()
-      )
+      const vec = face.normal.clone()
+      const up = new THREE.Vector3(0, 1, 0)
+      let axis
+      if (vec.y === 1 || vec.y === -1 ) {
+        axis = new THREE.Vector3(1, 0, 0)
+      } else {
+        axis = new THREE.Vector3().crossVectors(up, vec)
+      }
+      const radians = Math.acos(vec.dot(up))
+      const mat = new THREE.Matrix4().makeRotationAxis(axis, radians)
+
+      const quat = new THREE.Quaternion().setFromRotationMatrix(mat)
+
+      // Works better for spheres
+      // const quat = (new THREE.Quaternion()).setFromUnitVectors(
+      //   desiredRotation,
+      //   (new THREE.Vector3()).copy(vert).normalize()
+      // )
 
       quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
 
