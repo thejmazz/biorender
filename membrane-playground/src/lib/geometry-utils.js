@@ -60,6 +60,7 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
   } else if (type === 'outer') {
     offset = -(thickness/2)
   }
+  console.log(`offset is ${offset}`)
 
   const octree = new THREE.Octree()
   let verts = mesh.geometry.vertices
@@ -119,57 +120,21 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
     return newVert
   }
 
+  // TODO option for verts or faces?
+  // TODO filtering options, by normal
+  // TODO extra verts, etc
   for (let j=0; j < faces.length; j++) {
     const face = faces[j]
     const faceVerts = [verts[face.a], verts[face.b], verts[face.c]]
-    // console.log(face, faceVerts)
-
-    // const avgVert = fixVert(new THREE.Vector3(
-    //   (faceVerts[0].x + faceVerts[1].x + faceVerts[2].x) / 3,
-    //   (faceVerts[0].y + faceVerts[1].y + faceVerts[2].y) / 3,
-    //   (faceVerts[0].z + faceVerts[1].z + faceVerts[2].z) / 3
-    // ))
-    //
-    // // avgVert.x = avgVert.x * mesh.scale.x
-    // // avgVert.y = avgVert.y * mesh.scale.y
-    // // avgVert.z = avgVert.z * mesh.scale.z
-    // //
-    // //
-    // // avgVert.x = avgVert.x + mesh.position.x
-    // // avgVert.y = avgVert.y + mesh.position.y
-    // // avgVert.z = avgVert.z + mesh.position.z
-    //
-    // const minySphere = new THREE.Mesh(
-    //   new THREE.SphereGeometry(0.1, 16, 16),
-    //   randMaterial()
-    // )
-    // minySphere.position.set(avgVert.x, avgVert.y, avgVert.z)
-    // scene.add(minySphere)
-    //
-    // const faceVertsFixed = faceVerts.map(vert => fixVert(vert))
-    // const vertSphere = minySphere.clone()
-    // vertSphere.material = new THREE.MeshNormalMaterial()
-    // vertSphere.position.set(faceVertsFixed[0].x, faceVertsFixed[0].y, faceVertsFixed[1].z)
-    // scene.add(vertSphere)
 
     for (let i=0; i < faceVerts.length; i++) {
-      const faceVert = faceVerts[i]
-      const vert = (new THREE.Vector3()).copy(faceVert).applyEuler(mesh.rotation)
+      const vert = fixVert(faceVerts[i])
 
-      vert.x = vert.x * mesh.scale.x
-      vert.y = vert.y * mesh.scale.y
-      vert.z = vert.z * mesh.scale.z
-
-
-      vert.x = vert.x + mesh.position.x
-      vert.y = vert.y + mesh.position.y
-      vert.z = vert.z + mesh.position.z
-
-
-      const direction = (new THREE.Vector3())
-        .copy(vert)
-        .sub(mesh.position)
-        .normalize()
+      // const direction = (new THREE.Vector3())
+      //   .copy(vert)
+      //   .sub(mesh.position)
+      //   .normalize()
+      const direction = face.normal.clone()
 
       vert.x = vert.x + offset*direction.x
       vert.y = vert.y + offset*direction.y
@@ -195,6 +160,7 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
       //   (new THREE.Vector3()).copy(vert).normalize()
       // )
 
+      // Add some random spin
       quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
 
       // Update goblinBox position to current vertex
@@ -217,63 +183,12 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
       }
 
       if (noCollisions) {
-        // TODO this is where the "top" collision comes from.
+        // TODO this is where the "top" collision comes from. I think.
         // console.log('no collision with vertex %d', i)
         addNewBox(goblinBox)
       }
     }
   }
-
-  // TODO option for verts or faces?
-  // for (let i=0; i < verts.length; i+= 1) {
-  // // for (let i=0; i < 30; i++ ) {
-  //   // Rotate and realign vertex
-  //   const vert = (new THREE.Vector3(verts[i].x, verts[i].y, verts[i].z)).applyEuler(mesh.rotation)
-  //   vert.x = vert.x + mesh.position.x
-  //   vert.y = vert.y + mesh.position.y
-  //   vert.z = vert.z + mesh.position.z
-  //
-  //   const direction = (new THREE.Vector3())
-  //     .copy(vert)
-  //     .sub(mesh.position)
-  //     .normalize()
-  //
-  //   vert.x = vert.x + offset*direction.x
-  //   vert.y = vert.y + offset*direction.y
-  //   vert.z = vert.z + offset*direction.z
-  //
-  //   // Get angle from mesh position to this vertex
-  //   const quat = (new THREE.Quaternion()).setFromUnitVectors(
-  //     desiredRotation,
-  //     (new THREE.Vector3()).copy(vert).normalize()
-  //   )
-  //
-  //   quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
-  //
-  //   // Update goblinBox position to current vertex
-  //   goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
-  //   goblinBox.rotation.set(quat.x, quat.y, quat.z, quat.w)
-  //   goblinBox.updateDerived()
-  //
-  //   // Look for collisions in nearby area using octree search
-  //   const searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), boundingRadius*2)
-  //   let noCollisions = true
-  //   for (let j=0; j < searchResults.length; j++) {
-  //     const collidee = addedBlocks[searchResults[j].object.id]
-  //     const contact = Goblin.GjkEpa.testCollision(goblinBox, collidee)
-  //
-  //     if (contact !== undefined) {
-  //       // console.log('collision with vertex %d', i)
-  //       noCollisions = false
-  //       break
-  //     }
-  //   }
-  //
-  //   if (noCollisions || addedBlocks.length === 0) {
-  //     // console.log('no collision with vertex %d', i)
-  //     addNewBox(goblinBox)
-  //   }
-  // }
 
   return proteins
 }

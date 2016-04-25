@@ -359,16 +359,16 @@ async function init() {
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
-  const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
+  // const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
   console.timeEnd('goblinFill')
   // scene.add(innerMembrane)
-  scene.add(vesicle)
-  scene.add(innerMembraneProteins)
+  // scene.add(vesicle)
+  // scene.add(innerMembraneProteins)
 
   // await makeUnifiedMito()
-  // await makePiecesMito()
+  await makePiecesMito()
 
-  // useWalls(walls)
+  useWalls(walls)
 }
 
 init()
