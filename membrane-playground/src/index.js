@@ -93,7 +93,7 @@ const OBJLoader = new THREE.OBJLoader()
 // === CONTROLS ===
 const controls = new THREE.OrbitControls(camera, renderer.domElement)
 // const controls = new THREE.FlyControls(camera)
-// controls.movementSpeed = 5 //0.5
+// controls.movementSpeed = 50 //5 //0.5
 // controls.domElement = renderer.domElement
 // controls.rollSpeed = (Math.PI / 6)*10
 // controls.autoForward = false
@@ -158,8 +158,10 @@ const initVesicle = ({radius=50, thickness=4, name}) => {
   const outerLayer = new THREE.Mesh(
     new THREE.SphereGeometry(radius + thickness/2, 32, 32, 0, TWOPI, 0, TWOPI),
     new THREE.MeshLambertMaterial({
-      color: 0x2f81db,
-      transparent: true,
+      // color: 0x2f81db,
+      color: 0xf7df26,
+      wireframe: true,
+      transparent: false,
       opacity: 0.6
     })
   )
@@ -282,50 +284,51 @@ const useWalls = (walls) => {
   sphereHelp.position.set(pos.x, pos.y, pos.z)
   scene.add(sphereHelp)
 
-  const threshold = 0.01
-  const goodVerts = []
-  for (let i=0; i < wall.geometry.faces.length; i++) {
-    const face = wall.geometry.faces[i]
-
-    if (face.normal.x > 1 - threshold && face.normal.x < 1 +  threshold) {
-      // console.log(face)
-      const aSphere = sphereHelp.clone()
-      const aVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.a])
-      aVert.x = aVert.x * wall.scale.x
-      aVert.y = aVert.y * wall.scale.y
-      aVert.z = aVert.z * wall.scale.x
-      aSphere.material = randMaterial()
-      aSphere.position.set(aVert.x, aVert.y, aVert.z)
-      scene.add(aSphere)
-
-      const bSphere = sphereHelp.clone()
-      const bVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.b])
-      bVert.x = bVert.x * wall.scale.x
-      bVert.y = bVert.y * wall.scale.y
-      bVert.z = bVert.z * wall.scale.x
-      bSphere.material = randMaterial()
-      bSphere.position.set(bVert.x, bVert.y, bVert.z)
-      scene.add(bSphere)
-
-      const cSphere = sphereHelp.clone()
-      const cVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.c])
-      cVert.x = cVert.x * wall.scale.x
-      cVert.y = cVert.y * wall.scale.y
-      cVert.z = cVert.z * wall.scale.x
-      cSphere.material = randMaterial()
-      cSphere.position.set(cVert.x, cVert.y, cVert.z)
-      scene.add(cSphere)
-
-      goodVerts.push(face.a)
-      goodVerts.push(face.b)
-      goodVerts.push(face.c)
-    }
-  }
+  // const threshold = 0.01
+  // const goodVerts = []
+  // for (let i=0; i < wall.geometry.faces.length; i++) {
+  //   const face = wall.geometry.faces[i]
+  //
+  //   if (face.normal.x > 1 - threshold && face.normal.x < 1 +  threshold) {
+  //     // console.log(face)
+  //     const aSphere = sphereHelp.clone()
+  //     const aVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.a])
+  //     aVert.x = aVert.x * wall.scale.x
+  //     aVert.y = aVert.y * wall.scale.y
+  //     aVert.z = aVert.z * wall.scale.x
+  //     aSphere.material = randMaterial()
+  //     aSphere.position.set(aVert.x, aVert.y, aVert.z)
+  //     scene.add(aSphere)
+  //
+  //     const bSphere = sphereHelp.clone()
+  //     const bVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.b])
+  //     bVert.x = bVert.x * wall.scale.x
+  //     bVert.y = bVert.y * wall.scale.y
+  //     bVert.z = bVert.z * wall.scale.x
+  //     bSphere.material = randMaterial()
+  //     bSphere.position.set(bVert.x, bVert.y, bVert.z)
+  //     scene.add(bSphere)
+  //
+  //     const cSphere = sphereHelp.clone()
+  //     const cVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.c])
+  //     cVert.x = cVert.x * wall.scale.x
+  //     cVert.y = cVert.y * wall.scale.y
+  //     cVert.z = cVert.z * wall.scale.x
+  //     cSphere.material = randMaterial()
+  //     cSphere.position.set(cVert.x, cVert.y, cVert.z)
+  //     scene.add(cSphere)
+  //
+  //     goodVerts.push(face.a)
+  //     goodVerts.push(face.b)
+  //     goodVerts.push(face.c)
+  //   }
+  // }
 
 
   wall.userData.thickness = 4
   // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
-  const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0))
+  // playing with desiredRotation to no avail
+  const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(1, 0, 1))
   scene.add(etcs)
 }
 
@@ -356,16 +359,16 @@ async function init() {
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
-  // const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
+  const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
   console.timeEnd('goblinFill')
   // scene.add(innerMembrane)
-  // scene.add(vesicle)
-  // scene.add(innerMembraneProteins)
+  scene.add(vesicle)
+  scene.add(innerMembraneProteins)
 
   // await makeUnifiedMito()
-  await makePiecesMito()
+  // await makePiecesMito()
 
-  useWalls(walls)
+  // useWalls(walls)
 }
 
 init()

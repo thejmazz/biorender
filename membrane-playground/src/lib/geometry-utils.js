@@ -158,7 +158,7 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
         }
       }
 
-      if (noCollisions || addedBlocks.length === 0) {
+      if (noCollisions) {
         // TODO this is where the "top" collision comes from.
         // console.log('no collision with vertex %d', i)
         addNewBox(goblinBox)
