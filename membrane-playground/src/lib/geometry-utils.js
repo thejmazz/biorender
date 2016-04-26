@@ -38,7 +38,7 @@ const applyScaleToBBox = (bbox, scale) => {
   return bbox
 }
 
-export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Vector3(0, 1, 0), goodVerts=[]) => {
+export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, randomSpin=true) => {
   console.log(`populating ${mesh.name}`)
   const { thickness } = mesh.userData
 
@@ -60,17 +60,18 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
   } else if (type === 'outer') {
     offset = -(thickness/2)
   }
-  console.log(`offset is ${offset}`)
+  // console.log(`offset is ${offset}`)
 
   const octree = new THREE.Octree()
   let verts = mesh.geometry.vertices
-  console.log(`we have ${verts.length} verts`)
-  if (goodVerts.length > 0) {
-    console.log('using goodVerts')
-    verts = goodVerts
-  }
+  // console.log(`we have ${verts.length} verts`)
+  // if (goodVerts.length > 0) {
+  //   console.log('using goodVerts')
+  //   verts = goodVerts
+  // }
   const faces = mesh.geometry.faces
   const bbox = applyScaleToBBox(getBBoxDimensions(block.geometry), block.scale)
+  console.log(bbox)
   const boundingRadius = getBoundingRadius(block.geometry)
   // uses half dimensions
   const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
@@ -102,6 +103,16 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
 
     proteins.add(newProtein)
     // console.log(`adding a protein for ${mesh.name} at (${vert.x}, ${vert.y}, ${vert.z})`)
+
+    // TODO integrate into a debug mode
+    const wBox = new THREE.Mesh(
+      new THREE.BoxGeometry(half_width*2, half_height*2, half_depth*2),
+      new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true})
+    )
+    wBox.position.set(vert.x, vert.y, vert.z)
+    // wBox.geometry.translate(-newProtein.geometry.boundingBox.min.x, -newProtein.geometry.boundingBox.min.y, 0)
+    wBox.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
+    scene.add(wBox)
   }
 
   const fixVert = (vert) => {
@@ -120,20 +131,31 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
     return newVert
   }
 
+  const sphereHelp = new THREE.Mesh(new THREE.SphereGeometry(2, 32, 32), randMaterial())
   // TODO option for verts or faces?
   // TODO filtering options, by normal
   // TODO extra verts, etc
   for (let j=0; j < faces.length; j++) {
     const face = faces[j]
-    const faceVerts = [verts[face.a], verts[face.b], verts[face.c]]
+    const faceVerts = []
+    // const faceVerts = [verts[face.a], verts[face.b], verts[face.c]]
+    const a = verts[face.a]
+    const b = verts[face.b]
+    const c = verts[face.c]
+
+    if (checkVerts(a)) {
+      faceVerts.push(a)
+    }
+    if (checkVerts(b)) {
+      faceVerts.push(b)
+    }
+    if (checkVerts(c)) {
+      faceVerts.push(c)
+    }
 
     for (let i=0; i < faceVerts.length; i++) {
       const vert = fixVert(faceVerts[i])
 
-      // const direction = (new THREE.Vector3())
-      //   .copy(vert)
-      //   .sub(mesh.position)
-      //   .normalize()
       const direction = face.normal.clone()
 
       vert.x = vert.x + offset*direction.x
@@ -161,15 +183,26 @@ export const populateMembrane = (mesh, block, type, desiredRotation=new THREE.Ve
       // )
 
       // Add some random spin
-      quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
+      if (randomSpin) {
+        quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
+      }
 
       // Update goblinBox position to current vertex
+      // goblinBox.position = new Goblin.Vector3(
+      //   vert.x - block.geometry.boundingBox.min.x,
+      //   vert.y - block.geometry.boundingBox.min.y,
+      //   vert.z - block.geometry.boundingBox.min.z
+      // )
       goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
       goblinBox.rotation.set(quat.x, quat.y, quat.z, quat.w)
       goblinBox.updateDerived()
 
+      // const sphereH = sphereHelp.clone()
+      // sphereH.position.set(vert.x, vert.y, vert.z)
+      // scene.add(sphereH)
+
       // Look for collisions in nearby area using octree search
-      const searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), boundingRadius*2)
+      const searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), boundingRadius*1.5)
       let noCollisions = true
       for (let j=0; j < searchResults.length; j++) {
         const collidee = addedBlocks[searchResults[j].object.id]

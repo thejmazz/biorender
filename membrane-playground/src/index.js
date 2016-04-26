@@ -47,6 +47,7 @@ import {
   crudeDimerCreator,
   dimerCreator,
   constructSynthase,
+  constructSynthaseSimple,
   constructDimer
 } from './scene/meshes/atp-synthase.js'
 
@@ -179,10 +180,11 @@ const initVesicle = ({radius=50, thickness=4, name}) => {
 let pinchesBoxes = []
 let wallsBoxes = []
 let walls = []
+let pinches = []
 async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
-  let pinches = []
+  // let pinches = []
   let desiredWidth = 3000
   let scale
 
@@ -195,6 +197,7 @@ async function makePiecesMito() {
 
     if (name.indexOf('Pinch') !== -1) {
       // console.log('pinch: ', name)
+      mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
       pinches.push(mesh)
     } else if (name.indexOf('Wall') !== -1) {
       // console.log('wall: ', name)
@@ -284,55 +287,60 @@ const useWalls = (walls) => {
   sphereHelp.position.set(pos.x, pos.y, pos.z)
   scene.add(sphereHelp)
 
-  // const threshold = 0.01
-  // const goodVerts = []
-  // for (let i=0; i < wall.geometry.faces.length; i++) {
-  //   const face = wall.geometry.faces[i]
-  //
-  //   if (face.normal.x > 1 - threshold && face.normal.x < 1 +  threshold) {
-  //     // console.log(face)
-  //     const aSphere = sphereHelp.clone()
-  //     const aVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.a])
-  //     aVert.x = aVert.x * wall.scale.x
-  //     aVert.y = aVert.y * wall.scale.y
-  //     aVert.z = aVert.z * wall.scale.x
-  //     aSphere.material = randMaterial()
-  //     aSphere.position.set(aVert.x, aVert.y, aVert.z)
-  //     scene.add(aSphere)
-  //
-  //     const bSphere = sphereHelp.clone()
-  //     const bVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.b])
-  //     bVert.x = bVert.x * wall.scale.x
-  //     bVert.y = bVert.y * wall.scale.y
-  //     bVert.z = bVert.z * wall.scale.x
-  //     bSphere.material = randMaterial()
-  //     bSphere.position.set(bVert.x, bVert.y, bVert.z)
-  //     scene.add(bSphere)
-  //
-  //     const cSphere = sphereHelp.clone()
-  //     const cVert = (new THREE.Vector3()).copy(wall.geometry.vertices[face.c])
-  //     cVert.x = cVert.x * wall.scale.x
-  //     cVert.y = cVert.y * wall.scale.y
-  //     cVert.z = cVert.z * wall.scale.x
-  //     cSphere.material = randMaterial()
-  //     cSphere.position.set(cVert.x, cVert.y, cVert.z)
-  //     scene.add(cSphere)
-  //
-  //     goodVerts.push(face.a)
-  //     goodVerts.push(face.b)
-  //     goodVerts.push(face.c)
-  //   }
-  // }
-
 
   wall.userData.thickness = 4
   // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
   // playing with desiredRotation to no avail
-  const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(1, 0, 1))
+  const etcs = populateMembrane(wall, etc2, 'outer')
   scene.add(etcs)
 }
 
-let vesicle, ETC
+let ATPSynthase
+const usePinch = (pinches) => {
+  const sphereHelp = new THREE.Mesh(
+    new THREE.SphereGeometry(10, 32, 32),
+    randMaterial()
+  )
+  const pinch = pinches[17]
+  console.log(pinch)
+  // console.log(wall)
+  const pos = pinch.geometry.vertices[0].clone()
+  pos.x = pos.x * pinch.scale.x
+  pos.y = pos.y * pinch.scale.y
+  pos.z = pos.z * pinch.scale.x
+
+  sphereHelp.position.set(pos.x, pos.y, pos.z)
+  // scene.add(sphereHelp)
+
+  pinch.userData.thickness = 4 - ATPSynthase.userData.yOffset
+  let minZ, maxZ
+  pinch.geometry.vertices.forEach( (vert, i) => {
+    if (i === 1) {
+      minZ = maxZ = vert.z
+    }
+    if (vert.z < minZ) {
+      minZ = vert.z
+    }
+    if (vert.z > maxZ) {
+      maxZ = vert.z
+    }
+  })
+  console.log(minZ, maxZ)
+
+  const testBox = new THREE.Mesh(new THREE.BoxGeometry(12, 23, 13), randMaterial())
+
+  const ATPSynthases = populateMembrane(pinch, ATPSynthase, 'inner', (vert, i) => {
+
+    // console.log(vert.z)
+    return vert.z > -0.17
+  }, false)
+
+  scene.add(ATPSynthases)
+}
+
+
+let vesicle, ETC, atpPivot, bboxH
+let atpReady = false
 async function init() {
   initGlobalLights()
   initMembrane()
@@ -351,11 +359,34 @@ async function init() {
 
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
 
-  const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
+  // const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // scene.add(porin)
-  etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
-  etc2.position.set(0, 2, 0)
+  // etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
+  // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
+
+  ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase-singular.obj'))
+  ATPSynthase.geometry.computeBoundingBox()
+  ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
+  ATPSynthase.geometry.center()
+  // const bbox = getBBoxDimensions(ATPSynthase.geometry)
+  // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
+
+  // const box = new THREE.Box3().setFromObject(ATPSynthase)
+  // console.log(ATPSynthase.position)
+  // box.center(mesh.position) // this re-sets the mesh position
+  // console.log(ATPSynthase.position)
+  // ATPSynthase.position.multiplyScalar(-1)
+  // atpPivot = new THREE.Group()
+  // scene.add(atpPivot)
+  // atpPivot.add(ATPSynthase)
+
+
+  atpReady = true
+  scene.add(ATPSynthase)
+  bboxH = new THREE.BoundingBoxHelper(ATPSynthase, 0x000000)
+  bboxH.update()
+  scene.add(bboxH)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
@@ -368,7 +399,8 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  useWalls(walls)
+  // useWalls(walls)
+  usePinch(pinches)
 }
 
 init()
@@ -386,7 +418,11 @@ const stats = createStats()
 const render = () => {
   stats.begin()
 
-  // const delta = clock.getDelta()
+  const delta = clock.getDelta()
+  if (atpReady) {
+    ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta*0.8
+    // bboxH.update()
+  }
   // innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4
   // innerMembrane.rotation.z = innerMembrane.rotation.z + delta*0.4
   // innerMembrane.rotation.x = innerMembrane.rotation.x + delta*0.4
