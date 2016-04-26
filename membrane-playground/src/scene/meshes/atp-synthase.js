@@ -1,4 +1,5 @@
 import { getBBoxDimensions } from '../../lib/geometry-utils.js'
+import { randMaterial } from '../../lib/material-utils.js'
 
 export const crudeSynthaseCreator = () => {
   const synthase = new THREE.Group()
@@ -42,10 +43,11 @@ export const crudeDimerCreator = (angle=Math.PI/8, spread=0.04, synthase) => {
 }
 
 export const dimerCreator = ({spread=-0.2, rotationY=0, rotationX=Math.PI/4, synthase}) => {
-  const dimer = new THREE.Group()
+  // const dimer = new THREE.Group()
 
-  const synthaseA = synthase
+  const synthaseA = synthase.clone()
   synthaseA.rotation.x = rotationX
+
   const synthaseB = synthase.clone()
 
   const bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000)
@@ -55,8 +57,27 @@ export const dimerCreator = ({spread=-0.2, rotationY=0, rotationX=Math.PI/4, syn
   synthaseB.rotation.x = -rotationX
   synthaseB.position.set(0,0, -(bBox.scale.z + spread*bBox.scale.z))
 
-  dimer.add(synthaseA)
-  dimer.add(synthaseB)
+  // dimer.add(synthaseA)
+  // dimer.add(synthaseB)
+
+  // console.log(dimer)
+
+  // console.log(synthaseA)
+  synthaseA.geometry = new THREE.Geometry().fromBufferGeometry(synthaseA.geometry)
+  synthaseA.geometry.rotateX(rotationX)
+  // synthaseA.geometry.applyMatrix(synthaseA.matrix)
+  synthaseB.geometry = new THREE.Geometry().fromBufferGeometry(synthaseB.geometry)
+  synthaseB.geometry.rotateX(rotationX)
+  synthaseB.geometry.rotateY(Math.PI)
+  synthaseB.geometry.translate(0,0, -(bBox.scale.z + spread*bBox.scale.z))
+  // synthaseB.geometry.applyMatrix(synthaseB.matrix)
+
+  const geom = synthaseA.geometry
+  geom.merge(synthaseB.geometry)
+  geom.center()
+
+  const dimer = new THREE.Mesh(geom, randMaterial())
+  console.log(dimer)
 
   return dimer
 }

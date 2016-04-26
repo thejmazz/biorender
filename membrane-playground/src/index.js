@@ -419,7 +419,11 @@ async function init() {
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
   const dimer = dimerCreator({synthase: ATPSynthase})
   scene.add(dimer)
-
+  const dimer2 = dimerCreator({synthase: ATPSynthase})
+  console.log(dimer2)
+  // dimer2.rotation.z = Math.PI/2
+  dimer2.rotation.y = Math.PI/2
+  scene.add(dimer2)
 
   // const box = new THREE.Box3().setFromObject(ATPSynthase)
   // console.log(ATPSynthase.position)
