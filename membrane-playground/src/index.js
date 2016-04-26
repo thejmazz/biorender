@@ -302,9 +302,40 @@ const useWalls = (walls) => {
 let ATPSynthase
 const usePinch = (pinches) => {
   // 17
-  const pinch = pinches[16]
+  // const pinch = pinches[16]
 
-  const doPinch = (pinch) => {
+  const getSidedness = (pinch) => {
+    const bbox = getBBoxDimensions(pinch.geometry)
+    const zThreshold = pinch.geometry.boundingBox.min.z + bbox.depth*0.9
+    const faces = pinch.geometry.faces
+    const verts = pinch.geometry.vertices
+
+    let maxZNorm = faces[0].normal.z
+    for (let i=1; i < faces.length; i++) {
+      const face = faces[i]
+
+      if (verts[face.a].z > zThreshold && verts[face.b].z > zThreshold && verts[face.c].z > zThreshold) {
+        if (face.normal.z > maxZNorm) {
+          maxZNorm = face.normal.z
+        }
+      }
+    }
+
+    let side
+    if (maxZNorm < 0) {
+      side = 'away'
+    } else if (maxZNorm > 0) {
+      side = 'towards'
+    }
+
+    return side
+  }
+
+  // console.log(getSidedness(pinches[16]))
+  // console.log(getSidedness(pinches[17]))
+
+
+  const doPinch = ({pinch, side}) => {
     const bbox = getBBoxDimensions(pinch.geometry)
     const yThreshold = pinch.geometry.boundingBox.max.y - bbox.height/2
 
@@ -353,13 +384,25 @@ const usePinch = (pinches) => {
     // for 17,
     // let z = max.z
     // for 16,
-    let z = min.z
+    // let z = min.z
+    let z
+    if (side === 'towards') {
+      z = max.z
+    } else if (side === 'away') {
+      z = min.z
+    }
 
     const dimer = dimerCreator({synthase: ATPSynthase})
     // for 17,
     // dimer.rotation.z = Math.PI/2
     // for 16,
-    dimer.rotation.z = -Math.PI/2
+    // dimer.rotation.z = -Math.PI/2
+    if (side === 'towards') {
+      dimer.rotation.z = Math.PI/2
+    } else if (side === 'away') {
+      dimer.rotation.z = -Math.PI/2
+    }
+
     dimer.rotation.y = Math.PI/2
     const dimerBbox = new THREE.BoundingBoxHelper(dimer, 0x000000)
     dimerBbox.update()
@@ -386,7 +429,15 @@ const usePinch = (pinches) => {
     }
   }
 
-  doPinch(pinch)
+  for (let i=0; i < pinches.length; i++) {
+    const pinch = pinches[i]
+    const side = getSidedness(pinch)
+
+    doPinch({pinch, side})
+  }
+
+  // doPinch({pinch: pinches[16], side:'away'})
+  // doPinch({pinch: pinches[17], side:'towards'})
 }
 
 
