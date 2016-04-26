@@ -273,7 +273,7 @@ const useWalls = (walls) => {
   //   new THREE.SphereGeometry(0.5, 32, 32),
   //   randMaterial()
   // )
-  // const wall = walls[17]
+  const wall = walls[17]
   // // console.log(wall)
   // const pos = wall.geometry.vertices[0]
   // pos.x = pos.x * wall.scale.x
@@ -284,19 +284,19 @@ const useWalls = (walls) => {
   // scene.add(sphereHelp)
   //
   //
-  // wall.userData.thickness = 4
-  // // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
-  // // playing with desiredRotation to no avail
-  // const etcs = populateMembrane(wall, etc2, 'outer')
-  // scene.add(etcs)
+  wall.userData.thickness = 4
+  // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
+  // playing with desiredRotation to no avail
+  const etcs = populateMembrane(wall, etc2, 'outer')
+  scene.add(etcs)
 
-  for (let i=0; i < walls.length; i++) {
-    const wall = walls[i]
-
-    wall.userData.thickness = 4
-    const etcs = populateMembrane(wall, etc2, 'outer')
-    scene.add(etcs)
-  }
+  // for (let i=0; i < walls.length; i++) {
+  //   const wall = walls[i]
+  //
+  //   wall.userData.thickness = 4
+  //   const etcs = populateMembrane(wall, etc2, 'outer')
+  //   scene.add(etcs)
+  // }
 }
 
 let ATPSynthase
@@ -333,21 +333,43 @@ const usePinch = (pinches) => {
 
   const testBox = new THREE.Mesh(new THREE.BoxGeometry(12, 23, 13), randMaterial())
 
-  const ATPSynthases = populateMembrane(
-    pinch,
-    ATPSynthase,
-    'inner',
-    (vert, i) => {
-      // return vert.z > -0.17
-      // return vert.z > -0.16
-      return vert.z > -0.158 && vert.y < 0.5
-    },
-    false,
-    [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
-    0.85
-  )
+  // const ATPSynthases = populateMembrane(
+  //   pinch,
+  //   ATPSynthase,
+  //   'inner',
+  //   (vert, i) => {
+  //     // return vert.z > -0.17
+  //     // return vert.z > -0.16
+  //     return vert.z > -0.158 && vert.y < 0.5
+  //   },
+  //   false,
+  //   [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
+  //   0.85
+  // )
+  //
+  // scene.add(ATPSynthases)
 
-  scene.add(ATPSynthases)
+  for (let i=0; i < pinches.length; i++) {
+    const pinch = pinches[i]
+
+    pinch.userData.thickness = 4 - ATPSynthase.userData.yOffset
+
+    const ATPSynthases = populateMembrane(
+      pinch,
+      ATPSynthase,
+      'inner',
+      (vert, i) => {
+        // return vert.z > -0.17
+        // return vert.z > -0.16
+        return vert.z > -0.158 && vert.y < 0.5
+      },
+      false,
+      [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
+      0.85
+    )
+
+    scene.add(ATPSynthases)
+  }
 }
 
 
