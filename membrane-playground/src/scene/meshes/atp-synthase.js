@@ -41,18 +41,19 @@ export const crudeDimerCreator = (angle=Math.PI/8, spread=0.04, synthase) => {
   return dimer
 }
 
-export const dimerCreator = (spread=0, synthase) => {
+export const dimerCreator = ({spread=-0.2, rotationY=0, rotationX=Math.PI/4, synthase}) => {
   const dimer = new THREE.Group()
 
   const synthaseA = synthase
+  synthaseA.rotation.x = rotationX
   const synthaseB = synthase.clone()
 
   const bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000)
   bBox.update()
 
-
   synthaseB.rotation.y = Math.PI
-  synthaseB.position.set(0,0, bBox.scale.z + spread*bBox.scale.z)
+  synthaseB.rotation.x = -rotationX
+  synthaseB.position.set(0,0, -(bBox.scale.z + spread*bBox.scale.z))
 
   dimer.add(synthaseA)
   dimer.add(synthaseB)

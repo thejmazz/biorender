@@ -317,83 +317,70 @@ const usePinch = (pinches) => {
   // scene.add(sphereHelp)
 
   pinch.userData.thickness = 4 - ATPSynthase.userData.yOffset
-  let minZ, maxZ
-  pinch.geometry.vertices.forEach( (vert, i) => {
-    vert = vert.clone().applyMatrix4(pinch.matrix)
 
-    if (i === 1) {
-      minZ = maxZ = vert.z
-    }
-    if (vert.z < minZ) {
-      minZ = vert.z
-    }
-    if (vert.z > maxZ) {
-      maxZ = vert.z
-    }
-  })
-  // console.log(minZ, maxZ)
-  const diff = Math.abs(minZ) + Math.abs(maxZ)
-  // console.log(minZ + diff*0.155)
+  pinch.geometry.computeBoundingBox()
+  console.log(pinch.geometry.boundingBox)
 
-  const testBox = new THREE.Mesh(new THREE.BoxGeometry(12, 23, 13), randMaterial())
+  console.log(pinch.geometry)
 
-  const ATPSynthases = populateMembrane(
-    pinch,
-    ATPSynthase,
-    'inner',
-    (vert, i) => {
-      // console.log(vert)
-      // return vert.z > -0.17
-      // return vert.z > -0.16
-      // return vert.z > -0.158 && vert.y < 0.5
-      return vert.z > (minZ + diff*0.155)
-      // return vert.z > 0
-    },
-    false,
-    [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
-    0.85
-  )
 
-  scene.add(ATPSynthases)
+  // const ATPSynthases = populateMembrane(
+  //   pinch,
+  //   ATPSynthase,
+  //   'inner',
+  //   (vert, i) => {
+  //     // console.log(vert)
+  //     // return vert.z > -0.17
+  //     // return vert.z > -0.16
+  //     // return vert.z > -0.158 && vert.y < 0.5
+  //     return vert.z > (minZ + diff*0.155)
+  //     // return vert.z > 0
+  //   },
+  //   false,
+  //   [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
+  //   0.85
+  // )
+  //
+  // scene.add(ATPSynthases)
 
-  for (let i=0; i < pinches.length; i++) {
-    const pinch = pinches[i]
-
-    pinch.userData.thickness = 4 - ATPSynthase.userData.yOffset
-    let minZ, maxZ
-    pinch.geometry.vertices.forEach( (vert, i) => {
-      vert = vert.clone().applyMatrix4(pinch.matrix)
-
-      if (i === 1) {
-        minZ = maxZ = vert.z
-      }
-      if (vert.z < minZ) {
-        minZ = vert.z
-      }
-      if (vert.z > maxZ) {
-        maxZ = vert.z
-      }
-    })
-    // console.log(minZ, maxZ)
-    const diff = Math.abs(minZ) + Math.abs(maxZ)
-    // console.log(minZ + diff*0.155)
-
-    const ATPSynthases = populateMembrane(
-      pinch,
-      ATPSynthase,
-      'inner',
-      (vert, i) => {
-        // return vert.z > -0.17
-        // return vert.z > -0.16
-        return vert.z > (minZ + diff*0.155)
-      },
-      false,
-      [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
-      0.85
-    )
-
-    scene.add(ATPSynthases)
-  }
+  // for (let i=0; i < pinches.length; i++) {
+  //   const pinch = pinches[i]
+  //
+  //   pinch.userData.thickness = 4 - ATPSynthase.userData.yOffset
+  //   let minZ, maxZ
+  //   pinch.geometry.vertices.forEach( (vert, i) => {
+  //     vert = vert.clone().applyMatrix4(pinch.matrix)
+  //
+  //     if (i === 1) {
+  //       minZ = maxZ = vert.z
+  //     }
+  //     if (vert.z < minZ) {
+  //       minZ = vert.z
+  //     }
+  //     if (vert.z > maxZ) {
+  //       maxZ = vert.z
+  //     }
+  //   })
+  //   // console.log(minZ, maxZ)
+  //   const diff = Math.abs(minZ) + Math.abs(maxZ)
+  //   // console.log(minZ + diff*0.155)
+  //
+  //   const ATPSynthases = populateMembrane(
+  //     pinch,
+  //     ATPSynthase,
+  //     'inner',
+  //     (vert, i) => {
+  //       // return vert.z > -0.17
+  //       // return vert.z > -0.16
+  //       return vert.z > (minZ + diff*0.155)
+  //     },
+  //     false,
+  //     [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
+  //     0.85
+  //   )
+  //
+  //   scene.add(ATPSynthases)
+  // }
 }
 
 
@@ -430,6 +417,9 @@ async function init() {
   ATPSynthase.geometry.center()
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
+  const dimer = dimerCreator({synthase: ATPSynthase})
+  scene.add(dimer)
+
 
   // const box = new THREE.Box3().setFromObject(ATPSynthase)
   // console.log(ATPSynthase.position)
