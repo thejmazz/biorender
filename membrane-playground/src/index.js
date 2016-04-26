@@ -301,81 +301,92 @@ const useWalls = (walls) => {
 
 let ATPSynthase
 const usePinch = (pinches) => {
-  const pinch = pinches[17]
+  // 17
+  const pinch = pinches[16]
 
-  const bbox = getBBoxDimensions(pinch.geometry)
-  const yThreshold = pinch.geometry.boundingBox.max.y - bbox.height/2
+  const doPinch = (pinch) => {
+    const bbox = getBBoxDimensions(pinch.geometry)
+    const yThreshold = pinch.geometry.boundingBox.max.y - bbox.height/2
 
-  let min = null
-  let max = null
-  // assumes up. assumes left-right.
-  const verts = pinch.geometry.vertices
-  for (let i=0; i < verts.length; i++) {
-    const vert = verts[i]
+    let min = null
+    let max = null
+    // assumes up. assumes left-right.
+    const verts = pinch.geometry.vertices
+    for (let i=0; i < verts.length; i++) {
+      const vert = verts[i]
 
-    if (vert.y > yThreshold) {
-      if (min === null) {
-        min = new THREE.Vector3().copy(vert)
+      if (vert.y > yThreshold) {
+        if (min === null) {
+          min = new THREE.Vector3().copy(vert)
+        }
+        if (max === null) {
+          max = new THREE.Vector3().copy(vert)
+        }
+
+        if (vert.x < min.x) {
+          min.x = vert.x
+        } else if (vert.x > max.x) {
+          max.x = vert.x
+        }
+
+        if (vert.y < min.y) {
+          min.y = vert.y
+        } else if (vert.y > max.y) {
+          max.y = vert.y
+        }
+
+        if (vert.z < min.z) {
+          min.z = vert.z
+        } else if (vert.z > max.z) {
+          max.z = vert.z
+        }
       }
-      if (max === null) {
-        max = new THREE.Vector3().copy(vert)
-      }
+    }
 
-      if (vert.x < min.x) {
-        min.x = vert.x
-      } else if (vert.x > max.x) {
-        max.x = vert.x
-      }
+    // TODO util func for this
+    // assumes equal x,y,z scaling
+    max.multiplyScalar(pinch.scale.x)
+    min.multiplyScalar(pinch.scale.x)
 
-      if (vert.y < min.y) {
-        min.y = vert.y
-      } else if (vert.y > max.y) {
-        max.y = vert.y
-      }
+    let x = min.x + (max.x - min.x)/2
+    let y = max.y
+    // for 17,
+    // let z = max.z
+    // for 16,
+    let z = min.z
 
-      if (vert.z < min.z) {
-        min.z = vert.z
-      } else if (vert.z > max.z) {
-        max.z = vert.z
-      }
+    const dimer = dimerCreator({synthase: ATPSynthase})
+    // for 17,
+    // dimer.rotation.z = Math.PI/2
+    // for 16,
+    dimer.rotation.z = -Math.PI/2
+    dimer.rotation.y = Math.PI/2
+    const dimerBbox = new THREE.BoundingBoxHelper(dimer, 0x000000)
+    dimerBbox.update()
+
+    let currentY = y
+
+    const makeGlobalMinY = (dist, mesh) => {
+      mesh.geometry.computeBoundingBox()
+      const { min, max } = mesh.geometry.boundingBox
+
+      const minY = (min.y + dist*(max.y - min.y))*mesh.scale.y
+
+      return minY
+    }
+
+    let globalMinY = makeGlobalMinY(0.1, pinch)
+    while (currentY > globalMinY) {
+      const newDimer = dimer.clone()
+      newDimer.position.set(x, currentY, z)
+      newDimer.material = randMaterial()
+      scene.add(newDimer)
+
+      currentY -= dimerBbox.scale.y*1.5
     }
   }
 
-  // TODO util func for this
-  // assumes equal x,y,z scaling
-  max.multiplyScalar(pinch.scale.x)
-  min.multiplyScalar(pinch.scale.x)
-
-  let x = min.x + (max.x - min.x)/2
-  let y = max.y
-  let z = max.z
-
-  const dimer = dimerCreator({synthase: ATPSynthase})
-  dimer.rotation.z = Math.PI/2
-  dimer.rotation.y = Math.PI/2
-  const dimerBbox = new THREE.BoundingBoxHelper(dimer, 0x000000)
-  dimerBbox.update()
-
-  let currentY = y
-
-  const makeGlobalMinY = (dist, mesh) => {
-    mesh.geometry.computeBoundingBox()
-    const { min, max } = mesh.geometry.boundingBox
-
-    const minY = (min.y + dist*(max.y - min.y))*mesh.scale.y
-
-    return minY
-  }
-
-  let globalMinY = makeGlobalMinY(0.05, pinch)
-  while (currentY > globalMinY) {
-    const newDimer = dimer.clone()
-    newDimer.position.set(x, currentY, z)
-    newDimer.material = randMaterial()
-    scene.add(newDimer)
-
-    currentY -= dimerBbox.scale.y*1.5
-  }
+  doPinch(pinch)
 }
 
 
