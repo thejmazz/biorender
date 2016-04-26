@@ -92,13 +92,13 @@ const getChildIndexByName = (name, group) => {
 const OBJLoader = new THREE.OBJLoader()
 
 // === CONTROLS ===
-// const controls = new THREE.OrbitControls(camera, renderer.domElement)
-const controls = new THREE.FlyControls(camera)
-controls.movementSpeed = 500 //50 //5 //0.5
-controls.domElement = renderer.domElement
-controls.rollSpeed = (Math.PI / 6)*10
-controls.autoForward = false
-controls.dragToLook = false
+const controls = new THREE.OrbitControls(camera, renderer.domElement)
+// const controls = new THREE.FlyControls(camera)
+// controls.movementSpeed = 500 //50 //5 //0.5
+// controls.domElement = renderer.domElement
+// controls.rollSpeed = (Math.PI / 6)*10
+// controls.autoForward = false
+// controls.dragToLook = false
 
 // === INIT METHODS ===
 
@@ -319,6 +319,8 @@ const usePinch = (pinches) => {
   pinch.userData.thickness = 4 - ATPSynthase.userData.yOffset
   let minZ, maxZ
   pinch.geometry.vertices.forEach( (vert, i) => {
+    vert = vert.clone().applyMatrix4(pinch.matrix)
+
     if (i === 1) {
       minZ = maxZ = vert.z
     }
@@ -329,30 +331,52 @@ const usePinch = (pinches) => {
       maxZ = vert.z
     }
   })
-  console.log(minZ, maxZ)
+  // console.log(minZ, maxZ)
+  const diff = Math.abs(minZ) + Math.abs(maxZ)
+  // console.log(minZ + diff*0.155)
 
   const testBox = new THREE.Mesh(new THREE.BoxGeometry(12, 23, 13), randMaterial())
 
-  // const ATPSynthases = populateMembrane(
-  //   pinch,
-  //   ATPSynthase,
-  //   'inner',
-  //   (vert, i) => {
-  //     // return vert.z > -0.17
-  //     // return vert.z > -0.16
-  //     return vert.z > -0.158 && vert.y < 0.5
-  //   },
-  //   false,
-  //   [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
-  //   0.85
-  // )
-  //
-  // scene.add(ATPSynthases)
+  const ATPSynthases = populateMembrane(
+    pinch,
+    ATPSynthase,
+    'inner',
+    (vert, i) => {
+      // console.log(vert)
+      // return vert.z > -0.17
+      // return vert.z > -0.16
+      // return vert.z > -0.158 && vert.y < 0.5
+      return vert.z > (minZ + diff*0.155)
+      // return vert.z > 0
+    },
+    false,
+    [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
+    0.85
+  )
+
+  scene.add(ATPSynthases)
 
   for (let i=0; i < pinches.length; i++) {
     const pinch = pinches[i]
 
     pinch.userData.thickness = 4 - ATPSynthase.userData.yOffset
+    let minZ, maxZ
+    pinch.geometry.vertices.forEach( (vert, i) => {
+      vert = vert.clone().applyMatrix4(pinch.matrix)
+
+      if (i === 1) {
+        minZ = maxZ = vert.z
+      }
+      if (vert.z < minZ) {
+        minZ = vert.z
+      }
+      if (vert.z > maxZ) {
+        maxZ = vert.z
+      }
+    })
+    // console.log(minZ, maxZ)
+    const diff = Math.abs(minZ) + Math.abs(maxZ)
+    // console.log(minZ + diff*0.155)
 
     const ATPSynthases = populateMembrane(
       pinch,
@@ -361,7 +385,7 @@ const usePinch = (pinches) => {
       (vert, i) => {
         // return vert.z > -0.17
         // return vert.z > -0.16
-        return vert.z > -0.158 && vert.y < 0.5
+        return vert.z > (minZ + diff*0.155)
       },
       false,
       [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
@@ -488,7 +512,7 @@ const render = () => {
   //   lod.update(camera)
   // }
 
-  controls.update(delta*0.1)
+  // controls.update(delta*0.1)
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
 

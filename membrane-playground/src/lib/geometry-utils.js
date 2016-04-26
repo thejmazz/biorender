@@ -144,13 +144,13 @@ export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, 
     const b = verts[face.b]
     const c = verts[face.c]
 
-    if (checkVerts(a)) {
+    if (checkVerts(a.clone().applyMatrix4(mesh.matrixWorld))) {
       faceVerts.push(a)
     }
-    if (checkVerts(b)) {
+    if (checkVerts(b.clone().applyMatrix4(mesh.matrixWorld))) {
       faceVerts.push(b)
     }
-    if (checkVerts(c)) {
+    if (checkVerts(c.clone().applyMatrix4(mesh.matrixWorld))) {
       faceVerts.push(c)
     }
 
@@ -188,7 +188,7 @@ export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, 
         quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
       }
       if (rot) {
-        console.log(vert.x)
+        // console.log(vert.x)
         if (vert.x > 0)
           quat.multiply(rot[0])
         else if (vert.x < 0)
