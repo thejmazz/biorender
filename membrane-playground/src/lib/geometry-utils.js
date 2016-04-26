@@ -38,7 +38,7 @@ const applyScaleToBBox = (bbox, scale) => {
   return bbox
 }
 
-export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, randomSpin=true) => {
+export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, randomSpin=true, rot=null, collisionScale=1) => {
   console.log(`populating ${mesh.name}`)
   const { thickness } = mesh.userData
 
@@ -74,7 +74,8 @@ export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, 
   console.log(bbox)
   const boundingRadius = getBoundingRadius(block.geometry)
   // uses half dimensions
-  const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
+  // const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
+  const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(collisionScale*(bbox.width/2), collisionScale*(bbox.height/2), collisionScale*(bbox.depth/2)))
 
   // Array of previously used bounding boxes
   let addedBlocks = []
@@ -105,14 +106,14 @@ export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, 
     // console.log(`adding a protein for ${mesh.name} at (${vert.x}, ${vert.y}, ${vert.z})`)
 
     // TODO integrate into a debug mode
-    const wBox = new THREE.Mesh(
-      new THREE.BoxGeometry(half_width*2, half_height*2, half_depth*2),
-      new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true})
-    )
-    wBox.position.set(vert.x, vert.y, vert.z)
-    // wBox.geometry.translate(-newProtein.geometry.boundingBox.min.x, -newProtein.geometry.boundingBox.min.y, 0)
-    wBox.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
-    scene.add(wBox)
+    // const wBox = new THREE.Mesh(
+    //   new THREE.BoxGeometry(half_width*2, half_height*2, half_depth*2),
+    //   new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true})
+    // )
+    // wBox.position.set(vert.x, vert.y, vert.z)
+    // // wBox.geometry.translate(-newProtein.geometry.boundingBox.min.x, -newProtein.geometry.boundingBox.min.y, 0)
+    // wBox.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
+    // scene.add(wBox)
   }
 
   const fixVert = (vert) => {
@@ -186,6 +187,13 @@ export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, 
       if (randomSpin) {
         quat.multiply((new THREE.Quaternion()).setFromAxisAngle(Y_AXIS, Math.random()*Math.PI))
       }
+      if (rot) {
+        console.log(vert.x)
+        if (vert.x > 0)
+          quat.multiply(rot[0])
+        else if (vert.x < 0)
+          quat.multiply(rot[1])
+      }
 
       // Update goblinBox position to current vertex
       // goblinBox.position = new Goblin.Vector3(
@@ -195,6 +203,7 @@ export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, 
       // )
       goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z)
       goblinBox.rotation.set(quat.x, quat.y, quat.z, quat.w)
+      // goblinBox.scale.set(0.8, 0.8, 0.8)
       goblinBox.updateDerived()
 
       // const sphereH = sphereHelp.clone()

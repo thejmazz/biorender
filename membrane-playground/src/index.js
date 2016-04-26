@@ -92,13 +92,13 @@ const getChildIndexByName = (name, group) => {
 const OBJLoader = new THREE.OBJLoader()
 
 // === CONTROLS ===
-const controls = new THREE.OrbitControls(camera, renderer.domElement)
-// const controls = new THREE.FlyControls(camera)
-// controls.movementSpeed = 50 //5 //0.5
-// controls.domElement = renderer.domElement
-// controls.rollSpeed = (Math.PI / 6)*10
-// controls.autoForward = false
-// controls.dragToLook = false
+// const controls = new THREE.OrbitControls(camera, renderer.domElement)
+const controls = new THREE.FlyControls(camera)
+controls.movementSpeed = 500 //50 //5 //0.5
+controls.domElement = renderer.domElement
+controls.rollSpeed = (Math.PI / 6)*10
+controls.autoForward = false
+controls.dragToLook = false
 
 // === INIT METHODS ===
 
@@ -329,11 +329,19 @@ const usePinch = (pinches) => {
 
   const testBox = new THREE.Mesh(new THREE.BoxGeometry(12, 23, 13), randMaterial())
 
-  const ATPSynthases = populateMembrane(pinch, ATPSynthase, 'inner', (vert, i) => {
-
-    // console.log(vert.z)
-    return vert.z > -0.17
-  }, false)
+  const ATPSynthases = populateMembrane(
+    pinch,
+    ATPSynthase,
+    'inner',
+    (vert, i) => {
+      // return vert.z > -0.17
+      // return vert.z > -0.16
+      return vert.z > -0.158 && vert.y < 0.5
+    },
+    false,
+    [new THREE.Quaternion().setFromAxisAngle(Y_AXIS, 0.8*Math.PI), new THREE.Quaternion().setFromAxisAngle(Y_AXIS, -0.8*Math.PI)],
+    0.85
+  )
 
   scene.add(ATPSynthases)
 }
@@ -367,6 +375,7 @@ async function init() {
 
   ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase-singular.obj'))
   ATPSynthase.geometry.computeBoundingBox()
+  // SKETCHY AF
   ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
   ATPSynthase.geometry.center()
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
@@ -382,11 +391,11 @@ async function init() {
   // atpPivot.add(ATPSynthase)
 
 
-  atpReady = true
-  scene.add(ATPSynthase)
-  bboxH = new THREE.BoundingBoxHelper(ATPSynthase, 0x000000)
-  bboxH.update()
-  scene.add(bboxH)
+  // atpReady = true
+  // scene.add(ATPSynthase)
+  // bboxH = new THREE.BoundingBoxHelper(ATPSynthase, 0x000000)
+  // bboxH.update()
+  // scene.add(bboxH)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
@@ -453,7 +462,7 @@ const render = () => {
   //   lod.update(camera)
   // }
 
-  // controls.update(delta*0.1)
+  controls.update(delta*0.1)
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
 
