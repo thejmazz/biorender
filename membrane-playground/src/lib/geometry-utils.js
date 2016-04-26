@@ -71,7 +71,7 @@ export const populateMembrane = (mesh, block, type, checkVerts= (vert) => true, 
   // }
   const faces = mesh.geometry.faces
   const bbox = applyScaleToBBox(getBBoxDimensions(block.geometry), block.scale)
-  console.log(bbox)
+  // console.log(bbox)
   const boundingRadius = getBoundingRadius(block.geometry)
   // uses half dimensions
   // const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
