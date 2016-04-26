@@ -269,30 +269,34 @@ async function makeUnifiedMito() {
 
 let etc2
 const useWalls = (walls) => {
-  // for (let i=0; i < walls.length; i++) {
-  //   console.log(walls[i])
-  // }
+  // const sphereHelp = new THREE.Mesh(
+  //   new THREE.SphereGeometry(0.5, 32, 32),
+  //   randMaterial()
+  // )
+  // const wall = walls[17]
+  // // console.log(wall)
+  // const pos = wall.geometry.vertices[0]
+  // pos.x = pos.x * wall.scale.x
+  // pos.y = pos.y * wall.scale.y
+  // pos.z = pos.z * wall.scale.x
+  //
+  // sphereHelp.position.set(pos.x, pos.y, pos.z)
+  // scene.add(sphereHelp)
+  //
+  //
+  // wall.userData.thickness = 4
+  // // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
+  // // playing with desiredRotation to no avail
+  // const etcs = populateMembrane(wall, etc2, 'outer')
+  // scene.add(etcs)
 
-  const sphereHelp = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 32, 32),
-    randMaterial()
-  )
-  const wall = walls[17]
-  // console.log(wall)
-  const pos = wall.geometry.vertices[0]
-  pos.x = pos.x * wall.scale.x
-  pos.y = pos.y * wall.scale.y
-  pos.z = pos.z * wall.scale.x
+  for (let i=0; i < walls.length; i++) {
+    const wall = walls[i]
 
-  sphereHelp.position.set(pos.x, pos.y, pos.z)
-  scene.add(sphereHelp)
-
-
-  wall.userData.thickness = 4
-  // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
-  // playing with desiredRotation to no avail
-  const etcs = populateMembrane(wall, etc2, 'outer')
-  scene.add(etcs)
+    wall.userData.thickness = 4
+    const etcs = populateMembrane(wall, etc2, 'outer')
+    scene.add(etcs)
+  }
 }
 
 let ATPSynthase
@@ -369,7 +373,7 @@ async function init() {
 
   // const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // scene.add(porin)
-  // etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
+  etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
   // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
 
@@ -408,7 +412,7 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  // useWalls(walls)
+  useWalls(walls)
   usePinch(pinches)
 }
 
