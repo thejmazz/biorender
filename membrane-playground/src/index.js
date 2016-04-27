@@ -92,13 +92,13 @@ const getChildIndexByName = (name, group) => {
 const OBJLoader = new THREE.OBJLoader()
 
 // === CONTROLS ===
-const controls = new THREE.OrbitControls(camera, renderer.domElement)
-// const controls = new THREE.FlyControls(camera)
-// controls.movementSpeed = 500 //50 //5 //0.5
-// controls.domElement = renderer.domElement
-// controls.rollSpeed = (Math.PI / 6)*10
-// controls.autoForward = false
-// controls.dragToLook = false
+// const controls = new THREE.OrbitControls(camera, renderer.domElement)
+const controls = new THREE.FlyControls(camera)
+controls.movementSpeed = 500 //50 //5 //0.5
+controls.domElement = renderer.domElement
+controls.rollSpeed = (Math.PI / 6)*10
+controls.autoForward = false
+controls.dragToLook = false
 
 // === INIT METHODS ===
 
@@ -309,8 +309,8 @@ async function makeUnifiedMito() {
 let etc2, etc2med, etc2low
 const useWalls = ({walls, lods}) => {
   // const wall = walls[17]
-  console.log(etc2med)
-  console.log(etc2low)
+  // console.log(etc2med)
+  // console.log(etc2low)
 
   const radius = getBoundingRadius(etc2.geometry)
   const bbox = new THREE.BoundingBoxHelper(etc2)
@@ -332,9 +332,16 @@ const useWalls = ({walls, lods}) => {
       etcBox2.material = child.material
       etcBox2.visible = false
 
+      const etcMed = etc2med.clone()
+      etcMed.material = child.material
+      etcMed.rotation.setFromQuaternion(child.quaternion)
+
+      // const etcLow = etc2low.clone()
+      // etcLow.material = child.material
+
       const etcLOD = makeLOD({
-        meshes: [child, etc2med, etc2low],
-        distances: [2, 4, 5].map(num => radius*num)
+        meshes: [child, etcMed, new THREE.Object3D()],
+        distances: [1, 2, 25].map(num => radius*num)
       })
       etcLOD.position.set(child.position.x, child.position.y, child.position.z)
       child.position.set(0, 0, 0)
@@ -674,7 +681,7 @@ const render = () => {
   // }
 
 
-  // controls.update(delta*0.1)
+  controls.update(delta*0.1)
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
 
