@@ -8091,17 +8091,17 @@
 	            useWalls({ walls: walls, lods: lods });
 	            usePinch({ pinches: pinches, ATPSynthase: ATPSynthase, lods: lods, lodOctree: LODOctree });
 	
-	            phosphosTexture = _loaders.textureLoader.load('/textures/phospholipids/phospholipids_a.png');
+	            phosphosTexture = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids/phospholipids_a.png');
 	            // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
 	
-	            phosphosBump = _loaders.textureLoader.load('/textures/phospholipids/phospholipids_b.png');
+	            phosphosBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids/phospholipids_b.png');
 	            // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
 	
 	            rim.material = new THREE.MeshPhongMaterial({ map: phosphosTexture, bumpMap: phosphosBump });
 	            scene.add(rim);
 	
-	            phosphosTopTexture = _loaders.textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png');
-	            phosphosTopBump = _loaders.textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png');
+	            phosphosTopTexture = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_a.png');
+	            phosphosTopBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_b.png');
 	            wallMat = new THREE.MeshPhongMaterial({ map: phosphosTopTexture, bumpMap: phosphosTopBump, side: THREE.DoubleSide });
 	
 	            walls.forEach(function (wall) {
@@ -9598,10 +9598,10 @@
 	var _UVUtil = __webpack_require__(305);
 	
 	var constructCristae = exports.constructCristae = function constructCristae(group) {
-	  var phosphosTopAlbedo = _loaders.textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png');
+	  var phosphosTopAlbedo = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_a.png');
 	  phosphosTopAlbedo.wrapT = phosphosTopAlbedo.wrapS = THREE.RepeatWrapping;
 	  phosphosTopAlbedo.repeat.set(100, 100);
-	  var phosphosTopBump = _loaders.textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png');
+	  var phosphosTopBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_b.png');
 	  phosphosTopBump.wrapS = phosphosTopBump.wrapT = THREE.RepeatWrapping;
 	  phosphosTopBump.repeat.set(100, 100);
 	
@@ -9630,8 +9630,8 @@
 	
 	      etc = child;
 	    } else if (child.name === 'Cristae.Rim') {
-	      var phosphosAlbedo = _loaders.textureLoader.load('/textures/phospholipids_a.png');
-	      var phosphosBump = _loaders.textureLoader.load('/textures/phospholipids_b.png');
+	      var phosphosAlbedo = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids_a.png');
+	      var phosphosBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids_b.png');
 	
 	      child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry);
 	
