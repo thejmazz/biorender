@@ -103,7 +103,7 @@ controls.dragToLook = false
 // === INIT METHODS ===
 
 const initGlobalLights = () => {
-  const cLight = new THREE.PointLight(0xffffff, 1, 500)
+  const cLight = new THREE.PointLight(0xffffff, 1, 1000)
   camera.add(cLight)
   cLight.position.set(0,0,-0.001)
 
@@ -324,7 +324,12 @@ const useWalls = ({walls, lods}) => {
 
   const doWall = (wall) => {
     wall.userData.thickness = 4
-    const etcs = populateMembrane(wall, etc2, 'outer')
+    wall.geometry.computeBoundingBox()
+    const { max, min } = wall.geometry.boundingBox
+    const yThreshold = max.y - (max.y - min.y)*0.05
+    const etcs = populateMembrane(wall, etc2, 'outer', (vert) => {
+      return vert.y < yThreshold
+    })
 
     for (let j=0; j < etcs.children.length; j++) {
       const child = etcs.children[j]
@@ -627,7 +632,7 @@ async function init() {
 
   const phosphosTopTexture = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
   const phosphosTopBump = textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png')
-  const wallMat = new THREE.MeshPhongMaterial({map: phosphosTopTexture, bumpMap: phosphosTopBump})
+  const wallMat = new THREE.MeshPhongMaterial({map: phosphosTopTexture, bumpMap: phosphosTopBump, side: THREE.DoubleSide})
   walls.forEach( (wall) => {
     wall.material = wallMat
     scene.add(wall)
@@ -640,7 +645,9 @@ async function init() {
 
   base.material = wallMat
   scene.add(base)
-  outerMembrane.material = wallMat
+  outerMembrane.material = wallMat.clone()
+  outerMembrane.material.transparent = true
+  outerMembrane.material.opacity = 0.5
   scene.add(outerMembrane)
 
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
