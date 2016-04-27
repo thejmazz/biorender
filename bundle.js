@@ -7796,41 +7796,77 @@
 	
 	var makePiecesMito = function () {
 	  var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
-	    var mitochondria, pinches, walls, outerMembrane, base, i, mesh, name;
+	    var mitochondria, triFaceMaterials, desiredWidth, scale, i, _mesh, name, bbox;
+	
 	    return regeneratorRuntime.wrap(function _callee$(_context) {
 	      while (1) {
 	        switch (_context.prev = _context.next) {
 	          case 0:
 	            _context.next = 2;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/mitochondria.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/models/Mitochondria/mitochondria.obj');
 	
 	          case 2:
 	            mitochondria = _context.sent;
-	            pinches = [];
-	            walls = [];
-	            outerMembrane = void 0, base = void 0;
+	
+	            triFaceMaterials = function triFaceMaterials(geometry) {
+	              geometry.faceVertexUvs[0] = [];
+	
+	              for (var i = 0; i < geometry.faces.length; i += 2) {
+	
+	                geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(0, 1), new THREE.Vector2(1, 0)]);
+	
+	                geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 1), new THREE.Vector2(1, 1), new THREE.Vector2(1, 0)]);
+	              }
+	
+	              geometry.uvsNeedUpdate = true;
+	            };
+	
+	            desiredWidth = 3000;
+	            scale = void 0;
 	
 	
 	            for (i = 1; i < mitochondria.children.length; i++) {
-	              mesh = mitochondria.children[i];
-	              name = mesh.name.replace(/Cube\.\d+_?/, '');
-	
+	              _mesh = mitochondria.children[i];
+	              name = _mesh.name.replace(/Cube\.\d+_?/, '');
+	              // console.log(name)
 	
 	              if (name.indexOf('Pinch') !== -1) {
 	                // console.log('pinch: ', name)
-	                pinches.push(mesh);
+	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
+	                triFaceMaterials(_mesh.geometry);
+	                pinches.push(_mesh);
 	              } else if (name.indexOf('Wall') !== -1) {
 	                // console.log('wall: ', name)
-	                walls.push(mesh);
+	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
+	                triFaceMaterials(_mesh.geometry);
+	                walls.push(_mesh);
 	              } else if (name.indexOf('Membrane.Outer') !== -1) {
+	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
+	                triFaceMaterials(_mesh.geometry);
 	                // console.log('outer membrane: ', name)
-	                outerMembrane = mesh;
+	                outerMembrane = _mesh;
+	                bbox = (0, _geometryUtils.getBBoxDimensions)(outerMembrane.geometry);
+	
+	                scale = desiredWidth / bbox.width;
 	              } else if (name.indexOf('Base') !== -1) {
+	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
+	                triFaceMaterials(_mesh.geometry);
 	                // console.log('base: ', name)
+	                base = _mesh;
+	              } else if (name.indexOf('RIM') !== -1) {
+	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
+	
+	                triFaceMaterials(_mesh.geometry);
+	
+	                // mesh.material = faceMat
+	                // mesh.material = new THREE.MeshNormalMaterial()
+	                rim = _mesh;
 	              } else {
-	                  console.log('else: ', name);
-	                }
+	                console.log('else: ', name);
+	              }
 	            }
+	
+	            // console.log(scale)
 	
 	            pinches.forEach(function (mesh) {
 	              // scene.add(mesh)
@@ -7838,9 +7874,37 @@
 	              bbox.update();
 	              pinchesBoxes.push(bbox);
 	              // scene.add(bbox)
+	
+	              mesh.material = (0, _materialUtils.randMaterial)();
+	              mesh.scale.set(scale, scale, scale);
+	              // scene.add(mesh)
 	            });
 	
-	          case 8:
+	            walls.forEach(function (wall) {
+	              wall.material = (0, _materialUtils.randMaterial)();
+	              // wall.material.wireframe = true
+	              wall.scale.set(scale, scale, scale);
+	              // scene.add(wall)
+	
+	              // const bbox = new THREE.BoundingBoxHelper(wall, 0x000000)
+	              // bbox.update()
+	              // wallsBoxes.push(bbox)
+	              // scene.add(bbox)
+	            });
+	
+	            outerMembrane.material = (0, _materialUtils.randMaterial)({ transparency: true });
+	            outerMembrane.scale.set(scale, scale, scale);
+	            // scene.add(outerMembrane)
+	
+	            base.material = (0, _materialUtils.randMaterial)();
+	            base.scale.set(scale, scale, scale);
+	            // scene.add(base)
+	
+	            // rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+	            rim.scale.set(scale, scale, scale);
+	            // scene.add(rim)
+	
+	          case 14:
 	          case 'end':
 	            return _context.stop();
 	        }
@@ -7855,13 +7919,14 @@
 	
 	var makeUnifiedMito = function () {
 	  var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
-	    var mitochondria, meshes, i, mesh;
+	    var mitochondria, meshes, i, _mesh2;
+	
 	    return regeneratorRuntime.wrap(function _callee2$(_context2) {
 	      while (1) {
 	        switch (_context2.prev = _context2.next) {
 	          case 0:
 	            _context2.next = 2;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/mitochondria_unified.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/models/Mitochondria/mitochondria_unified.obj');
 	
 	          case 2:
 	            mitochondria = _context2.sent;
@@ -7871,12 +7936,12 @@
 	            meshes = [];
 	
 	            for (i = 0; i < mitochondria.children.length; i++) {
-	              mesh = mitochondria.children[i];
+	              _mesh2 = mitochondria.children[i];
 	
-	              mesh.material = new THREE.MeshLambertMaterial({ color: 0x84dd72 });
-	              mesh.material.wireframe = false;
+	              _mesh2.material = new THREE.MeshLambertMaterial({ color: 0x84dd72 });
+	              _mesh2.material.wireframe = false;
 	
-	              meshes.push(mesh);
+	              meshes.push(_mesh2);
 	            }
 	
 	            meshes.forEach(function (mesh) {
@@ -7898,88 +7963,172 @@
 	
 	var init = function () {
 	  var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
-	    var synthaseModels, synthaseGeoms, atpScale, lod, attachSynthases;
+	    var membraneDimensions, ATPSynthase, dimer, dimer2, bboxA, atpRadius, boxy, testLOD, _testLOD$position,
+	    // lods.push(testLOD)
+	    x, y, z, objy, phosphosTexture, phosphosBump, phosphosTopTexture, phosphosTopBump, wallMat, porin;
+	
 	    return regeneratorRuntime.wrap(function _callee3$(_context3) {
 	      while (1) {
 	        switch (_context3.prev = _context3.next) {
 	          case 0:
-	            _context3.next = 2;
-	            return makeUnifiedMito();
+	            initGlobalLights();
+	            initMembrane();
 	
-	          case 2:
-	            _context3.next = 4;
-	            return makePiecesMito();
+	            membraneDimensions = {
+	              x: 100,
+	              y: 100,
+	              thickness: 4,
+	              padding: 0
+	            };
 	
-	          case 4:
+	            // const { x, y, thickness, padding } = membraneDimensions
 	
-	            // === Dimer ===
-	            synthaseModels = ['http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase_d0.05.obj', 'http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase_d0.01.obj'];
-	            _context3.next = 7;
-	            return Promise.all(synthaseModels.map(function (model) {
-	              return (0, _loaders.OBJLoaderAsync)(model);
-	            }));
+	            vesicle = initVesicle({ name: 'test-vesicle' });
+	            // console.log(getChildIndexByName('Inner-Membrane', vesicle))
 	
-	          case 7:
-	            synthaseGeoms = _context3.sent;
-	            atpScale = 0.5;
-	            lod = (0, _lod.makeLOD)({
-	              meshes: synthaseGeoms.map(function (geom) {
-	                return (0, _atpSynthase.constructDimer)(geom);
-	              }),
-	              distances: [0.2, 0.21].map(function (num) {
-	                return num * atpScale;
+	            // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
+	
+	            // scene.add(porin)
+	            _context3.next = 6;
+	            return (0, _loaders.OBJLoaderAsync)('/models/ETC/etc2-0.1.obj');
+	
+	          case 6:
+	            _context3.t0 = _context3.sent;
+	            etc2 = (0, _etcCentered.constructETC2)(_context3.t0);
+	            _context3.next = 10;
+	            return (0, _loaders.OBJLoaderAsync)('/models/ETC/etc2-0.05.obj');
+	
+	          case 10:
+	            _context3.t1 = _context3.sent;
+	            etc2med = (0, _etcCentered.constructETC2)(_context3.t1);
+	            _context3.next = 14;
+	            return (0, _loaders.OBJLoaderAsync)('/models/ETC/etc2-0.01.obj');
+	
+	          case 14:
+	            _context3.t2 = _context3.sent;
+	            etc2low = (0, _etcCentered.constructETC2)(_context3.t2);
+	            _context3.next = 18;
+	            return (0, _loaders.OBJLoaderAsync)('/models/ATP-Synthase/ATP-Synthase2-0.1.obj');
+	
+	          case 18:
+	            _context3.t3 = _context3.sent;
+	            ATPSynthase = (0, _atpSynthase.constructSynthaseSimple)(_context3.t3);
+	
+	            ATPSynthase.geometry.computeBoundingBox();
+	            // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
+	            // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
+	            ATPSynthase.geometry.center();
+	            // scene.add(ATPSynthase)
+	
+	            _context3.next = 24;
+	            return (0, _loaders.OBJLoaderAsync)('/models/ATP-Synthase/ATP-Synthase2-0.05.obj');
+	
+	          case 24:
+	            _context3.t4 = _context3.sent;
+	            ATPSynthaseMed = (0, _atpSynthase.constructSynthaseSimple)(_context3.t4);
+	
+	            ATPSynthaseMed.geometry.computeBoundingBox();
+	            ATPSynthaseMed.geometry.center();
+	
+	            _context3.next = 30;
+	            return (0, _loaders.OBJLoaderAsync)('/models/ATP-Synthase/ATP-Synthase2-0.01.obj');
+	
+	          case 30:
+	            _context3.t5 = _context3.sent;
+	            ATPSynthaseLow = (0, _atpSynthase.constructSynthaseSimple)(_context3.t5);
+	
+	            ATPSynthaseLow.geometry.computeBoundingBox();
+	            ATPSynthaseLow.geometry.center();
+	
+	            // const bbox = getBBoxDimensions(ATPSynthase.geometry)
+	            // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
+	            dimer = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthase });
+	            // scene.add(dimer)
+	
+	            dimer2 = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthase });
+	
+	            dimer2.rotation.z = Math.PI / 2;
+	            dimer2.rotation.y = Math.PI / 2;
+	            // scene.add(dimer2)
+	
+	            bboxA = (0, _geometryUtils.getBBoxDimensions)(ATPSynthase.geometry);
+	            atpRadius = (0, _geometryUtils.getBoundingRadius)(ATPSynthase.geometry);
+	            boxy = new THREE.Mesh(new THREE.BoxGeometry(bboxA.width, bboxA.height, bboxA.depth), (0, _materialUtils.randMaterial)());
+	            testLOD = (0, _lod.makeLOD)({
+	              meshes: [ATPSynthase, boxy],
+	              distances: [4, 6].map(function (num) {
+	                return atpRadius * num;
 	              })
 	            });
 	
-	            lod.scale.set(1 * atpScale, 1 * atpScale, 1 * atpScale);
-	            lod.position.set(0, 0, 1);
-	            lod.updateMatrix();
+	            testLOD.position.set(0, -20, 0);
+	            testLOD.updateMatrix();_testLOD$position = testLOD.position;
+	            x = _testLOD$position.x;
+	            y = _testLOD$position.y;
+	            z = _testLOD$position.z;
 	
-	            scene.add(lod);
-	            lods.push(lod);
+	            LODOctree.add({ x: x, y: y, z: z, radius: atpRadius, id: lods.length - 1 });
+	            // LODOctree.update()
+	            // console.log(LODOctree.search(new THREE.Vector3().clone(testLOD.position), 100))
+	            // preDisableDetail(testLOD)
+	            // scene.add(testLOD)
 	
-	            attachSynthases = function attachSynthases(dimer) {
-	              pinchesBoxes.forEach(function (bbox) {
-	                // Bounding box around curved section
-	                var curvedHelper = bbox;
-	                // scene.add(curvedHelper)
+	            objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), (0, _materialUtils.randMaterial)());
 	
-	                // Pull out position and scale of curved section
-	                var curvedPosition = curvedHelper.position;
-	                var curvedScale = curvedHelper.scale;
+	            console.time('goblinFill');
+	            // const innerMembraneProteins = populateMembrane(vesicle, etc2, 'outer')
+	            console.timeEnd('goblinFill');
+	            // scene.add(innerMembrane)
+	            // scene.add(vesicle)
+	            // scene.add(innerMembraneProteins)
 	
-	                // const dimer = crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
-	                // TODO rotate from center of group
-	                dimer.rotation.y = Math.PI / 2;
-	                dimer.rotation.z = Math.PI / 2;
-	                dimer.position.set(curvedPosition.x - curvedScale.x / 2, curvedPosition.y + curvedScale.y / 2, curvedPosition.z);
-	                // dimer.position.set(-0.983, 0.83, -0.02)
-	                // scene.add(dimer)
+	            // await makeUnifiedMito()
+	            _context3.next = 54;
+	            return makePiecesMito();
 	
-	                // Get dimer dimensions
-	                var dimerHelper = new THREE.BoundingBoxHelper(dimer, 0xf6f400);
-	                dimerHelper.update();
-	                // scene.add(dimerHelper)
-	                var dimerScale = dimerHelper.scale;
-	                // console.log(dimerScale)
-	                // By inspection, z is the size we want..
+	          case 54:
 	
-	                var currentSpot = -curvedScale.y + dimerScale.y + 0.005;
-	                while (currentSpot <= curvedScale.y / 4 - dimerScale.y * 5) {
-	                  var anotherDimer = dimer.clone();
-	                  // anotherDimer.position.set(-0.983, currentSpot, -0.02)
-	                  anotherDimer.position.set(curvedPosition.x - curvedScale.x / 2 + 0.0125, currentSpot, curvedPosition.z + 0.025);
-	                  lods.push(anotherDimer);
-	                  scene.add(anotherDimer);
+	            useWalls({ walls: walls, lods: lods });
+	            usePinch({ pinches: pinches, ATPSynthase: ATPSynthase, lods: lods, lodOctree: LODOctree });
 	
-	                  currentSpot += dimerScale.y * 1.5;
-	                }
-	              });
-	            };
+	            phosphosTexture = _loaders.textureLoader.load('/textures/phospholipids/phospholipids_a.png');
+	            // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
 	
-	            attachSynthases(lod);
+	            phosphosBump = _loaders.textureLoader.load('/textures/phospholipids/phospholipids_b.png');
+	            // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
 	
-	          case 17:
+	            rim.material = new THREE.MeshPhongMaterial({ map: phosphosTexture, bumpMap: phosphosBump });
+	            scene.add(rim);
+	
+	            phosphosTopTexture = _loaders.textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png');
+	            phosphosTopBump = _loaders.textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png');
+	            wallMat = new THREE.MeshPhongMaterial({ map: phosphosTopTexture, bumpMap: phosphosTopBump, side: THREE.DoubleSide });
+	
+	            walls.forEach(function (wall) {
+	              wall.material = wallMat;
+	              scene.add(wall);
+	            });
+	
+	            pinches.forEach(function (pinch) {
+	              pinch.material = wallMat;
+	              scene.add(pinch);
+	            });
+	
+	            base.material = wallMat;
+	            scene.add(base);
+	            outerMembrane.material = wallMat.clone();
+	            outerMembrane.material.transparent = true;
+	            outerMembrane.material.opacity = 0.5;
+	            scene.add(outerMembrane);
+	
+	            _context3.next = 73;
+	            return (0, _loaders.OBJLoaderAsync)('/models/Mitochondria/Outer-Membrane/porin.obj');
+	
+	          case 73:
+	            _context3.t6 = _context3.sent;
+	            porin = (0, _porin.constructPorin)(_context3.t6);
+	
+	          case 75:
 	          case 'end':
 	            return _context3.stop();
 	        }
@@ -8002,18 +8151,28 @@
 	
 	var _lod = __webpack_require__(298);
 	
-	var _atpSynthase = __webpack_require__(299);
+	var _geometryUtils = __webpack_require__(299);
 	
-	var _cristae = __webpack_require__(300);
+	var _atpSynthase = __webpack_require__(303);
 	
-	var _etc = __webpack_require__(302);
+	var _cristae = __webpack_require__(304);
+	
+	var _etc = __webpack_require__(306);
+	
+	var _etcCentered = __webpack_require__(307);
+	
+	var _porin = __webpack_require__(308);
+	
+	var _materialUtils = __webpack_require__(301);
+	
+	var _constants = __webpack_require__(300);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
 	
 	var _createScene = (0, _create.createScene)({
-	  clearColor: 0xffffff,
+	  clearColor: 0x393939,
 	  antialias: true,
 	  size: 1
 	});
@@ -8026,7 +8185,9 @@
 	
 	// ===========================================================================
 	
-	camera.position.set(0, 0, 1.5);
+	camera.position.set(0, 1, 0);
+	
+	// Cam
 	
 	// ===========================================================================
 	
@@ -8051,6 +8212,8 @@
 	  }
 	
 	  // ===========================================================================
+	
+	  // === IMPORTS ===
 	} catch (err) {
 	  _didIteratorError = true;
 	  _iteratorError = err;
@@ -8066,207 +8229,484 @@
 	  }
 	}
 	
-	var OBJLoader = new THREE.OBJLoader();
+	// === CONSTANTS ===
 	
-	var controls = new THREE.OrbitControls(camera, renderer.domElement);
-	// const controls = new THREE.FlyControls(camera)
-	// controls.movementSpeed = 5 //0.5
-	// controls.domElement = renderer.domElement
-	// controls.rollSpeed = (Math.PI / 6)*10
-	// controls.autoForward = false
-	// controls.dragToLook = false
-	
-	var cLight = new THREE.PointLight(0xffffff, 1, 5);
-	camera.add(cLight);
-	cLight.position.set(0, 0, -0.001);
-	scene.add(camera);
-	
-	var aLight = new THREE.AmbientLight(0xe6e6e6, 0.5);
-	scene.add(aLight);
-	
-	var ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10), new THREE.MeshLambertMaterial({ color: 0xfbeec4, side: THREE.DoubleSide }));
-	ground.position.set(0, -2, 0);
-	ground.rotation.x = Math.PI / 2;
-	scene.add(ground);
-	
-	var flatUIHexColors = [0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x2980b9, 0x9b59b6, 0x8e44ad, 0x34495e, 0x2c3e50, 0xf1c40f, 0xf39c12, 0xe67e22, 0xd35400, 0xe74c3c, 0xc0392b, 0xecf0f1, 0xbdc3c7, 0x95a5a6, 0x7f8c8d];
-	
-	var populateCristae = function populateCristae(object, dimer, etcProteins) {
-	  var _constructCristae = (0, _cristae.constructCristae)(object);
-	
-	  var curved = _constructCristae.curved;
-	  var etc = _constructCristae.etc;
-	  var rim = _constructCristae.rim;
-	
-	
-	  scene.add(curved);
-	  scene.add(etc);
-	  scene.add(rim);
-	
-	  // // Bounding box around curved section
-	  // const curvedHelper = new THREE.BoundingBoxHelper(curved, 0xf6f400)
-	  // curvedHelper.update()
-	  // // scene.add(curvedHelper)
-	  //
-	  // // Pull out position and scale of curved section
-	  // const curvedPosition = curvedHelper.position
-	  // const curvedScale = curvedHelper.scale
-	  //
-	  // // const dimer = crudeDimerCreator(Math.PI/4, 0.04, crudeSynthaseCreator())
-	  // // TODO rotate from center of group
-	  // // dimer.rotation.x = Math.PI/2
-	  // dimer.rotation.z = Math.PI/2
-	  // dimer.position.set(curvedPosition.x - curvedScale.x/2, curvedPosition.y + curvedScale.y/2, curvedPosition.z)
-	  // // dimer.position.set(-0.983, 0.83, -0.02)
-	  // // scene.add(dimer)
-	  //
-	  // // Get dimer dimensions
-	  // const dimerHelper = new THREE.BoundingBoxHelper(dimer, 0xf6f400)
-	  // dimerHelper.update()
-	  // // scene.add(dimerHelper)
-	  // const dimerScale = dimerHelper.scale
-	  // // console.log(dimerScale)
-	  // // By inspection, z is the size we want..
-	  //
-	  // let currentSpot = -curvedScale.y/2 + dimerScale.y + 0.005
-	  // while (currentSpot <= curvedScale.y/2 + dimerScale.y/2) {
-	  //   const anotherDimer = dimer.clone()
-	  //   // anotherDimer.position.set(-0.983, currentSpot, -0.02)
-	  //   anotherDimer.position.set(curvedPosition.x - curvedScale.x/2, currentSpot, curvedPosition.z - 0.055)
-	  //   lods.push(anotherDimer)
-	  //   scene.add(anotherDimer)
-	  //
-	  //   currentSpot += dimerScale.y*1.5
-	  // }
-	
-	  // === ETC ===
-	  var etcMax = etc.geometry.boundingBox.max;
-	  var etcMin = etc.geometry.boundingBox.min;
-	
-	  // helper sphere
-	  // const sphereGeom = new THREE.SphereGeometry(0.01, 16, 16)
-	  // const sphere = new THREE.Mesh(sphereGeom, new THREE.MeshLambertMaterial({color: 0x158e41}))
-	  // sphere.position.set((etcMax.x - etcMin.x)/2, etcMax.y, (etcMax.z - etcMin.z)/2)
-	  // // scene.add(sphere)
-	
-	  for (var i = 0; i < 8; i++) {
-	    for (var j = 0; j < 10; j++) {
-	      var anotherETC = etcProteins.clone();
-	
-	      anotherETC.rotation.y = Math.random() * 2 * Math.PI;
-	
-	      anotherETC.position.set((etcMax.x - etcMin.x) / 2 - 0.07 - i * 0.21, etcMax.y - 0.05 - j * 0.15, (etcMax.z - etcMin.z) / 2 - 0.125);
-	
-	      scene.add(anotherETC);
-	      lods.push(anotherETC);
-	
-	      // const anotherETC2 = etcProteins.clone()
-	      // anotherETC2.rotation.z = Math.PI
-	      // anotherETC2.position.set((etcMax.x - etcMin.x)/2 - 0.07 - i*0.21, etcMax.y - 0.05 - j*0.15, (etcMax.z - etcMin.z)/2 - 0.225)
-	      //
-	      // scene.add(anotherETC2)
-	      // lods.push(anotherETC2)
-	    }
-	  }
-	
-	  // etcProteins.position.set((etcMax.x - etcMin.x)/2 - 0.07, etcMax.y - 0.05, (etcMax.z - etcMin.z)/2 - 0.125)
-	  // scene.add(etcProteins)
-	  // lods.push(etcProteins)
-	};
+	// === FUNCTIONS ===
 	
 	var rand = function rand(min, max) {
 	  return Math.floor(Math.random() * (max - min + 1)) + min;
 	};
 	
-	var generateShades = function generateShades(hue, numOfShades) {
-	  var shades = ['hsl(' + hue + ', 100%, 50%)'];
+	var mesh = function mesh(geometry, materials) {
+	  if (Array.isArray(materials)) {
+	    return new THREE.SceneUtils.createMultiMaterialObject(geometry, materials);
+	  } else {
+	    return new THREE.Mesh(geometry, materials);
+	  }
+	};
 	
-	  for (var i = 0; i < numOfShades; i++) {
-	    shades.push('hsl(' + hue + ', ' + rand(10, 90) + '%, ' + rand(10, 90) + '%)');
+	var getChildIndexByName = function getChildIndexByName(name, group) {
+	  group.children.forEach(function (child, i) {
+	    console.log(child.name, name);
+	    if (child.name === name) {
+	      return i;
+	    }
+	  });
+	
+	  return -1;
+	};
+	
+	// === LOADERS ===
+	
+	var OBJLoader = new THREE.OBJLoader();
+	
+	// === CONTROLS ===
+	var controls = void 0;
+	var controlsType = 'orbit';
+	
+	if (controlsType === 'orbit') {
+	  controls = new THREE.OrbitControls(camera, renderer.domElement);
+	} else if (controlsType === 'fly') {
+	  controls = new THREE.FlyControls(camera);
+	  controls.movementSpeed = 500; //50 //5 //0.5
+	  controls.domElement = renderer.domElement;
+	  controls.rollSpeed = Math.PI / 6 * 10;
+	  controls.autoForward = false;
+	  controls.dragToLook = false;
+	}
+	
+	// === INIT METHODS ===
+	
+	var initGlobalLights = function initGlobalLights() {
+	  var cLight = new THREE.PointLight(0xffffff, 1, 1000);
+	  camera.add(cLight);
+	  cLight.position.set(0, 0, -0.001);
+	
+	  camera.lookAt(new THREE.Vector3(0, 0, 0));
+	  scene.add(camera);
+	
+	  var aLight = new THREE.AmbientLight(0xe6e6e6, 0.5);
+	  scene.add(aLight);
+	
+	  var ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10), new THREE.MeshLambertMaterial({ color: 0xfbeec4, side: THREE.DoubleSide }));
+	};
+	
+	var topLayer = void 0;
+	var initMembrane = function initMembrane(length, width, thickness) {
+	  var useWireframe = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
+	
+	  var planeGeom = new THREE.PlaneGeometry(length, width, length, width);
+	  var mat = new THREE.MeshLambertMaterial({ color: 0xbababa, side: THREE.DoubleSide });
+	  var wireframe = new THREE.MeshBasicMaterial({ color: 0xaaaaaa, wireframe: true });
+	
+	  var materials = void 0;
+	  if (useWireframe) {
+	    materials = [mat, wireframe];
+	  } else {
+	    materials = mat;
 	  }
 	
-	  return shades;
+	  topLayer = mesh(planeGeom, materials);
+	  topLayer.rotation.x = Math.PI / 2;
+	  topLayer.position.set(0, thickness / 2, 0);
+	  scene.add(topLayer);
+	
+	  var bottomLayer = topLayer.clone();
+	  bottomLayer.rotation.x = Math.PI / 2;
+	  bottomLayer.position.set(0, -(thickness / 2), 0);
+	  scene.add(bottomLayer);
+	};
+	
+	var initVesicle = function initVesicle(_ref) {
+	  var _ref$radius = _ref.radius;
+	  var radius = _ref$radius === undefined ? 50 : _ref$radius;
+	  var _ref$thickness = _ref.thickness;
+	  var thickness = _ref$thickness === undefined ? 4 : _ref$thickness;
+	  var name = _ref.name;
+	
+	  var baseName = name + '_membrane';
+	
+	  var innerLayer = new THREE.Mesh(new THREE.SphereGeometry(radius - thickness / 2, 32, 32, 0, _constants.TWOPI, 0, _constants.TWOPI), new THREE.MeshLambertMaterial({
+	    color: 0x2f81db,
+	    transparent: true,
+	    opacity: 0.6
+	  }));
+	  innerLayer.name = baseName + '_inner';
+	
+	  var outerLayer = new THREE.Mesh(new THREE.SphereGeometry(radius + thickness / 2, 32, 32, 0, _constants.TWOPI, 0, _constants.TWOPI), new THREE.MeshLambertMaterial({
+	    // color: 0x2f81db,
+	    color: 0xf7df26,
+	    wireframe: true,
+	    transparent: false,
+	    opacity: 0.6
+	  }));
+	  outerLayer.name = baseName + '_outer';
+	
+	  var vesicle = new THREE.Group();
+	  vesicle.add(innerLayer);
+	  vesicle.add(outerLayer);
+	  vesicle.name = baseName;
+	  vesicle.userData.thickness = thickness;
+	
+	  return vesicle;
 	};
 	
 	var pinchesBoxes = [];
+	var wallsBoxes = [];
+	var walls = [];
+	var pinches = [];
+	var outerMembrane = void 0;
+	var rim = void 0;
+	var base = void 0;
 	
 	
+	var etc2 = void 0,
+	    etc2med = void 0,
+	    etc2low = void 0;
+	var useWalls = function useWalls(_ref2) {
+	  var walls = _ref2.walls;
+	  var lods = _ref2.lods;
+	
+	  // const wall = walls[17]
+	  // console.log(etc2med)
+	  // console.log(etc2low)
+	
+	  var radius = (0, _geometryUtils.getBoundingRadius)(etc2.geometry);
+	  var bbox = new THREE.BoundingBoxHelper(etc2);
+	  bbox.update();
+	
+	  var etcBox = new THREE.Mesh(new THREE.BoxBufferGeometry(bbox.scale.x, bbox.scale.y, bbox.scale.z), (0, _materialUtils.randMaterial)());
+	
+	  var doWall = function doWall(wall) {
+	    wall.userData.thickness = 4;
+	    wall.geometry.computeBoundingBox();
+	    var _wall$geometry$boundi = wall.geometry.boundingBox;
+	    var max = _wall$geometry$boundi.max;
+	    var min = _wall$geometry$boundi.min;
+	
+	    var yThreshold = max.y - (max.y - min.y) * 0.05;
+	    var etcs = (0, _geometryUtils.populateMembrane)(wall, etc2, 'outer', function (vert) {
+	      return vert.y < yThreshold;
+	    });
+	
+	    for (var j = 0; j < etcs.children.length; j++) {
+	      var child = etcs.children[j];
+	
+	      var etcBox2 = etcBox.clone();
+	      etcBox2.material = child.material;
+	      etcBox2.visible = false;
+	
+	      var etcMed = etc2med.clone();
+	      etcMed.material = child.material;
+	      etcMed.rotation.setFromQuaternion(child.quaternion);
+	
+	      var etcLow = etc2low.clone();
+	      etcLow.material = child.material;
+	      etcLow.rotation.setFromQuaternion(child.quaternion);
+	
+	      var etcLOD = (0, _lod.makeLOD)({
+	        meshes: [child, etcMed, etcLow, new THREE.Object3D()],
+	        distances: [1, 2, 4, 20].map(function (num) {
+	          return radius * num;
+	        })
+	      });
+	      etcLOD.position.set(child.position.x, child.position.y, child.position.z);
+	      child.position.set(0, 0, 0);
+	      etcLOD.updateMatrix();
+	      lods.push(etcLOD);
+	      (0, _lod.preDisableDetail)(etcLOD);
+	      scene.add(etcLOD);
+	    }
+	  };
+	
+	  // doWall(wall)
+	
+	  for (var i = 0; i < walls.length; i++) {
+	    var wall = walls[i];
+	
+	    doWall(wall);
+	  }
+	};
+	
+	// let ATPSynthase
+	var ATPSynthaseMed = void 0,
+	    ATPSynthaseLow = void 0;
+	var usePinch = function usePinch(_ref3) {
+	  var pinches = _ref3.pinches;
+	  var ATPSynthase = _ref3.ATPSynthase;
+	  var lods = _ref3.lods;
+	  var lodOctree = _ref3.lodOctree;
+	
+	  var parentDimer = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthase });
+	  var parentDimerMed = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthaseMed });
+	  var parentDimerLow = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthaseLow });
+	
+	  // use max z factor from normals on 90% of z of mesh to determine which way its pointing
+	  // kinda sketchy. will only work if mito is in left-right. after this, you can rotate.
+	  var getSidedness = function getSidedness(pinch) {
+	    var bbox = (0, _geometryUtils.getBBoxDimensions)(pinch.geometry);
+	    var zThreshold = pinch.geometry.boundingBox.min.z + bbox.depth * 0.9;
+	    var faces = pinch.geometry.faces;
+	    var verts = pinch.geometry.vertices;
+	
+	    var maxZNorm = faces[0].normal.z;
+	    for (var i = 1; i < faces.length; i++) {
+	      var face = faces[i];
+	
+	      if (verts[face.a].z > zThreshold && verts[face.b].z > zThreshold && verts[face.c].z > zThreshold) {
+	        if (face.normal.z > maxZNorm) {
+	          maxZNorm = face.normal.z;
+	        }
+	      }
+	    }
+	
+	    var side = void 0;
+	    if (maxZNorm < 0) {
+	      side = 'away';
+	    } else if (maxZNorm > 0) {
+	      side = 'towards';
+	    }
+	
+	    return side;
+	  };
+	
+	  var doPinch = function doPinch(_ref4) {
+	    var pinch = _ref4.pinch;
+	    var side = _ref4.side;
+	
+	    var bbox = (0, _geometryUtils.getBBoxDimensions)(pinch.geometry);
+	    var yThreshold = pinch.geometry.boundingBox.max.y - bbox.height / 2;
+	
+	    var min = null;
+	    var max = null;
+	    // assumes up. assumes left-right.
+	    var verts = pinch.geometry.vertices;
+	    for (var i = 0; i < verts.length; i++) {
+	      var vert = verts[i];
+	
+	      if (vert.y > yThreshold) {
+	        if (min === null) {
+	          min = new THREE.Vector3().copy(vert);
+	        }
+	        if (max === null) {
+	          max = new THREE.Vector3().copy(vert);
+	        }
+	
+	        if (vert.x < min.x) {
+	          min.x = vert.x;
+	        } else if (vert.x > max.x) {
+	          max.x = vert.x;
+	        }
+	
+	        if (vert.y < min.y) {
+	          min.y = vert.y;
+	        } else if (vert.y > max.y) {
+	          max.y = vert.y;
+	        }
+	
+	        if (vert.z < min.z) {
+	          min.z = vert.z;
+	        } else if (vert.z > max.z) {
+	          max.z = vert.z;
+	        }
+	      }
+	    }
+	
+	    // TODO util func for this
+	    // assumes equal x,y,z scaling
+	    max.multiplyScalar(pinch.scale.x);
+	    min.multiplyScalar(pinch.scale.x);
+	
+	    var dimer = parentDimer.clone();
+	    var x = min.x + (max.x - min.x) / 2;
+	    var y = max.y;
+	    var z = void 0;
+	    if (side === 'towards') {
+	      z = max.z;
+	      dimer.rotation.z = Math.PI / 2;
+	    } else if (side === 'away') {
+	      z = min.z;
+	      dimer.rotation.z = -Math.PI / 2;
+	    }
+	    dimer.rotation.y = Math.PI / 2;
+	
+	    var dimerLow = parentDimerLow.clone();
+	    // let x = min.x + (max.x - min.x)/2
+	    // let y = max.y
+	    // let z
+	    if (side === 'towards') {
+	      // z = max.z
+	      dimerLow.rotation.z = Math.PI / 2;
+	    } else if (side === 'away') {
+	      // z = min.z
+	      dimerLow.rotation.z = -Math.PI / 2;
+	    }
+	    dimerLow.rotation.y = Math.PI / 2;
+	
+	    var dimerBbox = new THREE.BoundingBoxHelper(dimer);
+	    dimerBbox.update();
+	
+	    var currentY = y;
+	
+	    var makeGlobalMinY = function makeGlobalMinY(dist, mesh) {
+	      mesh.geometry.computeBoundingBox();
+	      var _mesh$geometry$boundi = mesh.geometry.boundingBox;
+	      var min = _mesh$geometry$boundi.min;
+	      var max = _mesh$geometry$boundi.max;
+	
+	
+	      var minY = (min.y + dist * (max.y - min.y)) * mesh.scale.y;
+	
+	      return minY;
+	    };
+	
+	    var globalMinY = makeGlobalMinY(0.1, pinch);
+	
+	    var _loop = function _loop() {
+	      var newDimer = dimer.clone();
+	      // newDimer.position.set(x, currentY, z)
+	      newDimer.material = (0, _materialUtils.randMaterial)();
+	      var newDimerLow = dimerLow.clone();
+	      newDimerLow.material = newDimer.material;
+	
+	      var radius = (0, _geometryUtils.getBoundingRadius)(newDimer.geometry);
+	      var newDimerBox = new THREE.Mesh(new THREE.BoxBufferGeometry(dimerBbox.scale.x, dimerBbox.scale.y, dimerBbox.scale.z), (0, _materialUtils.randMaterial)());
+	      var dimerLOD = (0, _lod.makeLOD)({
+	        meshes: [newDimer, newDimerLow, new THREE.Object3D()],
+	        distances: [2, 3, 25].map(function (num) {
+	          return radius * num;
+	        })
+	      });
+	      dimerLOD.position.set(x, currentY, z);
+	      dimerLOD.updateMatrix();
+	      lods.push(dimerLOD);
+	      // const { x, y, z } = dimerLOD.position
+	      // LODOctree.add({x, y, z, radius, id: lods.length - 1})
+	      (0, _lod.preDisableDetail)(dimerLOD);
+	      scene.add(dimerLOD);
+	
+	      // newDimer.position.set(x, currentY, z)
+	      // scene.add(newDimer)
+	
+	      currentY -= dimerBbox.scale.y * 1.5;
+	    };
+	
+	    while (currentY > globalMinY) {
+	      _loop();
+	    }
+	  };
+	
+	  for (var i = 0; i < pinches.length; i++) {
+	    var pinch = pinches[i];
+	    var side = getSidedness(pinch);
+	
+	    doPinch({ pinch: pinch, side: side });
+	  }
+	
+	  // doPinch({pinch: pinches[16], side:'away'})
+	  // doPinch({pinch: pinches[17], side:'towards'})
+	};
+	
+	var vesicle = void 0,
+	    ETC = void 0,
+	    atpPivot = void 0,
+	    bboxH = void 0;
+	var atpReady = false;
 	var lods = [];
+	// so we don't have to update **every** LOD **every** frame
+	var LODOctree = new THREE.Octree();
+	
+	// const porins = populateMembrane(outerMembrane, porin, 'outer')
+	// scene.add(porins)
+	
 	
 	init();
 	
 	// ===========================================================================
 	
-	// window.capturer = new CCapture( { format: 'png' } )
+	// window.capturer = new CCapture( { format: 'gif', workersPath: 'js/workers' } )
+	// window.capturer = new CCapture({format: 'png'})
 	
 	var clock = new THREE.Clock();
 	
+	var LODOctreeSearchRadius = 50;
+	
+	window.capturerGo = -1;
 	var stats = (0, _create.createStats)();
+	
+	// update all LODs before first render
+	// camera.updateMatrix()
+	// camera.updateMatrixWorld()
+	// renderer.render(scene, camera)
+	// for (let lod of lods) {
+	//   lod.update(camera)
+	// }
+	// renderer.render(scene, camera)
+	
 	var render = function render() {
 	  stats.begin();
 	
-	  // const delta = clock.getDelta()
-	
-	  var _iteratorNormalCompletion2 = true;
-	  var _didIteratorError2 = false;
-	  var _iteratorError2 = undefined;
-	
-	  try {
-	    for (var _iterator2 = keyframes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	      var keyframe = _step2.value;
-	
-	      keyframe();
-	    }
-	  } catch (err) {
-	    _didIteratorError2 = true;
-	    _iteratorError2 = err;
-	  } finally {
-	    try {
-	      if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	        _iterator2.return();
-	      }
-	    } finally {
-	      if (_didIteratorError2) {
-	        throw _iteratorError2;
-	      }
-	    }
+	  var delta = clock.getDelta();
+	  if (atpReady) {
+	    ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta * 0.8;
+	    // bboxH.update()
 	  }
+	  // innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4
+	  // innerMembrane.rotation.z = innerMembrane.rotation.z + delta*0.4
+	  // innerMembrane.rotation.x = innerMembrane.rotation.x + delta*0.4
 	
-	  var _iteratorNormalCompletion3 = true;
-	  var _didIteratorError3 = false;
-	  var _iteratorError3 = undefined;
+	  // if (innerMembrane.rotation.y % TWOPI > 0 && innerMembrane.rotation.y % TWOPI < 0.01 &&
+	  //     innerMembrane.rotation.z % TWOPI > 0 && innerMembrane.rotation.z % TWOPI < 0.01 &&
+	  //     innerMembrane.rotation.x % TWOPI > 0 && innerMembrane.rotation.x % TWOPI < 0.01 &&
+	  //     (capturerGo === 0 || capturerGo === 1)
+	  // ) {
+	  //   if (capturerGo === 0) {
+	  //     capturerGo++
+	  //     console.log('starting')
+	  //     capturer.start()
+	  //   } else if (capturerGo === 1) {
+	  //     capturerGo++
+	  //     console.log('ending')
+	  //     capturer.stop()
+	  //     capturer.save()
+	  //   }
+	  //   console.log('full Y')
+	  // }
 	
-	  try {
-	    for (var _iterator3 = lods[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	      var lod = _step3.value;
+	  // for (let keyframe of keyframes) {
+	  //   keyframe()
+	  // }
 	
-	      lod.update(camera);
-	    }
-	
-	    // controls.update(delta*0.1)
-	  } catch (err) {
-	    _didIteratorError3 = true;
-	    _iteratorError3 = err;
-	  } finally {
-	    try {
-	      if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	        _iterator3.return();
-	      }
-	    } finally {
-	      if (_didIteratorError3) {
-	        throw _iteratorError3;
-	      }
-	    }
+	  if (controlsType === 'fly') {
+	    controls.update(delta * 0.1);
 	  }
-	
 	  renderer.render(scene, camera);
 	  // capturer.capture(renderer.domElement)
+	
+	  // update octree **after** render loop
+	  // assumed to be faster than going through all LODs
+	  // hmm. low fps when trying this with atp synthases. back to for loop
+	  // LODOctree.update()
+	  // const nearbyLODS = LODOctree
+	  //   .search(camera.position, LODOctreeSearchRadius)
+	  //   .map(octreeObject => octreeObject.object.id)
+	  // const nearbyLODSLength = nearbyLODS.length
+	  // for (let i=0; i < nearbyLODSLength; i++) {
+	  //   lods[i].update(camera)
+	  // }
+	
+	  // console.time('lodUpdate')
+	  for (var i = 0; i < lods.length; i++) {
+	    lods[i].update(camera);
+	  }
+	  // console.timeEnd('lodUpdate')
 	
 	  stats.end();
 	
 	  requestAnimationFrame(render);
 	};
 	
+	// letttsss goooooo
 	render();
 
 /***/ },
@@ -8623,7 +9063,7 @@
 /* 298 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -8644,9 +9084,282 @@
 	
 	  return lod;
 	};
+	
+	var preDisableDetail = exports.preDisableDetail = function preDisableDetail(lod) {
+	  var levels = lod.levels;
+	
+	
+	  for (var i = 0; i < levels.length - 1; i++) {
+	    levels[i].object.visible = false;
+	  }
+	};
 
 /***/ },
 /* 299 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.populateMembrane = exports.getBoundingRadius = exports.getBBoxDimensions = undefined;
+	
+	var _constants = __webpack_require__(300);
+	
+	var _materialUtils = __webpack_require__(301);
+	
+	var getBBoxDimensions = exports.getBBoxDimensions = function getBBoxDimensions(geometry) {
+	  if (!geometry.boundingBox) {
+	    geometry.computeBoundingBox();
+	  }
+	
+	  var _geometry$boundingBox = geometry.boundingBox;
+	  var max = _geometry$boundingBox.max;
+	  var min = _geometry$boundingBox.min;
+	
+	  var bbox = {
+	    width: max.x - min.x,
+	    height: max.y - min.y,
+	    depth: max.z - min.z
+	  };
+	
+	  return bbox;
+	};
+	
+	var getBoundingRadius = exports.getBoundingRadius = function getBoundingRadius(geometry) {
+	  if (!geometry.boundingSphere) {
+	    geometry.computeBoundingSphere();
+	  }
+	
+	  var radius = geometry.boundingSphere.radius;
+	
+	  return radius;
+	};
+	
+	var applyScaleToBBox = function applyScaleToBBox(bbox, scale) {
+	  var x = scale.x;
+	  var y = scale.y;
+	  var z = scale.z;
+	
+	
+	  bbox.width *= x;
+	  bbox.height *= y;
+	  bbox.depth *= z;
+	
+	  return bbox;
+	};
+	
+	var populateMembrane = exports.populateMembrane = function populateMembrane(mesh, block, type) {
+	  var checkVerts = arguments.length <= 3 || arguments[3] === undefined ? function (vert) {
+	    return true;
+	  } : arguments[3];
+	  var randomSpin = arguments.length <= 4 || arguments[4] === undefined ? true : arguments[4];
+	  var rot = arguments.length <= 5 || arguments[5] === undefined ? null : arguments[5];
+	  var collisionScale = arguments.length <= 6 || arguments[6] === undefined ? 1 : arguments[6];
+	
+	  console.log('populating ' + mesh.name);
+	  var thickness = mesh.userData.thickness;
+	
+	
+	  if (mesh instanceof THREE.Group) {
+	    mesh.children.forEach(function (child) {
+	      if (child.name.indexOf('inner') !== -1 && type === 'inner') {
+	        console.log('using inner');
+	        mesh = child;
+	      } else if (child.name.indexOf('outer') !== -1 && type === 'outer') {
+	        console.log('using outer');
+	        mesh = child;
+	      }
+	    });
+	  }
+	
+	  var offset = void 0;
+	  if (type === 'inner') {
+	    offset = thickness / 2;
+	  } else if (type === 'outer') {
+	    offset = -(thickness / 2);
+	  }
+	  // console.log(`offset is ${offset}`)
+	
+	  var octree = new THREE.Octree();
+	  var verts = mesh.geometry.vertices;
+	  // console.log(`we have ${verts.length} verts`)
+	  // if (goodVerts.length > 0) {
+	  //   console.log('using goodVerts')
+	  //   verts = goodVerts
+	  // }
+	  var faces = mesh.geometry.faces;
+	  var bbox = applyScaleToBBox(getBBoxDimensions(block.geometry), block.scale);
+	  // console.log(bbox)
+	  var boundingRadius = getBoundingRadius(block.geometry);
+	  // uses half dimensions
+	  // const goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(bbox.width/2, bbox.height/2, bbox.depth/2))
+	  var goblinBox = new Goblin.RigidBody(new Goblin.BoxShape(collisionScale * (bbox.width / 2), collisionScale * (bbox.height / 2), collisionScale * (bbox.depth / 2)));
+	
+	  // Array of previously used bounding boxes
+	  var addedBlocks = [];
+	  // Group to build
+	  var proteins = new THREE.Group();
+	
+	  var addNewBox = function addNewBox(goblinBox) {
+	    var vert = goblinBox.position;
+	    var _goblinBox$rotation = goblinBox.rotation;
+	    var x = _goblinBox$rotation.x;
+	    var y = _goblinBox$rotation.y;
+	    var z = _goblinBox$rotation.z;
+	    var w = _goblinBox$rotation.w;
+	    var _goblinBox$shape = goblinBox.shape;
+	    var half_width = _goblinBox$shape.half_width;
+	    var half_height = _goblinBox$shape.half_height;
+	    var half_depth = _goblinBox$shape.half_depth;
+	
+	
+	    var newBlock = new Goblin.RigidBody(new Goblin.BoxShape(half_width, half_height, half_depth));
+	    newBlock.position = new Goblin.Vector3(vert.x, vert.y, vert.z);
+	    newBlock.rotation.set(x, y, z, w);
+	    newBlock.updateDerived();
+	
+	    addedBlocks.push(newBlock);
+	
+	    octree.add({ x: vert.x, y: vert.y, z: vert.z, radius: 4, id: addedBlocks.length - 1 });
+	    octree.update();
+	
+	    var newProtein = block.clone();
+	    newProtein.material = (0, _materialUtils.randMaterial)();
+	    newProtein.position.set(vert.x, vert.y, vert.z);
+	    newProtein.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w));
+	
+	    proteins.add(newProtein);
+	    // console.log(`adding a protein for ${mesh.name} at (${vert.x}, ${vert.y}, ${vert.z})`)
+	
+	    // TODO integrate into a debug mode
+	    // const wBox = new THREE.Mesh(
+	    //   new THREE.BoxGeometry(half_width*2, half_height*2, half_depth*2),
+	    //   new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true})
+	    // )
+	    // wBox.position.set(vert.x, vert.y, vert.z)
+	    // // wBox.geometry.translate(-newProtein.geometry.boundingBox.min.x, -newProtein.geometry.boundingBox.min.y, 0)
+	    // wBox.rotation.setFromQuaternion(new THREE.Quaternion(x, y, z, w))
+	    // scene.add(wBox)
+	  };
+	
+	  var fixVert = function fixVert(vert) {
+	    var newVert = new THREE.Vector3().copy(vert).applyEuler(mesh.rotation);
+	
+	    newVert.x = newVert.x * mesh.scale.x;
+	    newVert.y = newVert.y * mesh.scale.y;
+	    newVert.z = newVert.z * mesh.scale.z;
+	
+	    newVert.x = newVert.x + mesh.position.x;
+	    newVert.y = newVert.y + mesh.position.y;
+	    newVert.z = newVert.z + mesh.position.z;
+	
+	    return newVert;
+	  };
+	
+	  var sphereHelp = new THREE.Mesh(new THREE.SphereGeometry(2, 32, 32), (0, _materialUtils.randMaterial)());
+	  // TODO option for verts or faces?
+	  // TODO filtering options, by normal
+	  // TODO extra verts, etc
+	  for (var j = 0; j < faces.length; j++) {
+	    var face = faces[j];
+	    var faceVerts = [];
+	    // const faceVerts = [verts[face.a], verts[face.b], verts[face.c]]
+	    var a = verts[face.a];
+	    var b = verts[face.b];
+	    var c = verts[face.c];
+	
+	    if (checkVerts(a.clone().applyMatrix4(mesh.matrixWorld))) {
+	      faceVerts.push(a);
+	    }
+	    if (checkVerts(b.clone().applyMatrix4(mesh.matrixWorld))) {
+	      faceVerts.push(b);
+	    }
+	    if (checkVerts(c.clone().applyMatrix4(mesh.matrixWorld))) {
+	      faceVerts.push(c);
+	    }
+	
+	    for (var i = 0; i < faceVerts.length; i++) {
+	      var vert = fixVert(faceVerts[i]);
+	
+	      var direction = face.normal.clone();
+	
+	      vert.x = vert.x + offset * direction.x;
+	      vert.y = vert.y + offset * direction.y;
+	      vert.z = vert.z + offset * direction.z;
+	
+	      // Get angle from mesh position to this vertex
+	      var vec = face.normal.clone();
+	      var up = new THREE.Vector3(0, 1, 0);
+	      var axis = void 0;
+	      if (vec.y === 1 || vec.y === -1) {
+	        axis = new THREE.Vector3(1, 0, 0);
+	      } else {
+	        axis = new THREE.Vector3().crossVectors(up, vec);
+	      }
+	      var radians = Math.acos(vec.dot(up));
+	      var mat = new THREE.Matrix4().makeRotationAxis(axis, radians);
+	
+	      var quat = new THREE.Quaternion().setFromRotationMatrix(mat);
+	
+	      // Works better for spheres
+	      // const quat = (new THREE.Quaternion()).setFromUnitVectors(
+	      //   desiredRotation,
+	      //   (new THREE.Vector3()).copy(vert).normalize()
+	      // )
+	
+	      // Add some random spin
+	      if (randomSpin) {
+	        quat.multiply(new THREE.Quaternion().setFromAxisAngle(_constants.Y_AXIS, Math.random() * Math.PI));
+	      }
+	      if (rot) {
+	        // console.log(vert.x)
+	        if (vert.x > 0) quat.multiply(rot[0]);else if (vert.x < 0) quat.multiply(rot[1]);
+	      }
+	
+	      // Update goblinBox position to current vertex
+	      // goblinBox.position = new Goblin.Vector3(
+	      //   vert.x - block.geometry.boundingBox.min.x,
+	      //   vert.y - block.geometry.boundingBox.min.y,
+	      //   vert.z - block.geometry.boundingBox.min.z
+	      // )
+	      goblinBox.position = new Goblin.Vector3(vert.x, vert.y, vert.z);
+	      goblinBox.rotation.set(quat.x, quat.y, quat.z, quat.w);
+	      // goblinBox.scale.set(0.8, 0.8, 0.8)
+	      goblinBox.updateDerived();
+	
+	      // const sphereH = sphereHelp.clone()
+	      // sphereH.position.set(vert.x, vert.y, vert.z)
+	      // scene.add(sphereH)
+	
+	      // Look for collisions in nearby area using octree search
+	      var searchResults = octree.search(new THREE.Vector3(vert.x, vert.y, vert.z), boundingRadius * 1.5);
+	      var noCollisions = true;
+	      for (var _j = 0; _j < searchResults.length; _j++) {
+	        var collidee = addedBlocks[searchResults[_j].object.id];
+	        var contact = Goblin.GjkEpa.testCollision(goblinBox, collidee);
+	
+	        if (contact !== undefined) {
+	          // console.log('collision with vertex %d', i)
+	          noCollisions = false;
+	          break;
+	        }
+	      }
+	
+	      if (noCollisions) {
+	        // TODO this is where the "top" collision comes from. I think.
+	        // console.log('no collision with vertex %d', i)
+	        addNewBox(goblinBox);
+	      }
+	    }
+	  }
+	
+	  return proteins;
+	};
+
+/***/ },
+/* 300 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -8654,6 +9367,68 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	var TWOPI = exports.TWOPI = Math.PI * 2;
+	var Y_AXIS = exports.Y_AXIS = new THREE.Vector3(0, 1, 0);
+
+/***/ },
+/* 301 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.randMaterial = undefined;
+	
+	var _colourUtils = __webpack_require__(302);
+	
+	var randMaterial = exports.randMaterial = function randMaterial() {
+	  var transparency = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+	
+	  return new THREE.MeshLambertMaterial({
+	    color: _colourUtils.flatUIHexColors[Math.floor(Math.random() * _colourUtils.flatUIHexColors.length)],
+	    transparent: transparency,
+	    opacity: 0.6
+	  });
+	};
+
+/***/ },
+/* 302 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var flatUIHexColors = exports.flatUIHexColors = [0x1abc9c, 0x16a085, 0x2ecc71, 0x27ae60, 0x3498db, 0x2980b9, 0x9b59b6, 0x8e44ad, 0x34495e, 0x2c3e50, 0xf1c40f, 0xf39c12, 0xe67e22, 0xd35400, 0xe74c3c, 0xc0392b, 0xecf0f1, 0xbdc3c7, 0x95a5a6, 0x7f8c8d];
+	
+	var generateShades = exports.generateShades = function generateShades(hue, numOfShades) {
+	  var shades = ['hsl(' + hue + ', 100%, 50%)'];
+	
+	  for (var i = 0; i < numOfShades; i++) {
+	    shades.push('hsl(' + hue + ', ' + rand(10, 90) + '%, ' + rand(10, 90) + '%)');
+	  }
+	
+	  return shades;
+	};
+
+/***/ },
+/* 303 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.constructSynthaseSimple = exports.constructSynthase = exports.constructDimer = exports.dimerCreator = exports.crudeDimerCreator = exports.crudeSynthaseCreator = undefined;
+	
+	var _geometryUtils = __webpack_require__(299);
+	
+	var _materialUtils = __webpack_require__(301);
+	
 	var crudeSynthaseCreator = exports.crudeSynthaseCreator = function crudeSynthaseCreator() {
 	  var synthase = new THREE.Group();
 	  var barrel = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshLambertMaterial({ color: 0x12d0f6 }));
@@ -8690,23 +9465,39 @@
 	  return dimer;
 	};
 	
-	var dimerCreator = exports.dimerCreator = function dimerCreator() {
-	  var spread = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
-	  var synthase = arguments[1];
+	var dimerCreator = exports.dimerCreator = function dimerCreator(_ref) {
+	  var synthase = _ref.synthase;
+	  var _ref$spread = _ref.spread;
+	  var spread = _ref$spread === undefined ? -0.2 : _ref$spread;
+	  var _ref$rotationY = _ref.rotationY;
+	  var rotationY = _ref$rotationY === undefined ? 0 : _ref$rotationY;
+	  var _ref$rotationX = _ref.rotationX;
+	  var rotationX = _ref$rotationX === undefined ? Math.PI / 4 : _ref$rotationX;
 	
-	  var dimer = new THREE.Group();
+	  var synthaseA = synthase.clone();
+	  // for some reason, need this..
+	  synthaseA.rotation.x = rotationX;
 	
-	  var synthaseA = synthase;
 	  var synthaseB = synthase.clone();
 	
 	  var bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000);
 	  bBox.update();
 	
-	  synthaseB.rotation.y = Math.PI;
-	  synthaseB.position.set(0, 0, bBox.scale.z + spread * bBox.scale.z);
+	  synthaseA.geometry = new THREE.Geometry().fromBufferGeometry(synthaseA.geometry);
+	  synthaseA.geometry.rotateX(rotationX);
 	
-	  dimer.add(synthaseA);
-	  dimer.add(synthaseB);
+	  synthaseB.geometry = new THREE.Geometry().fromBufferGeometry(synthaseB.geometry);
+	  synthaseB.geometry.rotateX(rotationX);
+	  synthaseB.geometry.rotateY(Math.PI);
+	  synthaseB.geometry.translate(0, 0, -(bBox.scale.z + spread * bBox.scale.z));
+	
+	  var geom = synthaseA.geometry;
+	  geom.merge(synthaseB.geometry);
+	  geom.center();
+	
+	  var bufferGeom = new THREE.BufferGeometry().fromGeometry(geom);
+	
+	  var dimer = new THREE.Mesh(bufferGeom, (0, _materialUtils.randMaterial)());
 	
 	  return dimer;
 	};
@@ -8753,9 +9544,46 @@
 	
 	  return ATPSynthase;
 	};
+	
+	var constructSynthaseSimple = exports.constructSynthaseSimple = function constructSynthaseSimple(group) {
+	  var bilayerWidth = 4;
+	
+	  var scale = 1;
+	  var geometry = void 0;
+	  var components = [];
+	  for (var i = 1; i < group.children.length; i++) {
+	    var mesh = group.children[i];
+	
+	    // TODO define naming conventions to make this work the same for all proteins
+	    mesh.name = mesh.name.replace(/_ShapeIndexedFaceSet_/, '_');
+	    var section = mesh.name.split('_')[1];
+	
+	    if (section === 'TM-Section') {
+	      var bbox = (0, _geometryUtils.getBBoxDimensions)(mesh.geometry);
+	      scale = bilayerWidth / bbox.height;
+	    }
+	
+	    if (i === 1) {
+	      geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry);
+	    } else if (i > 1) {
+	      components.push(new THREE.Geometry().fromBufferGeometry(mesh.geometry));
+	    }
+	  }
+	
+	  for (var _i = 0; _i < components.length; _i++) {
+	    geometry.merge(components[_i]);
+	  }
+	
+	  geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+	
+	  var porin = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0xb04921, side: THREE.DoubleSide }));
+	  porin.scale.set(scale, scale, scale);
+	
+	  return porin;
+	};
 
 /***/ },
-/* 300 */
+/* 304 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8767,7 +9595,7 @@
 	
 	var _loaders = __webpack_require__(297);
 	
-	var _UVUtil = __webpack_require__(301);
+	var _UVUtil = __webpack_require__(305);
 	
 	var constructCristae = exports.constructCristae = function constructCristae(group) {
 	  var phosphosTopAlbedo = _loaders.textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png');
@@ -8831,7 +9659,7 @@
 	};
 
 /***/ },
-/* 301 */
+/* 305 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -8866,7 +9694,7 @@
 	};
 
 /***/ },
-/* 302 */
+/* 306 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -8903,6 +9731,106 @@
 	  });
 	
 	  return ETC;
+	};
+
+/***/ },
+/* 307 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.constructETC2 = undefined;
+	
+	var _geometryUtils = __webpack_require__(299);
+	
+	var constructETC2 = exports.constructETC2 = function constructETC2(group) {
+	  var bilayerWidth = 4;
+	
+	  var scale = 1;
+	  var geometry = void 0;
+	  var components = [];
+	  for (var i = 1; i < group.children.length; i++) {
+	    var mesh = group.children[i];
+	
+	    // TODO define naming conventions to make this work the same for all proteins
+	    mesh.name = mesh.name.replace(/_ShapeIndexedFaceSet_/, '_');
+	    var section = mesh.name.split('_')[1];
+	
+	    if (section === 'TM-Section') {
+	      var bbox = (0, _geometryUtils.getBBoxDimensions)(mesh.geometry);
+	      scale = bilayerWidth / bbox.height;
+	    }
+	
+	    if (i === 1) {
+	      geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry);
+	    } else if (i > 1) {
+	      components.push(new THREE.Geometry().fromBufferGeometry(mesh.geometry));
+	    }
+	  }
+	
+	  for (var _i = 0; _i < components.length; _i++) {
+	    geometry.merge(components[_i]);
+	  }
+	
+	  geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+	
+	  var porin = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0xb04921, side: THREE.DoubleSide }));
+	  porin.scale.set(scale, scale, scale);
+	
+	  return porin;
+	};
+
+/***/ },
+/* 308 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.constructPorin = undefined;
+	
+	var _geometryUtils = __webpack_require__(299);
+	
+	var constructPorin = exports.constructPorin = function constructPorin(group) {
+	  var bilayerWidth = 4;
+	
+	  var scale = 1;
+	  var geometry = void 0;
+	  var components = [];
+	  for (var i = 1; i < group.children.length; i++) {
+	    var mesh = group.children[i];
+	
+	    // TODO define naming conventions to make this work the same for all proteins
+	    mesh.name = mesh.name.replace(/_ShapeIndexedFaceSet_/, '_');
+	    var section = mesh.name.split('_')[1];
+	
+	    if (section === 'TM-Section') {
+	      var bbox = (0, _geometryUtils.getBBoxDimensions)(mesh.geometry);
+	      scale = bilayerWidth / bbox.height;
+	    }
+	
+	    if (i === 1) {
+	      geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry);
+	    } else if (i > 1) {
+	      components.push(new THREE.Geometry().fromBufferGeometry(mesh.geometry));
+	    }
+	  }
+	
+	  for (var _i = 0; _i < components.length; _i++) {
+	    geometry.merge(components[_i]);
+	  }
+	
+	  geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+	
+	  var porin = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0xb04921, side: THREE.DoubleSide }));
+	  porin.scale.set(scale, scale, scale);
+	
+	  return porin;
 	};
 
 /***/ }
