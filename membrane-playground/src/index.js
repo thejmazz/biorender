@@ -40,7 +40,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 
 import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
 import { makeLOD } from './lib/lod.js'
-import { populateMembrane, getBBoxDimensions } from './lib/geometry-utils.js'
+import { populateMembrane, getBBoxDimensions, getBoundingRadius } from './lib/geometry-utils.js'
 
 import {
   crudeSynthaseCreator,
@@ -181,6 +181,7 @@ let pinchesBoxes = []
 let wallsBoxes = []
 let walls = []
 let pinches = []
+let outerMembrane
 async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
@@ -188,7 +189,7 @@ async function makePiecesMito() {
   let desiredWidth = 3000
   let scale
 
-  let outerMembrane, base
+  let base
 
   for (let i=1; i < mitochondria.children.length; i++) {
     const mesh = mitochondria.children[i]
@@ -301,9 +302,8 @@ const useWalls = (walls) => {
 
 let ATPSynthase
 const usePinch = (pinches) => {
-  // 17
-  // const pinch = pinches[16]
-
+  // use max z factor from normals on 90% of z of mesh to determine which way its pointing
+  // kinda sketchy. will only work if mito is in left-right. after this, you can rotate.
   const getSidedness = (pinch) => {
     const bbox = getBBoxDimensions(pinch.geometry)
     const zThreshold = pinch.geometry.boundingBox.min.z + bbox.depth*0.9
@@ -330,10 +330,6 @@ const usePinch = (pinches) => {
 
     return side
   }
-
-  // console.log(getSidedness(pinches[16]))
-  // console.log(getSidedness(pinches[17]))
-
 
   const doPinch = ({pinch, side}) => {
     const bbox = getBBoxDimensions(pinch.geometry)
@@ -443,6 +439,9 @@ const usePinch = (pinches) => {
 
 let vesicle, ETC, atpPivot, bboxH
 let atpReady = false
+let lods = []
+// so we don't have to update **every** LOD **every** frame
+const LODOctree = new THREE.Octree()
 async function init() {
   initGlobalLights()
   initMembrane()
@@ -454,14 +453,13 @@ async function init() {
     padding: 0,
   }
 
-  const { x, y, thickness, padding } = membraneDimensions
+  // const { x, y, thickness, padding } = membraneDimensions
 
   vesicle = initVesicle({name: 'test-vesicle'})
   // console.log(getChildIndexByName('Inner-Membrane', vesicle))
 
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
 
-  // const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // scene.add(porin)
   etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
   // etc2.position.set(0, 2, 0)
@@ -469,9 +467,11 @@ async function init() {
 
   ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase-singular.obj'))
   ATPSynthase.geometry.computeBoundingBox()
-  // SKETCHY AF
-  ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
+  // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
+  // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
   ATPSynthase.geometry.center()
+  // scene.add(ATPSynthase)
+
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
   const dimer = dimerCreator({synthase: ATPSynthase})
@@ -481,21 +481,26 @@ async function init() {
   dimer2.rotation.y = Math.PI/2
   // scene.add(dimer2)
 
-  // const box = new THREE.Box3().setFromObject(ATPSynthase)
-  // console.log(ATPSynthase.position)
-  // box.center(mesh.position) // this re-sets the mesh position
-  // console.log(ATPSynthase.position)
-  // ATPSynthase.position.multiplyScalar(-1)
-  // atpPivot = new THREE.Group()
-  // scene.add(atpPivot)
-  // atpPivot.add(ATPSynthase)
 
+  const bboxA = getBBoxDimensions(ATPSynthase.geometry)
+  const atpRadius = getBoundingRadius(ATPSynthase.geometry)
+  const boxy = new THREE.Mesh(
+    new THREE.BoxGeometry(bboxA.width, bboxA.height, bboxA.depth),
+    randMaterial()
+  )
+  const testLOD = makeLOD({
+    meshes: [ATPSynthase, boxy],
+    distances: [4, 6].map(num => atpRadius*num)
+  })
+  testLOD.position.set(0, -20, 0)
+  testLOD.updateMatrix()
+  lods.push(testLOD)
+  const { x, y, z } = testLOD.position
+  LODOctree.add({x, y, z, radius: atpRadius, id: lods.length - 1})
+  LODOctree.update()
+  console.log(LODOctree.search(new THREE.Vector3().clone(testLOD.position), 100))
+  scene.add(testLOD)
 
-  // atpReady = true
-  // scene.add(ATPSynthase)
-  // bboxH = new THREE.BoundingBoxHelper(ATPSynthase, 0x000000)
-  // bboxH.update()
-  // scene.add(bboxH)
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
@@ -510,6 +515,10 @@ async function init() {
 
   useWalls(walls)
   usePinch(pinches)
+
+  const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
+  // const porins = populateMembrane(outerMembrane, porin, 'outer')
+  // scene.add(porins)
 }
 
 init()
@@ -521,6 +530,8 @@ init()
 // window.capturer = new CCapture({format: 'png'})
 
 const clock = new THREE.Clock()
+
+let LODOctreeSearchRadius = 100
 
 window.capturerGo = -1
 const stats = createStats()
@@ -558,17 +569,29 @@ const render = () => {
   //   keyframe()
   // }
 
-  // for (let lod of lods) {
-  //   lod.update(camera)
-  // }
 
   // controls.update(delta*0.1)
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
+
+  // update octree **after** render loop
+  LODOctree.update()
+  const nearbyLODS = LODOctree
+    .search(camera.position, LODOctreeSearchRadius)
+    .map(octreeObject => octreeObject.object.id)
+  const nearbyLODSLength = nearbyLODS.length
+  for (let i=0; i < nearbyLODSLength; i++) {
+    lods[i].update(camera)
+  }
+
+  // for (let lod of lods) {
+  //   lod.update(camera)
+  // }
 
   stats.end()
 
   requestAnimationFrame(render)
 }
 
+// letttsss goooooo
 render()

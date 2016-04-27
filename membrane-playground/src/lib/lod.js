@@ -1,3 +1,5 @@
+'use strict'
+
 export const makeLOD = ({meshes, distances}) => {
   const lod = new THREE.LOD()
 
