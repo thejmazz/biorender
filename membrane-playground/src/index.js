@@ -185,11 +185,27 @@ let outerMembrane
 let rim
 async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
-  const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
-  // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
-  const phosphosBump = textureLoader.load('/textures/phospholipids/phospholipids_b.png')
-  // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
 
+  const triFaceMaterials = (geometry) => {
+    geometry.faceVertexUvs[0] = []
+
+    for (let i = 0; i < geometry.faces.length;  i+= 2) {
+
+      geometry.faceVertexUvs[0].push([
+        new THREE.Vector2(0 , 0),
+        new THREE.Vector2(0 , 1),
+        new THREE.Vector2(1 , 0),
+      ])
+
+      geometry.faceVertexUvs[0].push([
+        new THREE.Vector2(0 , 1),
+        new THREE.Vector2(1 , 1),
+        new THREE.Vector2(1 , 0),
+      ])
+    }
+
+    geometry.uvsNeedUpdate = true
+  }
 
   // let pinches = []
   let desiredWidth = 3000
@@ -210,6 +226,7 @@ async function makePiecesMito() {
     } else if (name.indexOf('Wall') !== -1) {
       // console.log('wall: ', name)
       mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
+      triFaceMaterials(mesh.geometry)
       walls.push(mesh)
     } else if (name.indexOf('Membrane.Outer') !== -1) {
       // console.log('outer membrane: ', name)
@@ -222,26 +239,7 @@ async function makePiecesMito() {
     } else if (name.indexOf('RIM') !== -1) {
       mesh.geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
 
-      // const faceMat = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
-
-      mesh.geometry.faceVertexUvs[0] = []
-
-      for (let i = 0; i < mesh.geometry.faces.length;  i+= 2) {
-
-        mesh.geometry.faceVertexUvs[0].push([
-          new THREE.Vector2(0 , 0),
-          new THREE.Vector2(0 , 1),
-          new THREE.Vector2(1 , 0),
-        ])
-
-        mesh.geometry.faceVertexUvs[0].push([
-          new THREE.Vector2(0 , 1),
-          new THREE.Vector2(1 , 1),
-          new THREE.Vector2(1 , 0),
-        ])
-      }
-
-      mesh.geometry.uvsNeedUpdate = true
+      triFaceMaterials(mesh.geometry)
 
       // mesh.material = faceMat
       // mesh.material = new THREE.MeshNormalMaterial()
@@ -269,7 +267,7 @@ async function makePiecesMito() {
     wall.material = randMaterial()
     // wall.material.wireframe = true
     wall.scale.set(scale, scale, scale)
-    scene.add(wall)
+    // scene.add(wall)
 
     // const bbox = new THREE.BoundingBoxHelper(wall, 0x000000)
     // bbox.update()
@@ -285,9 +283,9 @@ async function makePiecesMito() {
   base.scale.set(scale, scale, scale)
   scene.add(base)
 
-  rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+  // rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
   rim.scale.set(scale, scale, scale)
-  scene.add(rim)
+  // scene.add(rim)
 }
 
 async function makeUnifiedMito() {
@@ -336,12 +334,13 @@ const useWalls = ({walls, lods}) => {
       etcMed.material = child.material
       etcMed.rotation.setFromQuaternion(child.quaternion)
 
-      // const etcLow = etc2low.clone()
-      // etcLow.material = child.material
+      const etcLow = etc2low.clone()
+      etcLow.material = child.material
+      etcLow.rotation.setFromQuaternion(child.quaternion)
 
       const etcLOD = makeLOD({
-        meshes: [child, etcMed, new THREE.Object3D()],
-        distances: [1, 2, 25].map(num => radius*num)
+        meshes: [child, etcMed, etcLow, new THREE.Object3D()],
+        distances: [1, 2, 4, 20].map(num => radius*num)
       })
       etcLOD.position.set(child.position.x, child.position.y, child.position.z)
       child.position.set(0, 0, 0)
@@ -497,7 +496,7 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
       )
       const dimerLOD = makeLOD({
         meshes: [newDimer, newDimerLow, new THREE.Object3D()],
-        distances: [2, 3, 50].map(num => radius*num)
+        distances: [2, 3, 25].map(num => radius*num)
       })
       dimerLOD.position.set(x, currentY, z)
       dimerLOD.updateMatrix()
@@ -615,6 +614,21 @@ async function init() {
 
   useWalls({walls, lods})
   usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
+
+  const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
+  // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
+  const phosphosBump = textureLoader.load('/textures/phospholipids/phospholipids_b.png')
+  // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
+  rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+  scene.add(rim)
+
+  const phosphosTopTexture = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
+  const phosphosTopBump = textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png')
+  const wallMat = new THREE.MeshPhongMaterial({map: phosphosTopTexture, bumpMap: phosphosTopBump})
+  walls.forEach( (wall) => {
+    wall.material = wallMat
+    scene.add(wall)
+  })
 
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // const porins = populateMembrane(outerMembrane, porin, 'outer')
