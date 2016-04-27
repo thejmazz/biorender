@@ -15,10 +15,12 @@ def subsurf(level, render_levels=-1, apply=True):
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Subsurf')
 
 @objectMode
-def solidify(offset, thickness):
+def solidify(offset, thickness, use_rim=True, use_rim_only=False):
     bpy.ops.object.modifier_add(type='SOLIDIFY')
     bpy.context.object.modifiers['Solidify'].offset = offset
     bpy.context.object.modifiers['Solidify'].thickness = thickness
+    bpy.context.object.modifiers['Solidify'].use_rim = use_rim
+    bpy.context.object.modifiers['Solidify'].use_rim_only = use_rim_only
     bpy.ops.object.modifier_apply(apply_as='DATA', modifier='Solidify')
 
 @objectMode

@@ -182,8 +182,14 @@ let wallsBoxes = []
 let walls = []
 let pinches = []
 let outerMembrane
+let rim
 async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
+  const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
+  // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
+  const phosphosBump = textureLoader.load('/textures/phospholipids/phospholipids_b.png')
+  // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
+
 
   // let pinches = []
   let desiredWidth = 3000
@@ -195,6 +201,7 @@ async function makePiecesMito() {
     const mesh = mitochondria.children[i]
 
     const name = mesh.name.replace(/Cube\.\d+_?/, '')
+    // console.log(name)
 
     if (name.indexOf('Pinch') !== -1) {
       // console.log('pinch: ', name)
@@ -212,6 +219,33 @@ async function makePiecesMito() {
     } else if (name.indexOf('Base') !== -1) {
       // console.log('base: ', name)
       base = mesh
+    } else if (name.indexOf('RIM') !== -1) {
+      mesh.geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
+
+      // const faceMat = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+
+      mesh.geometry.faceVertexUvs[0] = []
+
+      for (let i = 0; i < mesh.geometry.faces.length;  i+= 2) {
+
+        mesh.geometry.faceVertexUvs[0].push([
+          new THREE.Vector2(0 , 0),
+          new THREE.Vector2(0 , 1),
+          new THREE.Vector2(1 , 0),
+        ])
+
+        mesh.geometry.faceVertexUvs[0].push([
+          new THREE.Vector2(0 , 1),
+          new THREE.Vector2(1 , 1),
+          new THREE.Vector2(1 , 0),
+        ])
+      }
+
+      mesh.geometry.uvsNeedUpdate = true
+
+      // mesh.material = faceMat
+      // mesh.material = new THREE.MeshNormalMaterial()
+      rim = mesh
     } else {
       console.log('else: ', name)
     }
@@ -250,6 +284,10 @@ async function makePiecesMito() {
   base.material = randMaterial()
   base.scale.set(scale, scale, scale)
   scene.add(base)
+
+  rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+  rim.scale.set(scale, scale, scale)
+  scene.add(rim)
 }
 
 async function makeUnifiedMito() {
@@ -268,7 +306,7 @@ async function makeUnifiedMito() {
   meshes.forEach(mesh => scene.add(mesh))
 }
 
-let etc2
+let etc2, etc2med, etc2low
 const useWalls = ({walls, lods}) => {
   // const wall = walls[17]
 
@@ -290,10 +328,11 @@ const useWalls = ({walls, lods}) => {
 
       const etcBox2 = etcBox.clone()
       etcBox2.material = child.material
+      etcBox2.visible = false
 
       const etcLOD = makeLOD({
-        meshes: [child, etcBox2],
-        distances: [4, 6].map(num => radius*num)
+        meshes: [child, etc2med, etc2low, new THREE.Object3D()],
+        distances: [2, 4, 5, 20].map(num => radius*num)
       })
       etcLOD.position.set(child.position.x, child.position.y, child.position.z)
       child.position.set(0, 0, 0)
@@ -484,7 +523,9 @@ async function init() {
   // const objy = new THREE.Mesh(new THREE.TorusGeometry( 10, 3, 16, 100 ), randMaterial())
 
   // scene.add(porin)
-  etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/ETC-centered.obj'))
+  etc2 = constructETC2(await OBJLoaderAsync('/models/ETC/etc2-0.1.obj'))
+  etc2med = constructETC2(await OBJLoaderAsync('/models/ETC/etc2-0.05.obj'))
+  etc2low = constructETC2(await OBJLoaderAsync('/models/ETC/etc2-0.01.obj'))
   // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
 
