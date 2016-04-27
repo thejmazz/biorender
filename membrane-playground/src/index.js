@@ -309,6 +309,8 @@ async function makeUnifiedMito() {
 let etc2, etc2med, etc2low
 const useWalls = ({walls, lods}) => {
   // const wall = walls[17]
+  console.log(etc2med)
+  console.log(etc2low)
 
   const radius = getBoundingRadius(etc2.geometry)
   const bbox = new THREE.BoundingBoxHelper(etc2)
@@ -331,8 +333,8 @@ const useWalls = ({walls, lods}) => {
       etcBox2.visible = false
 
       const etcLOD = makeLOD({
-        meshes: [child, etc2med, etc2low, new THREE.Object3D()],
-        distances: [2, 4, 5, 20].map(num => radius*num)
+        meshes: [child, etc2med, etc2low],
+        distances: [2, 4, 5].map(num => radius*num)
       })
       etcLOD.position.set(child.position.x, child.position.y, child.position.z)
       child.position.set(0, 0, 0)
@@ -353,8 +355,11 @@ const useWalls = ({walls, lods}) => {
 }
 
 // let ATPSynthase
+let ATPSynthaseMed, ATPSynthaseLow
 const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
   const parentDimer = dimerCreator({synthase: ATPSynthase})
+  const parentDimerMed = dimerCreator({synthase: ATPSynthaseMed})
+  const parentDimerLow = dimerCreator({synthase: ATPSynthaseLow})
 
   // use max z factor from normals on 90% of z of mesh to determine which way its pointing
   // kinda sketchy. will only work if mito is in left-right. after this, you can rotate.
@@ -443,6 +448,19 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
     }
     dimer.rotation.y = Math.PI/2
 
+    const dimerLow = parentDimerLow.clone()
+    // let x = min.x + (max.x - min.x)/2
+    // let y = max.y
+    // let z
+    if (side === 'towards') {
+      // z = max.z
+      dimerLow.rotation.z = Math.PI/2
+    } else if (side === 'away') {
+      // z = min.z
+      dimerLow.rotation.z = -Math.PI/2
+    }
+    dimerLow.rotation.y = Math.PI/2
+
     const dimerBbox = new THREE.BoundingBoxHelper(dimer)
     dimerBbox.update()
 
@@ -462,6 +480,8 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
       const newDimer = dimer.clone()
       // newDimer.position.set(x, currentY, z)
       newDimer.material = randMaterial()
+      const newDimerLow = dimerLow.clone()
+      newDimerLow.material = newDimer.material
 
       const radius = getBoundingRadius(newDimer.geometry)
       const newDimerBox = new THREE.Mesh(
@@ -469,8 +489,8 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
         randMaterial()
       )
       const dimerLOD = makeLOD({
-        meshes: [newDimer, newDimerBox],
-        distances: [4, 6].map(num => radius*num)
+        meshes: [newDimer, newDimerLow, new THREE.Object3D()],
+        distances: [2, 3, 50].map(num => radius*num)
       })
       dimerLOD.position.set(x, currentY, z)
       dimerLOD.updateMatrix()
@@ -529,12 +549,20 @@ async function init() {
   // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
 
-  const ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase-singular.obj'))
+  const ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase2-0.1.obj'))
   ATPSynthase.geometry.computeBoundingBox()
   // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
   // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
   ATPSynthase.geometry.center()
   // scene.add(ATPSynthase)
+
+  ATPSynthaseMed = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase2-0.05.obj'))
+  ATPSynthaseMed.geometry.computeBoundingBox()
+  ATPSynthaseMed.geometry.center()
+
+  ATPSynthaseLow = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase2-0.01.obj'))
+  ATPSynthaseLow.geometry.computeBoundingBox()
+  ATPSynthaseLow.geometry.center()
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
