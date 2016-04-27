@@ -7803,7 +7803,7 @@
 	        switch (_context.prev = _context.next) {
 	          case 0:
 	            _context.next = 2;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/Mitochondria/mitochondria.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/mitochondria.obj');
 	
 	          case 2:
 	            mitochondria = _context.sent;
@@ -7926,7 +7926,7 @@
 	        switch (_context2.prev = _context2.next) {
 	          case 0:
 	            _context2.next = 2;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/Mitochondria/mitochondria_unified.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/mitochondria_unified.obj');
 	
 	          case 2:
 	            mitochondria = _context2.sent;
@@ -7990,25 +7990,25 @@
 	
 	            // scene.add(porin)
 	            _context3.next = 6;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/ETC/etc2-0.1.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ETC/etc2-0.1.obj');
 	
 	          case 6:
 	            _context3.t0 = _context3.sent;
 	            etc2 = (0, _etcCentered.constructETC2)(_context3.t0);
 	            _context3.next = 10;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/ETC/etc2-0.05.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ETC/etc2-0.05.obj');
 	
 	          case 10:
 	            _context3.t1 = _context3.sent;
 	            etc2med = (0, _etcCentered.constructETC2)(_context3.t1);
 	            _context3.next = 14;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/ETC/etc2-0.01.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ETC/etc2-0.01.obj');
 	
 	          case 14:
 	            _context3.t2 = _context3.sent;
 	            etc2low = (0, _etcCentered.constructETC2)(_context3.t2);
 	            _context3.next = 18;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.1.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.1.obj');
 	
 	          case 18:
 	            _context3.t3 = _context3.sent;
@@ -8021,7 +8021,7 @@
 	            // scene.add(ATPSynthase)
 	
 	            _context3.next = 24;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.05.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.05.obj');
 	
 	          case 24:
 	            _context3.t4 = _context3.sent;
@@ -8031,7 +8031,7 @@
 	            ATPSynthaseMed.geometry.center();
 	
 	            _context3.next = 30;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.01.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.01.obj');
 	
 	          case 30:
 	            _context3.t5 = _context3.sent;
@@ -8122,7 +8122,7 @@
 	            scene.add(outerMembrane);
 	
 	            _context3.next = 73;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender/github.io/biorender/models/Mitochondria/Outer-Membrane/porin.obj');
+	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/Outer-Membrane/porin.obj');
 	
 	          case 73:
 	            _context3.t6 = _context3.sent;
