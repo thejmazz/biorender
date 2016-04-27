@@ -92,13 +92,19 @@ const getChildIndexByName = (name, group) => {
 const OBJLoader = new THREE.OBJLoader()
 
 // === CONTROLS ===
-// const controls = new THREE.OrbitControls(camera, renderer.domElement)
-const controls = new THREE.FlyControls(camera)
-controls.movementSpeed = 500 //50 //5 //0.5
-controls.domElement = renderer.domElement
-controls.rollSpeed = (Math.PI / 6)*10
-controls.autoForward = false
-controls.dragToLook = false
+let controls
+let controlsType = 'orbit'
+
+if (controlsType === 'orbit') {
+  controls = new THREE.OrbitControls(camera, renderer.domElement)
+} else if (controlsType === 'fly') {
+  controls = new THREE.FlyControls(camera)
+  controls.movementSpeed = 500 //50 //5 //0.5
+  controls.domElement = renderer.domElement
+  controls.rollSpeed = (Math.PI / 6)*10
+  controls.autoForward = false
+  controls.dragToLook = false
+}
 
 // === INIT METHODS ===
 
@@ -715,7 +721,9 @@ const render = () => {
   // }
 
 
-  controls.update(delta*0.1)
+  if (controlsType === 'fly') {
+    controls.update(delta*0.1)
+  }
   renderer.render(scene, camera)
   // capturer.capture(renderer.domElement)
 
