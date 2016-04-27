@@ -13,3 +13,11 @@ export const makeLOD = ({meshes, distances}) => {
 
   return lod
 }
+
+export const preDisableDetail = (lod) => {
+  const { levels } = lod
+
+  for (let i=0; i < levels.length - 1; i++) {
+    levels[i].object.visible = false
+  }
+}

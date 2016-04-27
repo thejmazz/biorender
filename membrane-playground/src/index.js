@@ -39,7 +39,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 // === IMPORTS ===
 
 import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
-import { makeLOD } from './lib/lod.js'
+import { makeLOD, preDisableDetail } from './lib/lod.js'
 import { populateMembrane, getBBoxDimensions, getBoundingRadius } from './lib/geometry-utils.js'
 
 import {
@@ -300,8 +300,10 @@ const useWalls = (walls) => {
   // }
 }
 
-let ATPSynthase
-const usePinch = (pinches) => {
+// let ATPSynthase
+const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
+  const parentDimer = dimerCreator({synthase: ATPSynthase})
+
   // use max z factor from normals on 90% of z of mesh to determine which way its pointing
   // kinda sketchy. will only work if mito is in left-right. after this, you can rotate.
   const getSidedness = (pinch) => {
@@ -330,6 +332,7 @@ const usePinch = (pinches) => {
 
     return side
   }
+
 
   const doPinch = ({pinch, side}) => {
     const bbox = getBBoxDimensions(pinch.geometry)
@@ -375,32 +378,20 @@ const usePinch = (pinches) => {
     max.multiplyScalar(pinch.scale.x)
     min.multiplyScalar(pinch.scale.x)
 
+    const dimer = parentDimer.clone()
     let x = min.x + (max.x - min.x)/2
     let y = max.y
-    // for 17,
-    // let z = max.z
-    // for 16,
-    // let z = min.z
     let z
     if (side === 'towards') {
       z = max.z
-    } else if (side === 'away') {
-      z = min.z
-    }
-
-    const dimer = dimerCreator({synthase: ATPSynthase})
-    // for 17,
-    // dimer.rotation.z = Math.PI/2
-    // for 16,
-    // dimer.rotation.z = -Math.PI/2
-    if (side === 'towards') {
       dimer.rotation.z = Math.PI/2
     } else if (side === 'away') {
+      z = min.z
       dimer.rotation.z = -Math.PI/2
     }
-
     dimer.rotation.y = Math.PI/2
-    const dimerBbox = new THREE.BoundingBoxHelper(dimer, 0x000000)
+
+    const dimerBbox = new THREE.BoundingBoxHelper(dimer)
     dimerBbox.update()
 
     let currentY = y
@@ -417,9 +408,29 @@ const usePinch = (pinches) => {
     let globalMinY = makeGlobalMinY(0.1, pinch)
     while (currentY > globalMinY) {
       const newDimer = dimer.clone()
-      newDimer.position.set(x, currentY, z)
+      // newDimer.position.set(x, currentY, z)
       newDimer.material = randMaterial()
-      scene.add(newDimer)
+
+      // const bbox = getBBoxDimensions(newDimer.geometry)
+      const radius = getBoundingRadius(newDimer.geometry)
+      const newDimerBox = new THREE.Mesh(
+        new THREE.BoxGeometry(dimerBbox.scale.x, dimerBbox.scale.y, dimerBbox.scale.z),
+        randMaterial()
+      )
+      const dimerLOD = makeLOD({
+        meshes: [newDimer, newDimerBox],
+        distances: [4, 6].map(num => radius*num)
+      })
+      dimerLOD.position.set(x, currentY, z)
+      dimerLOD.updateMatrix()
+      lods.push(dimerLOD)
+      // const { x, y, z } = dimerLOD.position
+      // LODOctree.add({x, y, z, radius, id: lods.length - 1})
+      preDisableDetail(dimerLOD)
+      scene.add(dimerLOD)
+
+      // newDimer.position.set(x, currentY, z)
+      // scene.add(newDimer)
 
       currentY -= dimerBbox.scale.y*1.5
     }
@@ -465,7 +476,7 @@ async function init() {
   // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
 
-  ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase-singular.obj'))
+  const ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase-singular.obj'))
   ATPSynthase.geometry.computeBoundingBox()
   // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
   // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
@@ -497,8 +508,9 @@ async function init() {
   lods.push(testLOD)
   const { x, y, z } = testLOD.position
   LODOctree.add({x, y, z, radius: atpRadius, id: lods.length - 1})
-  LODOctree.update()
-  console.log(LODOctree.search(new THREE.Vector3().clone(testLOD.position), 100))
+  // LODOctree.update()
+  // console.log(LODOctree.search(new THREE.Vector3().clone(testLOD.position), 100))
+  preDisableDetail(testLOD)
   scene.add(testLOD)
 
 
@@ -514,7 +526,7 @@ async function init() {
   await makePiecesMito()
 
   useWalls(walls)
-  usePinch(pinches)
+  usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
 
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // const porins = populateMembrane(outerMembrane, porin, 'outer')
@@ -531,10 +543,21 @@ init()
 
 const clock = new THREE.Clock()
 
-let LODOctreeSearchRadius = 100
+let LODOctreeSearchRadius = 50
 
 window.capturerGo = -1
 const stats = createStats()
+
+// update all LODs before first render
+// camera.updateMatrix()
+// camera.updateMatrixWorld()
+// renderer.render(scene, camera)
+// for (let lod of lods) {
+//   lod.update(camera)
+// }
+// renderer.render(scene, camera)
+
+
 const render = () => {
   stats.begin()
 
@@ -575,18 +598,20 @@ const render = () => {
   // capturer.capture(renderer.domElement)
 
   // update octree **after** render loop
-  LODOctree.update()
-  const nearbyLODS = LODOctree
-    .search(camera.position, LODOctreeSearchRadius)
-    .map(octreeObject => octreeObject.object.id)
-  const nearbyLODSLength = nearbyLODS.length
-  for (let i=0; i < nearbyLODSLength; i++) {
+  // assumed to be faster than going through all LODs
+  // hmm. low fps when trying this with atp synthases. back to for loop
+  // LODOctree.update()
+  // const nearbyLODS = LODOctree
+  //   .search(camera.position, LODOctreeSearchRadius)
+  //   .map(octreeObject => octreeObject.object.id)
+  // const nearbyLODSLength = nearbyLODS.length
+  // for (let i=0; i < nearbyLODSLength; i++) {
+  //   lods[i].update(camera)
+  // }
+
+  for (let i=0; i < lods.length; i++) {
     lods[i].update(camera)
   }
-
-  // for (let lod of lods) {
-  //   lod.update(camera)
-  // }
 
   stats.end()
 
