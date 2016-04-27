@@ -270,47 +270,44 @@ async function makeUnifiedMito() {
 
 let etc2
 const useWalls = ({walls, lods}) => {
-  const wall = walls[17]
+  // const wall = walls[17]
 
-  wall.userData.thickness = 4
-  const etcs = populateMembrane(wall, etc2, 'outer')
-  // console.log(etcs)
+  const doWall = (wall) => {
+    wall.userData.thickness = 4
+    const etcs = populateMembrane(wall, etc2, 'outer')
 
-  for (let j=0; j < etcs.children.length; j++) {
-    const child = etcs.children[j]
+    for (let j=0; j < etcs.children.length; j++) {
+      const child = etcs.children[j]
 
-    const radius = getBoundingRadius(child.geometry)
-    const bbox = new THREE.BoundingBoxHelper(child)
-    bbox.update()
+      const radius = getBoundingRadius(child.geometry)
+      const bbox = new THREE.BoundingBoxHelper(child)
+      bbox.update()
 
-    const etcBox = new THREE.Mesh(
-      new THREE.BoxGeometry(bbox.scale.x, bbox.scale.y, bbox.scale.z),
-      child.material
-    )
+      const etcBox = new THREE.Mesh(
+        new THREE.BoxGeometry(bbox.scale.x, bbox.scale.y, bbox.scale.z),
+        child.material
+      )
 
-    const etcLOD = makeLOD({
-      meshes: [child, etcBox],
-      distances: [4, 6].map(num => radius*num)
-    })
-    etcLOD.position.set(child.position.x, child.position.y, child.position.z)
-    child.position.set(0, 0, 0)
-    etcLOD.updateMatrix()
-    lods.push(etcLOD)
-    preDisableDetail(etcLOD)
-    scene.add(etcLOD)
+      const etcLOD = makeLOD({
+        meshes: [child, etcBox],
+        distances: [4, 6].map(num => radius*num)
+      })
+      etcLOD.position.set(child.position.x, child.position.y, child.position.z)
+      child.position.set(0, 0, 0)
+      etcLOD.updateMatrix()
+      lods.push(etcLOD)
+      preDisableDetail(etcLOD)
+      scene.add(etcLOD)
+    }
   }
 
+  // doWall(wall)
 
+  for (let i=0; i < walls.length; i++) {
+    const wall = walls[i]
 
-  // scene.add(etcs)
-
-  // for (let i=0; i < walls.length; i++) {
-  //   const wall = walls[i]
-  //
-  //   wall.userData.thickness = 4
-  //   const etcs = populateMembrane(wall, etc2, 'outer')
-  //   scene.add(etcs)
-  // }
+    doWall(wall)
+  }
 }
 
 // let ATPSynthase
