@@ -272,6 +272,15 @@ let etc2
 const useWalls = ({walls, lods}) => {
   // const wall = walls[17]
 
+  const radius = getBoundingRadius(etc2.geometry)
+  const bbox = new THREE.BoundingBoxHelper(etc2)
+  bbox.update()
+
+  const etcBox = new THREE.Mesh(
+    new THREE.BoxBufferGeometry(bbox.scale.x, bbox.scale.y, bbox.scale.z),
+    randMaterial()
+  )
+
   const doWall = (wall) => {
     wall.userData.thickness = 4
     const etcs = populateMembrane(wall, etc2, 'outer')
@@ -279,17 +288,11 @@ const useWalls = ({walls, lods}) => {
     for (let j=0; j < etcs.children.length; j++) {
       const child = etcs.children[j]
 
-      const radius = getBoundingRadius(child.geometry)
-      const bbox = new THREE.BoundingBoxHelper(child)
-      bbox.update()
-
-      const etcBox = new THREE.Mesh(
-        new THREE.BoxGeometry(bbox.scale.x, bbox.scale.y, bbox.scale.z),
-        child.material
-      )
+      const etcBox2 = etcBox.clone()
+      etcBox2.material = child.material
 
       const etcLOD = makeLOD({
-        meshes: [child, etcBox],
+        meshes: [child, etcBox2],
         distances: [4, 6].map(num => radius*num)
       })
       etcLOD.position.set(child.position.x, child.position.y, child.position.z)
@@ -421,10 +424,9 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
       // newDimer.position.set(x, currentY, z)
       newDimer.material = randMaterial()
 
-      // const bbox = getBBoxDimensions(newDimer.geometry)
       const radius = getBoundingRadius(newDimer.geometry)
       const newDimerBox = new THREE.Mesh(
-        new THREE.BoxGeometry(dimerBbox.scale.x, dimerBbox.scale.y, dimerBbox.scale.z),
+        new THREE.BoxBufferGeometry(dimerBbox.scale.x, dimerBbox.scale.y, dimerBbox.scale.z),
         randMaterial()
       )
       const dimerLOD = makeLOD({
@@ -515,13 +517,13 @@ async function init() {
   })
   testLOD.position.set(0, -20, 0)
   testLOD.updateMatrix()
-  lods.push(testLOD)
+  // lods.push(testLOD)
   const { x, y, z } = testLOD.position
   LODOctree.add({x, y, z, radius: atpRadius, id: lods.length - 1})
   // LODOctree.update()
   // console.log(LODOctree.search(new THREE.Vector3().clone(testLOD.position), 100))
-  preDisableDetail(testLOD)
-  scene.add(testLOD)
+  // preDisableDetail(testLOD)
+  // scene.add(testLOD)
 
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
@@ -619,9 +621,11 @@ const render = () => {
   //   lods[i].update(camera)
   // }
 
+  // console.time('lodUpdate')
   for (let i=0; i < lods.length; i++) {
     lods[i].update(camera)
   }
+  // console.timeEnd('lodUpdate')
 
   stats.end()
 
