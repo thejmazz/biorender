@@ -183,6 +183,7 @@ let walls = []
 let pinches = []
 let outerMembrane
 let rim
+let base
 async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
 
@@ -207,11 +208,8 @@ async function makePiecesMito() {
     geometry.uvsNeedUpdate = true
   }
 
-  // let pinches = []
   let desiredWidth = 3000
   let scale
-
-  let base
 
   for (let i=1; i < mitochondria.children.length; i++) {
     const mesh = mitochondria.children[i]
@@ -222,6 +220,7 @@ async function makePiecesMito() {
     if (name.indexOf('Pinch') !== -1) {
       // console.log('pinch: ', name)
       mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
+      triFaceMaterials(mesh.geometry)
       pinches.push(mesh)
     } else if (name.indexOf('Wall') !== -1) {
       // console.log('wall: ', name)
@@ -229,11 +228,15 @@ async function makePiecesMito() {
       triFaceMaterials(mesh.geometry)
       walls.push(mesh)
     } else if (name.indexOf('Membrane.Outer') !== -1) {
+      mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
+      triFaceMaterials(mesh.geometry)
       // console.log('outer membrane: ', name)
       outerMembrane = mesh
       const bbox = getBBoxDimensions(outerMembrane.geometry)
       scale = desiredWidth / bbox.width
     } else if (name.indexOf('Base') !== -1) {
+      mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
+      triFaceMaterials(mesh.geometry)
       // console.log('base: ', name)
       base = mesh
     } else if (name.indexOf('RIM') !== -1) {
@@ -260,7 +263,7 @@ async function makePiecesMito() {
 
     mesh.material = randMaterial()
     mesh.scale.set(scale, scale, scale)
-    scene.add(mesh)
+    // scene.add(mesh)
   })
 
   walls.forEach( (wall) => {
@@ -277,11 +280,11 @@ async function makePiecesMito() {
 
   outerMembrane.material = randMaterial({transparency: true})
   outerMembrane.scale.set(scale, scale, scale)
-  scene.add(outerMembrane)
+  // scene.add(outerMembrane)
 
   base.material = randMaterial()
   base.scale.set(scale, scale, scale)
-  scene.add(base)
+  // scene.add(base)
 
   // rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
   rim.scale.set(scale, scale, scale)
@@ -629,6 +632,16 @@ async function init() {
     wall.material = wallMat
     scene.add(wall)
   })
+
+  pinches.forEach( (pinch) => {
+    pinch.material = wallMat
+    scene.add(pinch)
+  })
+
+  base.material = wallMat
+  scene.add(base)
+  outerMembrane.material = wallMat
+  scene.add(outerMembrane)
 
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
   // const porins = populateMembrane(outerMembrane, porin, 'outer')
