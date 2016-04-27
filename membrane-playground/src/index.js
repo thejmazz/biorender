@@ -237,9 +237,9 @@ async function makePiecesMito() {
     wall.scale.set(scale, scale, scale)
     scene.add(wall)
 
-    const bbox = new THREE.BoundingBoxHelper(wall, 0x000000)
-    bbox.update()
-    wallsBoxes.push(bbox)
+    // const bbox = new THREE.BoundingBoxHelper(wall, 0x000000)
+    // bbox.update()
+    // wallsBoxes.push(bbox)
     // scene.add(bbox)
   })
 
@@ -269,27 +269,40 @@ async function makeUnifiedMito() {
 }
 
 let etc2
-const useWalls = (walls) => {
-  // const sphereHelp = new THREE.Mesh(
-  //   new THREE.SphereGeometry(0.5, 32, 32),
-  //   randMaterial()
-  // )
+const useWalls = ({walls, lods}) => {
   const wall = walls[17]
-  // // console.log(wall)
-  // const pos = wall.geometry.vertices[0]
-  // pos.x = pos.x * wall.scale.x
-  // pos.y = pos.y * wall.scale.y
-  // pos.z = pos.z * wall.scale.x
-  //
-  // sphereHelp.position.set(pos.x, pos.y, pos.z)
-  // scene.add(sphereHelp)
-  //
-  //
+
   wall.userData.thickness = 4
-  // const etcs = populateMembrane(wall, etc2, 'outer', new THREE.Vector3(-0.7, 0, 0), goodVerts)
-  // playing with desiredRotation to no avail
   const etcs = populateMembrane(wall, etc2, 'outer')
-  scene.add(etcs)
+  // console.log(etcs)
+
+  for (let j=0; j < etcs.children.length; j++) {
+    const child = etcs.children[j]
+
+    const radius = getBoundingRadius(child.geometry)
+    const bbox = new THREE.BoundingBoxHelper(child)
+    bbox.update()
+
+    const etcBox = new THREE.Mesh(
+      new THREE.BoxGeometry(bbox.scale.x, bbox.scale.y, bbox.scale.z),
+      child.material
+    )
+
+    const etcLOD = makeLOD({
+      meshes: [child, etcBox],
+      distances: [4, 6].map(num => radius*num)
+    })
+    etcLOD.position.set(child.position.x, child.position.y, child.position.z)
+    child.position.set(0, 0, 0)
+    etcLOD.updateMatrix()
+    lods.push(etcLOD)
+    preDisableDetail(etcLOD)
+    scene.add(etcLOD)
+  }
+
+
+
+  // scene.add(etcs)
 
   // for (let i=0; i < walls.length; i++) {
   //   const wall = walls[i]
@@ -525,7 +538,7 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  useWalls(walls)
+  useWalls({walls, lods})
   usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
 
   const porin = constructPorin(await OBJLoaderAsync('/models/Mitochondria/Outer-Membrane/porin.obj'))
