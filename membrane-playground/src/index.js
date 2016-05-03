@@ -614,10 +614,10 @@ async function init() {
   // preDisableDetail(testLOD)
   // scene.add(testLOD)
 
-  const plane = await JSONLoaderAsync('/models/plane.json')
-  const planeMat = textureLoader.load('/textures/etc-front.png')
+  const plane = await JSONLoaderAsync('/models/ETC-billboard.json')
+  const planeMat = textureLoader.load('/textures/etc-billboard.png')
 
-  const billboard = new THREE.Mesh(plane[0], new THREE.MeshPhongMaterial({map: planeMat, transparent: true, side: THREE.DoubleSide}))
+  const billboard = new THREE.Mesh(plane[0], new THREE.MeshPhongMaterial({map: planeMat, transparent: true, side: THREE.DoubleSide, alphaTest: 0.5}))
   scene.add(billboard)
 
 
