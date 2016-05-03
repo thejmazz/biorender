@@ -38,7 +38,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 
 // === IMPORTS ===
 
-import { OBJLoaderAsync, textureLoader } from './lib/loaders.js'
+import { OBJLoaderAsync, textureLoader, JSONLoaderAsync } from './lib/loaders.js'
 import { makeLOD, preDisableDetail } from './lib/lod.js'
 import { populateMembrane, getBBoxDimensions, getBoundingRadius } from './lib/geometry-utils.js'
 
@@ -614,6 +614,12 @@ async function init() {
   // preDisableDetail(testLOD)
   // scene.add(testLOD)
 
+  const plane = await JSONLoaderAsync('/models/plane.json')
+  const planeMat = textureLoader.load('/textures/etc-front.png')
+
+  const billboard = new THREE.Mesh(plane[0], new THREE.MeshPhongMaterial({map: planeMat, transparent: true, side: THREE.DoubleSide}))
+  scene.add(billboard)
+
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
   console.time('goblinFill')
@@ -626,8 +632,8 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  useWalls({walls, lods})
-  usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
+  // useWalls({walls, lods})
+  // usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
 
   const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
   // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
