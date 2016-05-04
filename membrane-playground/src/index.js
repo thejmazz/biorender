@@ -359,6 +359,7 @@ const useWalls = ({walls, lods}) => {
       billboard.merge(billboard2)
       const bb = new THREE.Mesh(billboard, child.material)
       bb.material.side = THREE.DoubleSide
+      bb.rotation.setFromQuaternion(child.quaternion)
       // scene.add(bb)
 
       const etcLOD = makeLOD({
