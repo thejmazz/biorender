@@ -701,9 +701,29 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  useWalls({walls, lods})
+  // useWalls({walls, lods})
   const dimers = usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
-  dimers.forEach(dimer => scene.add(dimer))
+  // dimers.forEach(dimer => scene.add(dimer))
+  // const mergedGeom = new THREE.Geometry().fromBufferGeometry(dimers[0].children[1].geometry)
+  const mergedGeom = dimers[0].children[1].geometry
+  console.log(dimers.length-1)
+  for (let i=1; i < dimers.length; i++) {
+    const dimer = dimers[i]
+    console.log(i)
+
+    const { x, y, z } = dimer.position
+    dimer.children[1].position.set(x, y, z)
+    // scene.add(dimer.children[1])
+    // const geom = new THREE.Geometry().fromBufferGeometry(dimer.children[1].geometry)
+    dimer.updateMatrix()
+    dimer.children[1].updateMatrix()
+    const geom = dimer.children[1].geometry
+    geom.applyMatrix(dimer.matrixWorld)
+    mergedGeom.merge(geom, dimer.matrix)
+  }
+  console.log(mergedGeom)
+  const mergedMesh = new THREE.Mesh(mergedGeom, randMaterial())
+  scene.add(mergedMesh)
   // const iDimers = makeInstanced(dimers, dimerLow)
   // scene.add(iDimers)
 
