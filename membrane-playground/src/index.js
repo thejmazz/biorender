@@ -380,6 +380,7 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
   const parentDimer = dimerCreator({synthase: ATPSynthase})
   const parentDimerMed = dimerCreator({synthase: ATPSynthaseMed})
   const parentDimerLow = dimerCreator({synthase: ATPSynthaseLow})
+  let dimers = []
 
   // use max z factor from normals on 90% of z of mesh to determine which way its pointing
   // kinda sketchy. will only work if mito is in left-right. after this, you can rotate.
@@ -518,7 +519,8 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
       // const { x, y, z } = dimerLOD.position
       // LODOctree.add({x, y, z, radius, id: lods.length - 1})
       preDisableDetail(dimerLOD)
-      scene.add(dimerLOD)
+      // scene.add(dimerLOD)
+      dimers.push(dimerLOD)
 
       // newDimer.position.set(x, currentY, z)
       // scene.add(newDimer)
@@ -534,10 +536,67 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
     doPinch({pinch, side})
   }
 
+  return dimers
+
   // doPinch({pinch: pinches[16], side:'away'})
   // doPinch({pinch: pinches[17], side:'towards'})
 }
 
+const makeInstanced = (positions, geom) => {
+  const vertexShader = document.getElementById( 'vertexShader' ).textContent;
+	const fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+  const igeom = new THREE.InstancedBufferGeometry()
+  const instances = positions.length
+
+
+  const bgeo = geom.geometry
+  bgeo.maxInstancedCount = instances
+
+  const vertices = bgeo.attributes.position.clone()
+  igeom.addAttribute('position', vertices)
+
+  const offsets = new THREE.InstancedBufferAttribute(new Float32Array(instances*3), 3, 1)
+  for (let i=0; i < offsets.count; i++) {
+    const { x, y, z } = positions[i].position
+
+    offsets.setXYZ(i, x, y, z)
+  }
+  igeom.addAttribute('offset', offsets)
+
+  const colors = new THREE.InstancedBufferAttribute( new Float32Array( instances * 4 ), 4, 1 );
+	for ( var i = 0, ul = colors.count; i < ul; i++ ) {
+		colors.setXYZW( i, Math.random(), Math.random(), Math.random(), Math.random() );
+	}
+	igeom.addAttribute( 'color', colors );
+
+  var vector = new THREE.Vector4();
+	var orientationsStart = new THREE.InstancedBufferAttribute( new Float32Array( instances * 4 ), 4, 1 );
+	for ( var i = 0, ul = orientationsStart.count; i < ul; i++ ) {
+		vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 );
+		vector.normalize();
+		orientationsStart.setXYZW( i, vector.x, vector.y, vector.z, vector.w );
+	}
+	igeom.addAttribute( 'orientationStart', orientationsStart );
+	var orientationsEnd = new THREE.InstancedBufferAttribute( new Float32Array( instances * 4 ), 4, 1 );
+	for ( var i = 0, ul = orientationsEnd.count; i < ul; i++ ) {
+		vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 );
+		vector.normalize();
+		orientationsEnd.setXYZW( i, vector.x, vector.y, vector.z, vector.w );
+	}
+	igeom.addAttribute( 'orientationEnd', orientationsEnd );
+
+  const mat = new THREE.RawShaderMaterial({
+    uniforms: {
+			time: { type: "f", value: 1.0 },
+			sineTime: { type: "f", value: 1.0 }
+		},
+    vertexShader,
+    fragmentShader
+  })
+  const mesh = new THREE.Mesh(igeom, mat)
+
+  return mesh
+}
 
 let vesicle, ETC, atpPivot, bboxH
 let atpReady = false
@@ -632,8 +691,11 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  useWalls({walls, lods})
-  usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
+  // useWalls({walls, lods})
+  const dimers = usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
+  // dimers.forEach(dimer => scene.add(dimer))
+  const iDimers = makeInstanced(dimers, ATPSynthaseLow)
+  scene.add(iDimers)
 
   const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
   // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
