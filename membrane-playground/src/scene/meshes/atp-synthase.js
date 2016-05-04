@@ -1,6 +1,19 @@
 import { getBBoxDimensions } from '../../lib/geometry-utils.js'
 import { randMaterial } from '../../lib/material-utils.js'
 
+const materialMappings = {
+  'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
+  'OSAP': new THREE.MeshLambertMaterial({color: 0x950095}),
+  'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
+  'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xFFBC00}),
+  'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
+  'Stator-Base': new THREE.MeshLambertMaterial({color: 0xBC00BC}),
+  'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
+  'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
+  'TM-Section': new THREE.MeshLambertMaterial({color: 0xBA9F7C}),
+  'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xFF5900})
+}
+
 export const crudeSynthaseCreator = () => {
   const synthase = new THREE.Group()
   const barrel = new THREE.Mesh(
@@ -82,19 +95,6 @@ export const constructDimer = (synthase) => {
 }
 
 export const constructSynthase = (object) => {
-  const materialMappings = {
-    'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
-    'OSAP': new THREE.MeshLambertMaterial({color: 0x6f8efa}),
-    'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
-    'F1-Redish-Front': new THREE.MeshLambertMaterial({color: 0xc43535}),
-    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({color: 0x431cc6}),
-    'Stator-Base': new THREE.MeshLambertMaterial({color: 0x2f28be}),
-    'Test-Velvet-Green': new THREE.MeshLambertMaterial({color: 0x21f112}),
-    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
-    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({color: 0xcdcdcd}),
-    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xd5381d})
-  }
-
   const ATPSynthase = new THREE.Group()
   const components = []
 
@@ -122,8 +122,8 @@ export const constructSynthaseSimple = (group) => {
     const mesh = group.children[i]
 
     // TODO define naming conventions to make this work the same for all proteins
-    mesh.name = mesh.name.replace(/_ShapeIndexedFaceSet_/, '_')
-    const section = mesh.name.split('_')[1]
+    const name = mesh.name.replace(/_ShapeIndexedFaceSet\.[\d]+_/, '_')
+    const section = name.split('_')[1]
 
     if (section === 'TM-Section') {
       const bbox = getBBoxDimensions(mesh.geometry)
@@ -147,6 +147,56 @@ export const constructSynthaseSimple = (group) => {
     geometry,
     new THREE.MeshLambertMaterial({color: 0xb04921, side: THREE.DoubleSide})
   )
+  porin.scale.set(scale, scale, scale)
+
+  return porin
+}
+
+export const constructSynthaseColoured = (group) => {
+  const bilayerWidth = 4
+
+  let scale = 1
+  let geometry
+  const components = []
+  // console.log(group.children.length)
+  // console.log(Object.keys(materialMappings).length)
+  for (let i=1; i < group.children.length; i++) {
+    const mesh = group.children[i]
+    const geom = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
+    // console.log(geom)
+
+    // TODO define naming conventions to make this work the same for all proteins
+    const name = mesh.name.replace(/_ShapeIndexedFaceSet\.[\d]+_/, '_')
+    const section = name.split('_')[1]
+    console.log(section)
+
+    geom.faces.forEach( (face) => {
+      face.materialIndex = Object.keys(materialMappings).indexOf(section)
+    })
+
+    if (section === 'TM-Section') {
+      const bbox = getBBoxDimensions(mesh.geometry)
+      scale = bilayerWidth / bbox.height
+      console.log('scale is ', scale)
+    }
+
+    if (i === 1) {
+      geometry = geom
+    } else if (i > 1) {
+      components.push(geom)
+    }
+  }
+
+  for (let i=0; i < components.length; i++) {
+    geometry.merge(components[i])
+  }
+
+
+  const materials = Object.keys(materialMappings).map(key => materialMappings[key])
+
+  geometry = (new THREE.BufferGeometry()).fromGeometry(geometry)
+  const porin = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials))
+
   porin.scale.set(scale, scale, scale)
 
   return porin
