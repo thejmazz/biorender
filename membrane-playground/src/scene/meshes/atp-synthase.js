@@ -1,7 +1,7 @@
 import { getBBoxDimensions } from '../../lib/geometry-utils.js'
 import { randMaterial } from '../../lib/material-utils.js'
 
-const materialMappings = {
+const materialMappingsLambert = {
   'Axel-Front': new THREE.MeshLambertMaterial({color: 0x007C00}),
   'OSAP': new THREE.MeshLambertMaterial({color: 0x950095}),
   'Stator-Blue-Med': new THREE.MeshLambertMaterial({color: 0x1753c7}),
@@ -12,6 +12,19 @@ const materialMappings = {
   'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({color: 0x60be44}),
   'TM-Section': new THREE.MeshLambertMaterial({color: 0xBA9F7C}),
   'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({color: 0xFF5900})
+}
+
+const materialMappings = {
+  'Axel-Front': 0x007C00,
+  'OSAP': 0x950095,
+  'Stator-Blue-Med': 0x1753c7,
+  'F1-Redish-Front': 0xFFBC00,
+  'Stator-Blue-Dark': 0x431cc6,
+  'Stator-Base': 0xBC00BC,
+  'Test-Velvet-Green': 0x21f112,
+  'Test-Velvet-Green.001': 0x60be44,
+  'TM-Section': 0xBA9F7C,
+  'F1-Redish-Dark-Front': 0xFF5900
 }
 
 export const crudeSynthaseCreator = () => {
@@ -102,7 +115,7 @@ export const constructSynthase = (object) => {
     const child = object.children[i]
     child.name = child.name.split('_')[2]
 
-    child.material = materialMappings[child.name]
+    child.material = materialMappingsLambert[child.name]
 
     components.push(child)
   }
@@ -159,7 +172,7 @@ export const constructSynthaseColoured = (group) => {
   let geometry
   const components = []
   // console.log(group.children.length)
-  // console.log(Object.keys(materialMappings).length)
+  // console.log(Object.keys(materialMappingsLambert).length)
   for (let i=1; i < group.children.length; i++) {
     const mesh = group.children[i]
     const geom = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
@@ -171,7 +184,8 @@ export const constructSynthaseColoured = (group) => {
     console.log(section)
 
     geom.faces.forEach( (face) => {
-      face.materialIndex = Object.keys(materialMappings).indexOf(section)
+      // face.materialIndex = Object.keys(materialMappingsLambert).indexOf(section)
+      face.color.setHex(materialMappings[section])
     })
 
     if (section === 'TM-Section') {
@@ -192,10 +206,13 @@ export const constructSynthaseColoured = (group) => {
   }
 
 
-  const materials = Object.keys(materialMappings).map(key => materialMappings[key])
+  const materials = Object.keys(materialMappingsLambert).map(key => materialMappingsLambert[key])
+  const material = new THREE.MeshLambertMaterial({color: 0xffffff, vertexColors: THREE.VertexColors})
 
   geometry = (new THREE.BufferGeometry()).fromGeometry(geometry)
-  const porin = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials))
+  // const porin = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials))
+  const porin = new THREE.Mesh(geometry, material)
+  console.log(porin)
 
   porin.scale.set(scale, scale, scale)
 
