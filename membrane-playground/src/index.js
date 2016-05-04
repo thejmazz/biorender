@@ -353,8 +353,8 @@ const useWalls = ({walls, lods}) => {
       etcLow.rotation.setFromQuaternion(child.quaternion)
 
       const etcLOD = makeLOD({
-        meshes: [child, etcMed, etcLow, new THREE.Object3D()],
-        distances: [1, 2, 4, 20].map(num => radius*num)
+        meshes: [child, etcMed, etcLow],
+        distances: [1, 2, 4].map(num => radius*num)
       })
       etcLOD.position.set(child.position.x, child.position.y, child.position.z)
       child.position.set(0, 0, 0)
@@ -509,8 +509,8 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
         randMaterial()
       )
       const dimerLOD = makeLOD({
-        meshes: [newDimer, newDimerLow, new THREE.Object3D()],
-        distances: [2, 3, 25].map(num => radius*num)
+        meshes: [newDimer, newDimerLow],
+        distances: [2, 3].map(num => radius*num)
       })
       dimerLOD.position.set(x, currentY, z)
       dimerLOD.updateMatrix()
@@ -618,7 +618,7 @@ async function init() {
   const planeMat = textureLoader.load('/textures/etc-billboard.png')
 
   const billboard = new THREE.Mesh(plane[0], new THREE.MeshPhongMaterial({map: planeMat, transparent: true, side: THREE.DoubleSide, alphaTest: 0.5}))
-  scene.add(billboard)
+  // scene.add(billboard)
 
 
   const objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), randMaterial())
@@ -632,8 +632,8 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  // useWalls({walls, lods})
-  // usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
+  useWalls({walls, lods})
+  usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
 
   const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
   // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
