@@ -569,30 +569,19 @@ const makeInstanced = (positions, geom) => {
 	}
 	igeom.addAttribute( 'color', colors );
 
-  var vector = new THREE.Vector4();
-	var orientationsStart = new THREE.InstancedBufferAttribute( new Float32Array( instances * 4 ), 4, 1 );
-	for ( var i = 0, ul = orientationsStart.count; i < ul; i++ ) {
-		vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 );
-		vector.normalize();
-		orientationsStart.setXYZW( i, vector.x, vector.y, vector.z, vector.w );
-	}
-	igeom.addAttribute( 'orientationStart', orientationsStart );
-	var orientationsEnd = new THREE.InstancedBufferAttribute( new Float32Array( instances * 4 ), 4, 1 );
-	for ( var i = 0, ul = orientationsEnd.count; i < ul; i++ ) {
-		vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 );
-		vector.normalize();
-		orientationsEnd.setXYZW( i, vector.x, vector.y, vector.z, vector.w );
-	}
-	igeom.addAttribute( 'orientationEnd', orientationsEnd );
+  var vector = new THREE.Vector4()
+  const orientations = new THREE.InstancedBufferAttribute(new Float32Array(instances*4), 4, 1)
+  for (let i=0; i < orientations.count; i++) {
+    const { x, y, z, w } = positions[i].children[0].quaternion
+    vector.set(x, y, z, w)
+    // vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 )
+    vector.normalize()
+    // orientations.setXYZW(i, x, y, z, w)
+    orientations.setXYZW(i, 0, 0, 0, 1)
+  }
+  igeom.addAttribute('orientation', orientations)
 
-  const mat = new THREE.RawShaderMaterial({
-    uniforms: {
-			time: { type: "f", value: 1.0 },
-			sineTime: { type: "f", value: 1.0 }
-		},
-    vertexShader,
-    fragmentShader
-  })
+  const mat = new THREE.RawShaderMaterial({vertexShader, fragmentShader})
   const mesh = new THREE.Mesh(igeom, mat)
 
   return mesh
@@ -652,6 +641,8 @@ async function init() {
   dimer2.rotation.y = Math.PI/2
   // scene.add(dimer2)
 
+  const dimerLow = dimerCreator({synthase: ATPSynthaseLow})
+
 
   const bboxA = getBBoxDimensions(ATPSynthase.geometry)
   const atpRadius = getBoundingRadius(ATPSynthase.geometry)
@@ -694,7 +685,7 @@ async function init() {
   // useWalls({walls, lods})
   const dimers = usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
   // dimers.forEach(dimer => scene.add(dimer))
-  const iDimers = makeInstanced(dimers, ATPSynthaseLow)
+  const iDimers = makeInstanced(dimers, dimerLow)
   scene.add(iDimers)
 
   const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
