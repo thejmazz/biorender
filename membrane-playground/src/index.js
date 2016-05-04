@@ -342,7 +342,7 @@ const useWalls = ({walls, lods}) => {
 
       const etcBox2 = etcBox.clone()
       etcBox2.material = child.material
-      etcBox2.visible = false
+      etcBox2.visible = true
 
       const etcMed = etc2med.clone()
       etcMed.material = child.material
@@ -352,9 +352,18 @@ const useWalls = ({walls, lods}) => {
       etcLow.material = child.material
       etcLow.rotation.setFromQuaternion(child.quaternion)
 
+      const billboard = new THREE.PlaneGeometry(bbox.scale.x, bbox.scale.z)
+      const billboard2 = new THREE.PlaneGeometry(bbox.scale.z, bbox.scale.y)
+      billboard2.rotateZ(Math.PI/2)
+      billboard2.rotateY(Math.PI/2)
+      billboard.merge(billboard2)
+      const bb = new THREE.Mesh(billboard, child.material)
+      bb.material.side = THREE.DoubleSide
+      // scene.add(bb)
+
       const etcLOD = makeLOD({
-        meshes: [child, etcMed, etcLow],
-        distances: [1, 2, 4].map(num => radius*num)
+        meshes: [child, etcMed, bb],
+        distances: [1, 2, 5].map(num => radius*num)
       })
       etcLOD.position.set(child.position.x, child.position.y, child.position.z)
       child.position.set(0, 0, 0)
@@ -509,9 +518,18 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
         new THREE.BoxBufferGeometry(dimerBbox.scale.x, dimerBbox.scale.y, dimerBbox.scale.z),
         randMaterial()
       )
+
+      const billboard = new THREE.PlaneGeometry(dimerBbox.scale.x, dimerBbox.scale.z)
+      const billboard2 = new THREE.PlaneGeometry(dimerBbox.scale.z, dimerBbox.scale.y)
+      billboard2.rotateZ(Math.PI/2)
+      billboard2.rotateY(Math.PI/2)
+      billboard.merge(billboard2)
+      const bb = new THREE.Mesh(billboard, newDimer.material)
+      bb.material.side = THREE.DoubleSide
+
       const dimerLOD = makeLOD({
-        meshes: [newDimer, newDimerLow],
-        distances: [2, 3].map(num => radius*num)
+        meshes: [newDimer, newDimerLow, bb],
+        distances: [2, 3, 20].map(num => radius*num)
       })
       dimerLOD.position.set(x, currentY, z)
       dimerLOD.updateMatrix()
@@ -682,11 +700,11 @@ async function init() {
   // await makeUnifiedMito()
   await makePiecesMito()
 
-  // useWalls({walls, lods})
+  useWalls({walls, lods})
   const dimers = usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
-  // dimers.forEach(dimer => scene.add(dimer))
-  const iDimers = makeInstanced(dimers, dimerLow)
-  scene.add(iDimers)
+  dimers.forEach(dimer => scene.add(dimer))
+  // const iDimers = makeInstanced(dimers, dimerLow)
+  // scene.add(iDimers)
 
   const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
   // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
