@@ -50,6 +50,7 @@ import {
   constructSynthase,
   constructSynthaseSimple,
   constructSynthaseColoured,
+  constructSynthaseSpinning,
   constructDimer
 } from './scene/meshes/atp-synthase.js'
 
@@ -613,6 +614,8 @@ let atpReady = false
 let lods = []
 // so we don't have to update **every** LOD **every** frame
 const LODOctree = new THREE.Octree()
+
+let barrel
 async function init() {
   initGlobalLights()
   initMembrane()
@@ -656,11 +659,12 @@ async function init() {
   ATPSynthaseLow.geometry.computeBoundingBox()
   ATPSynthaseLow.geometry.center()
 
-  // const ATPSynthaseColoured = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
-  // ATPSynthaseColoured.geometry.center()
-  // const dimerColoured = dimerCreatorColoured({synthase: ATPSynthaseColoured})
-  // console.log(dimerColoured)
-  // scene.add(dimerColoured)
+  const ATPSynthaseSpinning = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
+  // ATPSynthaseSpinning.geometry.center()
+  scene.add(ATPSynthaseSpinning)
+  console.log(ATPSynthaseSpinning)
+  barrel = ATPSynthaseSpinning.children[1]
+  atpReady = true
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
@@ -800,7 +804,8 @@ const render = () => {
 
   const delta = clock.getDelta()
   if (atpReady) {
-    ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta*0.8
+    // ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta*0.8
+    barrel.rotation.y = barrel.rotation.y + delta*0.8
     // bboxH.update()
   }
   // innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4

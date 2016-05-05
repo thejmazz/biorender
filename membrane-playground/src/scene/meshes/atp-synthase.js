@@ -247,3 +247,88 @@ export const constructSynthaseColoured = (group) => {
 
   return porin
 }
+
+export const constructSynthaseSpinning = (group) => {
+  const bilayerWidth = 4
+
+  let scale = 1
+  let geometry
+  const components = []
+  let barrelGeom = null
+
+  const ATPSynthase = new THREE.Group()
+
+  const buildBarrel = (geom) => {
+    // geom = new THREE.Geometry().fromBufferGeometry(geom)
+
+    if (barrelGeom === null) {
+      barrelGeom = geom
+    } else {
+      barrelGeom.merge(geom)
+    }
+  }
+
+  // console.log(group.children.length)
+  // console.log(Object.keys(materialMappingsLambert).length)
+  for (let i=1; i < group.children.length; i++) {
+    const mesh = group.children[i]
+    const geom = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
+    // console.log(geom)
+
+    // TODO define naming conventions to make this work the same for all proteins
+    const name = mesh.name.replace(/_ShapeIndexedFaceSet\.[\d]+_/, '_')
+    const section = name.split('_')[1]
+    // console.log(section)
+
+    geom.faces.forEach( (face) => {
+      // face.materialIndex = Object.keys(materialMappingsLambert).indexOf(section)
+      face.color.setHex(materialMappings[section])
+    })
+
+    switch (section) {
+      case 'TM-Section':
+        const bbox = getBBoxDimensions(mesh.geometry)
+        scale = bilayerWidth / bbox.height
+        console.log('scale is ', scale)
+
+        buildBarrel(geom)
+
+        break
+      case 'Test-Velvet-Green':
+        buildBarrel(geom)
+        break
+      case 'Test-Velvet-Green.001':
+        buildBarrel(geom)
+        break
+      default:
+        if (i === 1) {
+          geometry = geom
+        } else if (i > 1) {
+          components.push(geom)
+        }
+    }
+  }
+
+  for (let i=0; i < components.length; i++) {
+    geometry.merge(components[i])
+  }
+
+
+  const materials = Object.keys(materialMappingsLambert).map(key => materialMappingsLambert[key])
+  const material = new THREE.MeshLambertMaterial({color: 0xffffff, vertexColors: THREE.VertexColors})
+
+  geometry = (new THREE.BufferGeometry()).fromGeometry(geometry)
+  // const porin = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials))
+  const porin = new THREE.Mesh(geometry, material)
+  // console.log(porin)
+
+  porin.scale.set(scale, scale, scale)
+
+  const barrel = new THREE.Mesh(barrelGeom, material)
+  barrel.scale.set(scale, scale, scale)
+
+  ATPSynthase.add(porin)
+  ATPSynthase.add(barrel)
+
+  return ATPSynthase
+}
