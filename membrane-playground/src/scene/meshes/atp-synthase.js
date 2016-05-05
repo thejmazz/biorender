@@ -210,7 +210,7 @@ export const constructSynthaseColoured = (group) => {
     // TODO define naming conventions to make this work the same for all proteins
     const name = mesh.name.replace(/_ShapeIndexedFaceSet\.[\d]+_/, '_')
     const section = name.split('_')[1]
-    console.log(section)
+    // console.log(section)
 
     geom.faces.forEach( (face) => {
       // face.materialIndex = Object.keys(materialMappingsLambert).indexOf(section)

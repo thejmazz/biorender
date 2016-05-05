@@ -389,9 +389,9 @@ const useWalls = ({walls, lods}) => {
 // let ATPSynthase
 let ATPSynthaseMed, ATPSynthaseLow
 const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
-  const parentDimer = dimerCreator({synthase: ATPSynthase})
-  const parentDimerMed = dimerCreator({synthase: ATPSynthaseMed})
-  const parentDimerLow = dimerCreator({synthase: ATPSynthaseLow})
+  const parentDimer = dimerCreatorColoured({synthase: ATPSynthase})
+  const parentDimerMed = dimerCreatorColoured({synthase: ATPSynthaseMed})
+  const parentDimerLow = dimerCreatorColoured({synthase: ATPSynthaseLow})
   let dimers = []
 
   // use max z factor from normals on 90% of z of mesh to determine which way its pointing
@@ -512,7 +512,7 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
     while (currentY > globalMinY) {
       const newDimer = dimer.clone()
       // newDimer.position.set(x, currentY, z)
-      newDimer.material = randMaterial()
+      // newDimer.material = randMaterial()
       const newDimerLow = dimerLow.clone()
       newDimerLow.material = newDimer.material
 
@@ -638,7 +638,7 @@ async function init() {
   // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
 
-  const ATPSynthase = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase2-0.1.obj'))
+  const ATPSynthase = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
   ATPSynthase.geometry.computeBoundingBox()
   // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
   // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
@@ -648,19 +648,19 @@ async function init() {
   // ATPSynthase2.position.set(5, 0, 0)
   // scene.add(ATPSynthase2)
 
-  ATPSynthaseMed = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase2-0.05.obj'))
+  ATPSynthaseMed = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.05.obj'))
   ATPSynthaseMed.geometry.computeBoundingBox()
   ATPSynthaseMed.geometry.center()
 
-  ATPSynthaseLow = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase2-0.01.obj'))
+  ATPSynthaseLow = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.01.obj'))
   ATPSynthaseLow.geometry.computeBoundingBox()
   ATPSynthaseLow.geometry.center()
 
-  const ATPSynthaseColoured = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
-  ATPSynthaseColoured.geometry.center()
-  const dimerColoured = dimerCreatorColoured({synthase: ATPSynthaseColoured})
-  console.log(dimerColoured)
-  scene.add(dimerColoured)
+  // const ATPSynthaseColoured = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
+  // ATPSynthaseColoured.geometry.center()
+  // const dimerColoured = dimerCreatorColoured({synthase: ATPSynthaseColoured})
+  // console.log(dimerColoured)
+  // scene.add(dimerColoured)
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
