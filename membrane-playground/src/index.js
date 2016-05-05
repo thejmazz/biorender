@@ -46,6 +46,7 @@ import {
   crudeSynthaseCreator,
   crudeDimerCreator,
   dimerCreator,
+  dimerCreatorColoured,
   constructSynthase,
   constructSynthaseSimple,
   constructSynthaseColoured,
@@ -642,7 +643,10 @@ async function init() {
   // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
   // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
   ATPSynthase.geometry.center()
-  // scene.add(ATPSynthase)
+
+  // const ATPSynthase2 = ATPSynthase.clone()
+  // ATPSynthase2.position.set(5, 0, 0)
+  // scene.add(ATPSynthase2)
 
   ATPSynthaseMed = constructSynthaseSimple(await OBJLoaderAsync('/models/ATP-Synthase/ATP-Synthase2-0.05.obj'))
   ATPSynthaseMed.geometry.computeBoundingBox()
@@ -652,8 +656,11 @@ async function init() {
   ATPSynthaseLow.geometry.computeBoundingBox()
   ATPSynthaseLow.geometry.center()
 
-  const ATPSynthaseColoured = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-single-d0.05.obj'))
-  scene.add(ATPSynthaseColoured)
+  const ATPSynthaseColoured = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
+  ATPSynthaseColoured.geometry.center()
+  const dimerColoured = dimerCreatorColoured({synthase: ATPSynthaseColoured})
+  console.log(dimerColoured)
+  scene.add(dimerColoured)
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)

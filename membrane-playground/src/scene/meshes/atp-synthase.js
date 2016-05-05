@@ -97,6 +97,35 @@ export const dimerCreator = ({synthase, spread=-0.2, rotationY=0, rotationX=Math
   return dimer
 }
 
+export const dimerCreatorColoured = ({synthase, spread=-0.2, rotationY=0, rotationX=Math.PI/4}) => {
+  const synthaseA = synthase.clone()
+  // for some reason, need this..
+  synthaseA.rotation.x = rotationX
+
+  const synthaseB = synthase.clone()
+
+  const bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000)
+  bBox.update()
+
+  synthaseA.geometry = new THREE.Geometry().fromBufferGeometry(synthaseA.geometry)
+  synthaseA.geometry.rotateX(rotationX)
+
+  synthaseB.geometry = new THREE.Geometry().fromBufferGeometry(synthaseB.geometry)
+  synthaseB.geometry.rotateX(rotationX)
+  synthaseB.geometry.rotateY(Math.PI)
+  synthaseB.geometry.translate(0,0, -(bBox.scale.z + spread*bBox.scale.z))
+
+  const geom = synthaseA.geometry
+  geom.merge(synthaseB.geometry)
+  geom.center()
+
+  const bufferGeom = new THREE.BufferGeometry().fromGeometry(geom)
+
+  const dimer = new THREE.Mesh(bufferGeom, new THREE.MeshLambertMaterial({color: 0xffffff, vertexColors: THREE.VertexColors}))
+
+  return dimer
+}
+
 export const constructDimer = (synthase) => {
   const ATPSynthase = constructSynthase(synthase)
 
@@ -212,7 +241,7 @@ export const constructSynthaseColoured = (group) => {
   geometry = (new THREE.BufferGeometry()).fromGeometry(geometry)
   // const porin = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials))
   const porin = new THREE.Mesh(geometry, material)
-  console.log(porin)
+  // console.log(porin)
 
   porin.scale.set(scale, scale, scale)
 
