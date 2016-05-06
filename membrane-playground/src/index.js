@@ -680,9 +680,9 @@ async function init() {
   console.log(dimerSpinning)
   scene.add(dimerSpinning)
 
-  barrelsLeft.push(dimerSpinning.children[0].children[1])
-  barrelsRight.push(dimerSpinning.children[1].children[1])
-  atpReady = true
+  // barrelsLeft.push(dimerSpinning.children[0].children[1])
+  // barrelsRight.push(dimerSpinning.children[1].children[1])
+  // atpReady = true
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)

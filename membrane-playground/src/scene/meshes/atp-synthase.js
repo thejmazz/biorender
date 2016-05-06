@@ -1,4 +1,4 @@
-import { getBBoxDimensions } from '../../lib/geometry-utils.js'
+import { getBBoxDimensions, getGroupBoundingBox } from '../../lib/geometry-utils.js'
 import { randMaterial } from '../../lib/material-utils.js'
 
 const materialMappingsLambert = {
@@ -128,31 +128,10 @@ export const dimerCreatorColoured = ({synthase, spread=-0.2, rotationY=0, rotati
 
 export const dimerCreatorColouredSpinning = ({synthase, spread=0.4, rotationY=0, rotationX=Math.PI/4}) => {
   const synthaseA = synthase.clone()
-  // for some reason, need this..
-  synthaseA.rotation.x = rotationX
-
   const synthaseB = synthase.clone()
 
-  // === TODO utilify this ===
-  const boundingBox = { min: new THREE.Vector3(Number.MAX_VALUE), max: new THREE.Vector3(Number.MIN_VALUE) }
+  const boundingBox = getGroupBoundingBox(synthaseA)
 
-  for (let i=0; i < synthase.children.length; i++) {
-    const child = synthase.children[i]
-    child.geometry.computeBoundingBox()
-    const childBox = child.geometry.boundingBox
-
-    boundingBox.min.x = Math.min(childBox.min.x, boundingBox.min.x)
-    boundingBox.min.y = Math.min(childBox.min.y, boundingBox.min.y)
-    boundingBox.min.z = Math.min(childBox.min.z, boundingBox.min.z)
-
-    boundingBox.max.x = Math.max(childBox.max.x, boundingBox.max.x)
-    boundingBox.max.y = Math.max(childBox.max.y, boundingBox.max.y)
-    boundingBox.max.z = Math.max(childBox.max.z, boundingBox.max.z)
-  }
-  // === === ===
-
-  // const bBox = new THREE.BoundingBoxHelper(synthaseA.children[0], 0x000000)
-  // bBox.update()
   const difference = new THREE.Vector3().subVectors(boundingBox.max, boundingBox.min)
 
   synthaseA.rotation.x = rotationX

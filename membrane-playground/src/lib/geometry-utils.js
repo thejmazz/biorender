@@ -28,6 +28,26 @@ export const getBoundingRadius = (geometry) => {
   return radius
 }
 
+export const getGroupBoundingBox = (group) => {
+  const boundingBox = { min: new THREE.Vector3(Number.MAX_VALUE), max: new THREE.Vector3(Number.MIN_VALUE) }
+
+  for (let i=0; i < group.children.length; i++) {
+    const child = group.children[i]
+    child.geometry.computeBoundingBox()
+    const childBox = child.geometry.boundingBox
+
+    boundingBox.min.x = Math.min(childBox.min.x, boundingBox.min.x)
+    boundingBox.min.y = Math.min(childBox.min.y, boundingBox.min.y)
+    boundingBox.min.z = Math.min(childBox.min.z, boundingBox.min.z)
+
+    boundingBox.max.x = Math.max(childBox.max.x, boundingBox.max.x)
+    boundingBox.max.y = Math.max(childBox.max.y, boundingBox.max.y)
+    boundingBox.max.z = Math.max(childBox.max.z, boundingBox.max.z)
+  }
+
+  return boundingBox
+}
+
 const applyScaleToBBox = (bbox, scale) => {
   const { x, y, z } = scale
 
