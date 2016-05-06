@@ -183,18 +183,19 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
                 y = v['y'] + width
                 break
 
+        dist = random.random() * 0.5
 
-        j_1 = j_spaces[i]*random.random()
+        j_1 = j_spaces[i] * (random.random()*dist + 0.25)
         y -= j_1
 
-        j_2 = (j_spaces[i]-j_1)*random.random()
+        j_2 = (j_spaces[i]-j_1) * (random.random()*(dist) + 0.25)
         y2 = y - j_2 - width*2
 
         spacage  = j_2 / j_spaces[i]
 
-        make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1), subsurf_level=cristae_disc_subsurf_level)
+        if x >= start + (start+2*mito_length)*0.05 and x <= (start+2*mito_length)*0.95:
+            make_cristae(name='Cristae.' + numToStr(i*2), loc=(x, y, 0), scale=(cristae_width, 1, 1), subsurf_level=cristae_disc_subsurf_level)
 
-        if spacage >= 0.4:
             make_cristae(name='Cristae.' + numToStr(i*2 + 1), loc=(x, y2, 0), scale=(cristae_width, 1, 1), side='left', subsurf_level=cristae_disc_subsurf_level)
 
     # Select all cristaes
@@ -283,17 +284,17 @@ def make_mitochondria(length=3, width=1, num_rows=30, padding_factor=0.2, do_lap
     # === Solidifiy outer membrane ===
     bpy.data.objects['Outer-Membrane'].select = True
     #bpy.ops.object.duplicate_move()
-    
+
     unselect_all()
     bpy.data.objects['Outer-Membrane'].select = True
     bpy.context.scene.objects.active = bpy.data.objects['Outer-Membrane']
     modifiers.solidify(0, 4 * 0.002, True)
-    
+
     #unselect_all()
     #bpy.data.objects['Outer-Membrane.001'].select = True
     #bpy.context.scene.objects.active = bpy.data.objects['Outer-Membrane.001']
     #modifiers.solidify(0, 4 * 0.002, False, True)
-    
+
 
     # Make and join to reset box then fix up
     unselect_all()
