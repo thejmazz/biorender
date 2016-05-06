@@ -486,15 +486,18 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
     }
     dimer.rotation.y = Math.PI/2
 
+    let spacage
     const dimerLow = parentDimerLow.clone()
     // let x = min.x + (max.x - min.x)/2
     // let y = max.y
     // let z
     if (side === 'towards') {
       // z = max.z
+      spacage = -1
       dimerLow.rotation.z = Math.PI/2
     } else if (side === 'away') {
       // z = min.z
+      spacage = 1
       dimerLow.rotation.z = -Math.PI/2
     }
     dimerLow.rotation.y = Math.PI/2
@@ -552,7 +555,7 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
         meshes: [newDimer, newDimerLow],
         distances: [2, 3].map(num => radius*num)
       })
-      dimerLOD.position.set(x+5.5, currentY, z-6)
+      dimerLOD.position.set(x+5.5, currentY, z + spacage*6)
       dimerLOD.updateMatrix()
       lods.push(dimerLOD)
       // const { x, y, z } = dimerLOD.position
