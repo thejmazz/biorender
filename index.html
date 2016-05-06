@@ -13,6 +13,40 @@
     </style>
   </head>
   <body>
+    <script id="vertexShader" type="x-shader/x-vertex">
+      precision highp float;
+
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+
+      attribute vec3 position;
+      attribute vec3 offset;
+      attribute vec4 color;
+      attribute vec4 orientation;
+
+      varying vec4 vColor;
+
+      void main() {
+        vec3 vPosition = offset + position;
+        vec3 vcV = cross(orientation.xyz, vPosition);
+  			vPosition = vcV * (2.0 * orientation.w) + (cross(orientation.xyz, vcV) * 2.0 + vPosition);
+
+        vColor = color;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1.0);
+      }
+  	</script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+      precision highp float;
+
+      varying vec4 vColor;
+
+      void main() {
+        vec4 color = vec4(vColor);
+        gl_FragColor = color;
+      }
+  	</script>
+
     <script src="js/three.min.js"></script>
     <script src="js/OBJLoader.js"></script>
     <script src="js/OrbitControls.js"></script>

@@ -7803,7 +7803,7 @@
 	        switch (_context.prev = _context.next) {
 	          case 0:
 	            _context.next = 2;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/mitochondria.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/Mitochondria/mitochondria.obj');
 	
 	          case 2:
 	            mitochondria = _context.sent;
@@ -7834,12 +7834,25 @@
 	                // console.log('pinch: ', name)
 	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
 	                triFaceMaterials(_mesh.geometry);
-	                pinches.push(_mesh);
+	
+	                if (name.indexOf('.L') !== -1) {
+	                  awayPinches.push(_mesh);
+	                } else {
+	                  towardsPinches.push(_mesh);
+	                }
 	              } else if (name.indexOf('Wall') !== -1) {
 	                // console.log('wall: ', name)
 	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
 	                triFaceMaterials(_mesh.geometry);
 	                walls.push(_mesh);
+	              } else if (name.indexOf('Membrane.Outer.RIM') !== -1) {
+	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
+	
+	                triFaceMaterials(_mesh.geometry);
+	
+	                // mesh.material = faceMat
+	                // mesh.material = new THREE.MeshNormalMaterial()
+	                outerRim = _mesh;
 	              } else if (name.indexOf('Membrane.Outer') !== -1) {
 	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
 	                triFaceMaterials(_mesh.geometry);
@@ -7853,14 +7866,14 @@
 	                triFaceMaterials(_mesh.geometry);
 	                // console.log('base: ', name)
 	                base = _mesh;
-	              } else if (name.indexOf('RIM') !== -1) {
+	              } else if (name.indexOf('Membrane.Inner.RIM') !== -1) {
 	                _mesh.geometry = new THREE.Geometry().fromBufferGeometry(_mesh.geometry);
 	
 	                triFaceMaterials(_mesh.geometry);
 	
 	                // mesh.material = faceMat
 	                // mesh.material = new THREE.MeshNormalMaterial()
-	                rim = _mesh;
+	                innerRim = _mesh;
 	              } else {
 	                console.log('else: ', name);
 	              }
@@ -7868,7 +7881,7 @@
 	
 	            // console.log(scale)
 	
-	            pinches.forEach(function (mesh) {
+	            awayPinches.forEach(function (mesh) {
 	              // scene.add(mesh)
 	              var bbox = new THREE.BoundingBoxHelper(mesh, 0x000000);
 	              bbox.update();
@@ -7878,6 +7891,9 @@
 	              mesh.material = (0, _materialUtils.randMaterial)();
 	              mesh.scale.set(scale, scale, scale);
 	              // scene.add(mesh)
+	            });
+	            towardsPinches.forEach(function (mesh) {
+	              mesh.scale.set(scale, scale, scale);
 	            });
 	
 	            walls.forEach(function (wall) {
@@ -7901,10 +7917,11 @@
 	            // scene.add(base)
 	
 	            // rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
-	            rim.scale.set(scale, scale, scale);
+	            innerRim.scale.set(scale, scale, scale);
+	            outerRim.scale.set(scale, scale, scale);
 	            // scene.add(rim)
 	
-	          case 14:
+	          case 16:
 	          case 'end':
 	            return _context.stop();
 	        }
@@ -7926,7 +7943,7 @@
 	        switch (_context2.prev = _context2.next) {
 	          case 0:
 	            _context2.next = 2;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/mitochondria_unified.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/Mitochondria/mitochondria_unified.obj');
 	
 	          case 2:
 	            mitochondria = _context2.sent;
@@ -7963,10 +7980,7 @@
 	
 	var init = function () {
 	  var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
-	    var membraneDimensions, ATPSynthase, dimer, dimer2, bboxA, atpRadius, boxy, testLOD, _testLOD$position,
-	    // lods.push(testLOD)
-	    x, y, z, objy, phosphosTexture, phosphosBump, phosphosTopTexture, phosphosTopBump, wallMat, porin;
-	
+	    var membraneDimensions, ATPSynthase, ATPSynthaseSpinning, first, second, difference, plane, planeMat, billboard, objy, dimers, dimers2, phosphosTextureInner, phosphosBumpInner, phosphosTextureOuter, phosphosBumpOuter, phosphosTopTexture, phosphosTopBump, wallMat, porin;
 	    return regeneratorRuntime.wrap(function _callee3$(_context3) {
 	      while (1) {
 	        switch (_context3.prev = _context3.next) {
@@ -7990,88 +8004,111 @@
 	
 	            // scene.add(porin)
 	            _context3.next = 6;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ETC/etc2-0.1.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ETC/etc2-0.1.obj');
 	
 	          case 6:
 	            _context3.t0 = _context3.sent;
 	            etc2 = (0, _etcCentered.constructETC2)(_context3.t0);
 	            _context3.next = 10;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ETC/etc2-0.05.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ETC/etc2-0.05.obj');
 	
 	          case 10:
 	            _context3.t1 = _context3.sent;
 	            etc2med = (0, _etcCentered.constructETC2)(_context3.t1);
 	            _context3.next = 14;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ETC/etc2-0.01.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ETC/etc2-0.01.obj');
 	
 	          case 14:
 	            _context3.t2 = _context3.sent;
 	            etc2low = (0, _etcCentered.constructETC2)(_context3.t2);
 	            _context3.next = 18;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.1.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.1.obj');
 	
 	          case 18:
 	            _context3.t3 = _context3.sent;
-	            ATPSynthase = (0, _atpSynthase.constructSynthaseSimple)(_context3.t3);
+	            ATPSynthase = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t3);
+	            _context3.next = 22;
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.05.obj');
 	
-	            ATPSynthase.geometry.computeBoundingBox();
-	            // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
-	            // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
-	            ATPSynthase.geometry.center();
-	            // scene.add(ATPSynthase)
-	
-	            _context3.next = 24;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.05.obj');
-	
-	          case 24:
+	          case 22:
 	            _context3.t4 = _context3.sent;
-	            ATPSynthaseMed = (0, _atpSynthase.constructSynthaseSimple)(_context3.t4);
+	            ATPSynthaseMed = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t4);
+	            _context3.next = 26;
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.01.obj');
 	
-	            ATPSynthaseMed.geometry.computeBoundingBox();
-	            ATPSynthaseMed.geometry.center();
-	
+	          case 26:
+	            _context3.t5 = _context3.sent;
+	            ATPSynthaseLow = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t5);
 	            _context3.next = 30;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/ATP-Synthase/ATP-Synthase2-0.01.obj');
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.1.obj');
 	
 	          case 30:
-	            _context3.t5 = _context3.sent;
-	            ATPSynthaseLow = (0, _atpSynthase.constructSynthaseSimple)(_context3.t5);
+	            _context3.t6 = _context3.sent;
+	            ATPSynthaseSpinning = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t6);
 	
-	            ATPSynthaseLow.geometry.computeBoundingBox();
-	            ATPSynthaseLow.geometry.center();
+	            ATPSynthaseSpinning.children[0].geometry.computeBoundingBox();
+	            first = ATPSynthaseSpinning.children[0].geometry.boundingBox.max.clone();
+	
+	            ATPSynthaseSpinning.children[0].geometry.center();
+	            ATPSynthaseSpinning.children[0].geometry.computeBoundingBox();
+	            second = ATPSynthaseSpinning.children[0].geometry.boundingBox.max.clone();
+	            difference = new THREE.Vector3().subVectors(first, second);
+	            // ATPSynthaseSpinning.children[1].geometry.center()
+	            // scene.add(ATPSynthaseSpinning)
+	            // console.log(ATPSynthaseSpinning)
+	
+	            barrel = ATPSynthaseSpinning.children[1];
+	            barrel.position.sub(difference);
+	
+	            // TODO properly center dimerSpinning group
+	            // dimerSpinning = dimerCreatorColouredSpinning({synthase: ATPSynthaseSpinning})
+	            // centerGroup(dimerSpinning)
+	            // console.log(dimerSpinning)
+	            // scene.add(dimerSpinning)
+	
+	            // barrelsLeft.push(dimerSpinning.children[0].children[1])
+	            // barrelsRight.push(dimerSpinning.children[1].children[1])
+	            atpReady = true;
 	
 	            // const bbox = getBBoxDimensions(ATPSynthase.geometry)
 	            // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
-	            dimer = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthase });
-	            // scene.add(dimer)
-	
-	            dimer2 = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthase });
-	
-	            dimer2.rotation.z = Math.PI / 2;
-	            dimer2.rotation.y = Math.PI / 2;
+	            // const dimer = dimerCreator({synthase: ATPSynthase})
+	            // // scene.add(dimer)
+	            // const dimer2 = dimerCreator({synthase: ATPSynthase})
+	            // dimer2.rotation.z = Math.PI/2
+	            // dimer2.rotation.y = Math.PI/2
 	            // scene.add(dimer2)
 	
-	            bboxA = (0, _geometryUtils.getBBoxDimensions)(ATPSynthase.geometry);
-	            atpRadius = (0, _geometryUtils.getBoundingRadius)(ATPSynthase.geometry);
-	            boxy = new THREE.Mesh(new THREE.BoxGeometry(bboxA.width, bboxA.height, bboxA.depth), (0, _materialUtils.randMaterial)());
-	            testLOD = (0, _lod.makeLOD)({
-	              meshes: [ATPSynthase, boxy],
-	              distances: [4, 6].map(function (num) {
-	                return atpRadius * num;
-	              })
-	            });
+	            // const dimerLow = dimerCreator({synthase: ATPSynthaseLow})
 	
-	            testLOD.position.set(0, -20, 0);
-	            testLOD.updateMatrix();_testLOD$position = testLOD.position;
-	            x = _testLOD$position.x;
-	            y = _testLOD$position.y;
-	            z = _testLOD$position.z;
-	
-	            LODOctree.add({ x: x, y: y, z: z, radius: atpRadius, id: lods.length - 1 });
+	            // const bboxA = getBBoxDimensions(ATPSynthase.geometry)
+	            // const atpRadius = getBoundingRadius(ATPSynthase.geometry)
+	            // const boxy = new THREE.Mesh(
+	            //   new THREE.BoxGeometry(bboxA.width, bboxA.height, bboxA.depth),
+	            //   randMaterial()
+	            // )
+	            // const testLOD = makeLOD({
+	            //   meshes: [ATPSynthase, boxy],
+	            //   distances: [4, 6].map(num => atpRadius*num)
+	            // })
+	            // testLOD.position.set(0, -20, 0)
+	            // testLOD.updateMatrix()
+	            // // lods.push(testLOD)
+	            // const { x, y, z } = testLOD.position
+	            // LODOctree.add({x, y, z, radius: atpRadius, id: lods.length - 1})
 	            // LODOctree.update()
 	            // console.log(LODOctree.search(new THREE.Vector3().clone(testLOD.position), 100))
 	            // preDisableDetail(testLOD)
 	            // scene.add(testLOD)
+	
+	            _context3.next = 43;
+	            return (0, _loaders.JSONLoaderAsync)('/biorender/models/ETC-billboard.json');
+	
+	          case 43:
+	            plane = _context3.sent;
+	            planeMat = _loaders.textureLoader.load('/biorender/textures/etc-billboard.png');
+	            billboard = new THREE.Mesh(plane[0], new THREE.MeshPhongMaterial({ map: planeMat, transparent: true, side: THREE.DoubleSide, alphaTest: 0.5 }));
+	            // scene.add(billboard)
 	
 	            objy = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 5), (0, _materialUtils.randMaterial)());
 	
@@ -8083,25 +8120,58 @@
 	            // scene.add(innerMembraneProteins)
 	
 	            // await makeUnifiedMito()
-	            _context3.next = 54;
+	            _context3.next = 51;
 	            return makePiecesMito();
 	
-	          case 54:
+	          case 51:
 	
-	            useWalls({ walls: walls, lods: lods });
-	            usePinch({ pinches: pinches, ATPSynthase: ATPSynthase, lods: lods, lodOctree: LODOctree });
+	            // useWalls({walls, lods})
+	            // console.log(awayPinches)
+	            dimers = usePinch({ pinches: awayPinches, ATPSynthase: ATPSynthase, lods: lods, lodOctree: LODOctree, sidedness: 'away' });
+	            dimers2 = usePinch({ pinches: towardsPinches, ATPSynthase: ATPSynthase, lods: lods, lodOctree: LODOctree, sidedness: 'towards' });
 	
-	            phosphosTexture = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids/phospholipids_a.png');
-	            // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
+	            dimers.concat(dimers2).forEach(function (dimer) {
+	              return scene.add(dimer);
+	            });
+	            // const mergedGeom = new THREE.Geometry().fromBufferGeometry(dimers[0].children[1].geometry)
+	            // const mergedGeom = dimers[0].children[1].geometry
+	            // console.log(dimers.length-1)
+	            // for (let i=1; i < dimers.length; i++) {
+	            //   const dimer = dimers[i]
+	            //   console.log(i)
+	            //
+	            //   const { x, y, z } = dimer.position
+	            //   dimer.children[1].position.set(x, y, z)
+	            //   // scene.add(dimer.children[1])
+	            //   // const geom = new THREE.Geometry().fromBufferGeometry(dimer.children[1].geometry)
+	            //   dimer.updateMatrix()
+	            //   dimer.children[1].updateMatrix()
+	            //   const geom = dimer.children[1].geometry
+	            //   geom.applyMatrix(dimer.matrixWorld)
+	            //   mergedGeom.merge(geom, dimer.matrix)
+	            // }
+	            // console.log(mergedGeom)
+	            // const mergedMesh = new THREE.Mesh(mergedGeom, randMaterial())
+	            // scene.add(mergedMesh)
+	            // const iDimers = makeInstanced(dimers, dimerLow)
+	            // scene.add(iDimers)
 	
-	            phosphosBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids/phospholipids_b.png');
-	            // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
+	            phosphosTextureInner = _loaders.textureLoader.load('/biorender/textures/phospholipids/mitochondria-inner-membrane-phospholipids_a.png');
+	            phosphosBumpInner = _loaders.textureLoader.load('/biorender/textures/phospholipids/mitochondria-inner-membrane-phospholipids_b.png');
 	
-	            rim.material = new THREE.MeshPhongMaterial({ map: phosphosTexture, bumpMap: phosphosBump });
-	            scene.add(rim);
 	
-	            phosphosTopTexture = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_a.png');
-	            phosphosTopBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_b.png');
+	            innerRim.material = new THREE.MeshPhongMaterial({ map: phosphosTextureInner, bumpMap: phosphosBumpInner });
+	            scene.add(innerRim);
+	
+	            phosphosTextureOuter = _loaders.textureLoader.load('/biorender/textures/phospholipids/mitochondria-outer-membrane-phospholipids_a.png');
+	            phosphosBumpOuter = _loaders.textureLoader.load('/biorender/textures/phospholipids/mitochondria-outer-membrane-phospholipids_b.png');
+	
+	
+	            outerRim.material = new THREE.MeshPhongMaterial({ map: phosphosTextureOuter, bumpMap: phosphosBumpOuter });
+	            scene.add(outerRim);
+	
+	            phosphosTopTexture = _loaders.textureLoader.load('/biorender/textures/phospholipids-top/phospholipids-top_a.png');
+	            phosphosTopBump = _loaders.textureLoader.load('/biorender/textures/phospholipids-top/phospholipids-top_b.png');
 	            wallMat = new THREE.MeshPhongMaterial({ map: phosphosTopTexture, bumpMap: phosphosTopBump, side: THREE.DoubleSide });
 	
 	            walls.forEach(function (wall) {
@@ -8109,7 +8179,7 @@
 	              scene.add(wall);
 	            });
 	
-	            pinches.forEach(function (pinch) {
+	            awayPinches.concat(towardsPinches).forEach(function (pinch) {
 	              pinch.material = wallMat;
 	              scene.add(pinch);
 	            });
@@ -8121,14 +8191,14 @@
 	            outerMembrane.material.opacity = 0.5;
 	            scene.add(outerMembrane);
 	
-	            _context3.next = 73;
-	            return (0, _loaders.OBJLoaderAsync)('http://biorender.github.io/biorender/models/Mitochondria/Outer-Membrane/porin.obj');
-	
-	          case 73:
-	            _context3.t6 = _context3.sent;
-	            porin = (0, _porin.constructPorin)(_context3.t6);
+	            _context3.next = 75;
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/Mitochondria/Outer-Membrane/porin.obj');
 	
 	          case 75:
+	            _context3.t7 = _context3.sent;
+	            porin = (0, _porin.constructPorin)(_context3.t7);
+	
+	          case 77:
 	          case 'end':
 	            return _context3.stop();
 	        }
@@ -8354,9 +8424,11 @@
 	var pinchesBoxes = [];
 	var wallsBoxes = [];
 	var walls = [];
-	var pinches = [];
+	var awayPinches = [];
+	var towardsPinches = [];
 	var outerMembrane = void 0;
-	var rim = void 0;
+	var innerRim = void 0;
+	var outerRim = void 0;
 	var base = void 0;
 	
 	
@@ -8394,7 +8466,7 @@
 	
 	      var etcBox2 = etcBox.clone();
 	      etcBox2.material = child.material;
-	      etcBox2.visible = false;
+	      etcBox2.visible = true;
 	
 	      var etcMed = etc2med.clone();
 	      etcMed.material = child.material;
@@ -8404,9 +8476,19 @@
 	      etcLow.material = child.material;
 	      etcLow.rotation.setFromQuaternion(child.quaternion);
 	
+	      var billboard = new THREE.PlaneGeometry(bbox.scale.x, bbox.scale.z);
+	      var billboard2 = new THREE.PlaneGeometry(bbox.scale.z, bbox.scale.y);
+	      billboard2.rotateZ(Math.PI / 2);
+	      billboard2.rotateY(Math.PI / 2);
+	      billboard.merge(billboard2);
+	      var bb = new THREE.Mesh(billboard, child.material);
+	      bb.material.side = THREE.DoubleSide;
+	      bb.rotation.setFromQuaternion(child.quaternion);
+	      // scene.add(bb)
+	
 	      var etcLOD = (0, _lod.makeLOD)({
-	        meshes: [child, etcMed, etcLow, new THREE.Object3D()],
-	        distances: [1, 2, 4, 20].map(function (num) {
+	        meshes: [child, etcMed, bb],
+	        distances: [1, 2, 5].map(function (num) {
 	          return radius * num;
 	        })
 	      });
@@ -8431,21 +8513,26 @@
 	// let ATPSynthase
 	var ATPSynthaseMed = void 0,
 	    ATPSynthaseLow = void 0;
+	var barrelsLeft = [];
+	var barrelsRight = [];
+	
 	var usePinch = function usePinch(_ref3) {
 	  var pinches = _ref3.pinches;
 	  var ATPSynthase = _ref3.ATPSynthase;
 	  var lods = _ref3.lods;
 	  var lodOctree = _ref3.lodOctree;
+	  var sidedness = _ref3.sidedness;
 	
-	  var parentDimer = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthase });
-	  var parentDimerMed = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthaseMed });
-	  var parentDimerLow = (0, _atpSynthase.dimerCreator)({ synthase: ATPSynthaseLow });
+	  var parentDimer = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthase });
+	  var parentDimerMed = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthaseMed });
+	  var parentDimerLow = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthaseLow });
+	  var dimers = [];
 	
 	  // use max z factor from normals on 90% of z of mesh to determine which way its pointing
 	  // kinda sketchy. will only work if mito is in left-right. after this, you can rotate.
 	  var getSidedness = function getSidedness(pinch) {
 	    var bbox = (0, _geometryUtils.getBBoxDimensions)(pinch.geometry);
-	    var zThreshold = pinch.geometry.boundingBox.min.z + bbox.depth * 0.9;
+	    var zThreshold = pinch.geometry.boundingBox.min.z + bbox.depth * 0.95;
 	    var faces = pinch.geometry.faces;
 	    var verts = pinch.geometry.vertices;
 	
@@ -8460,10 +8547,12 @@
 	      }
 	    }
 	
+	    // console.log(maxZNorm)
+	
 	    var side = void 0;
-	    if (maxZNorm < 0) {
+	    if (maxZNorm < 0.3) {
 	      side = 'away';
-	    } else if (maxZNorm > 0) {
+	    } else if (maxZNorm > 0.3) {
 	      side = 'towards';
 	    }
 	
@@ -8530,15 +8619,18 @@
 	    }
 	    dimer.rotation.y = Math.PI / 2;
 	
+	    var spacage = void 0;
 	    var dimerLow = parentDimerLow.clone();
 	    // let x = min.x + (max.x - min.x)/2
 	    // let y = max.y
 	    // let z
 	    if (side === 'towards') {
 	      // z = max.z
+	      spacage = -1;
 	      dimerLow.rotation.z = Math.PI / 2;
 	    } else if (side === 'away') {
 	      // z = min.z
+	      spacage = 1;
 	      dimerLow.rotation.z = -Math.PI / 2;
 	    }
 	    dimerLow.rotation.y = Math.PI / 2;
@@ -8565,25 +8657,47 @@
 	    var _loop = function _loop() {
 	      var newDimer = dimer.clone();
 	      // newDimer.position.set(x, currentY, z)
-	      newDimer.material = (0, _materialUtils.randMaterial)();
+	      // newDimer.material = randMaterial()
 	      var newDimerLow = dimerLow.clone();
 	      newDimerLow.material = newDimer.material;
 	
-	      var radius = (0, _geometryUtils.getBoundingRadius)(newDimer.geometry);
+	      // const radius = getBoundingRadius(newDimer.geometry)
+	      var box = new THREE.Box3().setFromObject(newDimer);
+	      var radius = new THREE.Sphere().setFromPoints([box.max, box.min]).radius;
 	      var newDimerBox = new THREE.Mesh(new THREE.BoxBufferGeometry(dimerBbox.scale.x, dimerBbox.scale.y, dimerBbox.scale.z), (0, _materialUtils.randMaterial)());
+	
+	      var billboard = new THREE.PlaneGeometry(dimerBbox.scale.x, dimerBbox.scale.z);
+	      var billboard2 = new THREE.PlaneGeometry(dimerBbox.scale.z, dimerBbox.scale.y);
+	      billboard2.rotateZ(Math.PI / 2);
+	      billboard2.rotateY(Math.PI / 2);
+	      billboard.merge(billboard2);
+	      var bb = new THREE.Mesh(billboard, newDimer.material);
+	      bb.material.side = THREE.DoubleSide;
+	
+	      barrelsLeft.push(newDimer.children[0].children[1]);
+	      barrelsRight.push(newDimer.children[1].children[1]);
+	
+	      barrelsLeft.push(newDimerLow.children[0].children[1]);
+	      barrelsRight.push(newDimerLow.children[1].children[1]);
+	
+	      // const dimerLOD = makeLOD({
+	      //   meshes: [newDimer, newDimerLow, bb],
+	      //   distances: [2, 3, 20].map(num => radius*num)
+	      // })
 	      var dimerLOD = (0, _lod.makeLOD)({
-	        meshes: [newDimer, newDimerLow, new THREE.Object3D()],
-	        distances: [2, 3, 25].map(function (num) {
+	        meshes: [newDimer, newDimerLow],
+	        distances: [2, 3].map(function (num) {
 	          return radius * num;
 	        })
 	      });
-	      dimerLOD.position.set(x, currentY, z);
+	      dimerLOD.position.set(x + 5.5, currentY, z + spacage * 6);
 	      dimerLOD.updateMatrix();
 	      lods.push(dimerLOD);
 	      // const { x, y, z } = dimerLOD.position
 	      // LODOctree.add({x, y, z, radius, id: lods.length - 1})
 	      (0, _lod.preDisableDetail)(dimerLOD);
-	      scene.add(dimerLOD);
+	      // scene.add(dimerLOD)
+	      dimers.push(dimerLOD);
 	
 	      // newDimer.position.set(x, currentY, z)
 	      // scene.add(newDimer)
@@ -8598,13 +8712,68 @@
 	
 	  for (var i = 0; i < pinches.length; i++) {
 	    var pinch = pinches[i];
-	    var side = getSidedness(pinch);
+	    // const side = getSidedness(pinch)
 	
-	    doPinch({ pinch: pinch, side: side });
+	    doPinch({ pinch: pinch, side: sidedness });
 	  }
+	
+	  return dimers;
 	
 	  // doPinch({pinch: pinches[16], side:'away'})
 	  // doPinch({pinch: pinches[17], side:'towards'})
+	};
+	
+	var makeInstanced = function makeInstanced(positions, geom) {
+	  var vertexShader = document.getElementById('vertexShader').textContent;
+	  var fragmentShader = document.getElementById('fragmentShader').textContent;
+	  var igeom = new THREE.InstancedBufferGeometry();
+	  var instances = positions.length;
+	
+	  var bgeo = geom.geometry;
+	  bgeo.maxInstancedCount = instances;
+	
+	  var vertices = bgeo.attributes.position.clone();
+	  igeom.addAttribute('position', vertices);
+	
+	  var offsets = new THREE.InstancedBufferAttribute(new Float32Array(instances * 3), 3, 1);
+	  for (var _i = 0; _i < offsets.count; _i++) {
+	    var _positions$_i$positio = positions[_i].position;
+	    var x = _positions$_i$positio.x;
+	    var y = _positions$_i$positio.y;
+	    var z = _positions$_i$positio.z;
+	
+	
+	    offsets.setXYZ(_i, x, y, z);
+	  }
+	  igeom.addAttribute('offset', offsets);
+	
+	  var colors = new THREE.InstancedBufferAttribute(new Float32Array(instances * 4), 4, 1);
+	  for (var i = 0, ul = colors.count; i < ul; i++) {
+	    colors.setXYZW(i, Math.random(), Math.random(), Math.random(), Math.random());
+	  }
+	  igeom.addAttribute('color', colors);
+	
+	  var vector = new THREE.Vector4();
+	  var orientations = new THREE.InstancedBufferAttribute(new Float32Array(instances * 4), 4, 1);
+	  for (var _i2 = 0; _i2 < orientations.count; _i2++) {
+	    var _positions$_i2$childr = positions[_i2].children[0].quaternion;
+	    var x = _positions$_i2$childr.x;
+	    var y = _positions$_i2$childr.y;
+	    var z = _positions$_i2$childr.z;
+	    var w = _positions$_i2$childr.w;
+	
+	    vector.set(x, y, z, w);
+	    // vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 )
+	    vector.normalize();
+	    // orientations.setXYZW(i, x, y, z, w)
+	    orientations.setXYZW(_i2, 0, 0, 0, 1);
+	  }
+	  igeom.addAttribute('orientation', orientations);
+	
+	  var mat = new THREE.RawShaderMaterial({ vertexShader: vertexShader, fragmentShader: fragmentShader });
+	  var mesh = new THREE.Mesh(igeom, mat);
+	
+	  return mesh;
 	};
 	
 	var vesicle = void 0,
@@ -8615,6 +8784,9 @@
 	var lods = [];
 	// so we don't have to update **every** LOD **every** frame
 	var LODOctree = new THREE.Octree();
+	
+	var barrel = void 0;
+	var dimerSpinning = void 0;
 	
 	// const porins = populateMembrane(outerMembrane, porin, 'outer')
 	// scene.add(porins)
@@ -8648,9 +8820,20 @@
 	
 	  var delta = clock.getDelta();
 	  if (atpReady) {
-	    ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta * 0.8;
+	    // ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta*0.8
+	    // dimerSpinning.rotation.y = dimerSpinning.rotation.y + delta*0.8
+	
 	    // bboxH.update()
 	  }
+	
+	  for (var i = 0; i < barrelsLeft.length; i++) {
+	    var barrelLeft = barrelsLeft[i];
+	    barrelLeft.rotation.y = barrelLeft.rotation.y + delta * 0.8;
+	
+	    var barrelRight = barrelsRight[i];
+	    barrelRight.rotation.y = barrelRight.rotation.y - delta * 0.8;
+	  }
+	
 	  // innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4
 	  // innerMembrane.rotation.z = innerMembrane.rotation.z + delta*0.4
 	  // innerMembrane.rotation.x = innerMembrane.rotation.x + delta*0.4
@@ -8696,8 +8879,8 @@
 	  // }
 	
 	  // console.time('lodUpdate')
-	  for (var i = 0; i < lods.length; i++) {
-	    lods[i].update(camera);
+	  for (var _i3 = 0; _i3 < lods.length; _i3++) {
+	    lods[_i3].update(camera);
 	  }
 	  // console.timeEnd('lodUpdate')
 	
@@ -9047,8 +9230,17 @@
 	  value: true
 	});
 	var OBJLoader = new THREE.OBJLoader();
+	var JSONLoader = new THREE.JSONLoader();
 	
 	var textureLoader = exports.textureLoader = new THREE.TextureLoader();
+	
+	var JSONLoaderAsync = exports.JSONLoaderAsync = function JSONLoaderAsync(url) {
+	  return new Promise(function (resolve, reject) {
+	    JSONLoader.load(url, function (geometry, materials) {
+	      resolve([geometry, materials]);
+	    });
+	  });
+	};
 	
 	// TODO Promise shim for older browsers
 	// TODO reject
@@ -9103,7 +9295,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.populateMembrane = exports.getBoundingRadius = exports.getBBoxDimensions = undefined;
+	exports.populateMembrane = exports.centerGroup = exports.getGroupBoundingBox = exports.getBoundingRadius = exports.getBBoxDimensions = undefined;
 	
 	var _constants = __webpack_require__(300);
 	
@@ -9135,6 +9327,43 @@
 	  var radius = geometry.boundingSphere.radius;
 	
 	  return radius;
+	};
+	
+	var getGroupBoundingBox = exports.getGroupBoundingBox = function getGroupBoundingBox(group) {
+	  var boundingBox = { min: new THREE.Vector3(Number.MAX_VALUE), max: new THREE.Vector3(Number.MIN_VALUE) };
+	
+	  for (var i = 0; i < group.children.length; i++) {
+	    var child = group.children[i];
+	    child.geometry.computeBoundingBox();
+	    var childBox = child.geometry.boundingBox;
+	
+	    boundingBox.min.x = Math.min(childBox.min.x, boundingBox.min.x);
+	    boundingBox.min.y = Math.min(childBox.min.y, boundingBox.min.y);
+	    boundingBox.min.z = Math.min(childBox.min.z, boundingBox.min.z);
+	
+	    boundingBox.max.x = Math.max(childBox.max.x, boundingBox.max.x);
+	    boundingBox.max.y = Math.max(childBox.max.y, boundingBox.max.y);
+	    boundingBox.max.z = Math.max(childBox.max.z, boundingBox.max.z);
+	  }
+	
+	  return boundingBox;
+	};
+	
+	var centerGroup = exports.centerGroup = function centerGroup(group) {
+	  var offset = new THREE.Vector3();
+	  var boundingBox = new THREE.Box3().setFromObject(group);
+	
+	  // get center of bbox
+	  offset.addVectors(boundingBox.min, boundingBox.max);
+	  offset.multiplyScalar(-0.5);
+	
+	  // move all meshes
+	  for (var i = 0; i < group.children.length; ++i) {
+	    // apply matrix translation
+	    group.children[i].geometry.applyMatrix(new THREE.Matrix4().makeTranslation(offset.x, offset.y, offset.z));
+	    // update bbox of each mesh
+	    group.children[i].geometry.computeBoundingBox();
+	  }
 	};
 	
 	var applyScaleToBBox = function applyScaleToBBox(bbox, scale) {
@@ -9423,11 +9652,37 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.constructSynthaseSimple = exports.constructSynthase = exports.constructDimer = exports.dimerCreator = exports.crudeDimerCreator = exports.crudeSynthaseCreator = undefined;
+	exports.constructSynthaseSpinning = exports.constructSynthaseColoured = exports.constructSynthaseSimple = exports.constructSynthase = exports.constructDimer = exports.dimerCreatorColouredSpinning = exports.dimerCreatorColoured = exports.dimerCreator = exports.crudeDimerCreator = exports.crudeSynthaseCreator = undefined;
 	
 	var _geometryUtils = __webpack_require__(299);
 	
 	var _materialUtils = __webpack_require__(301);
+	
+	var materialMappingsLambert = {
+	  'Axel-Front': new THREE.MeshLambertMaterial({ color: 0x007C00 }),
+	  'OSAP': new THREE.MeshLambertMaterial({ color: 0x950095 }),
+	  'Stator-Blue-Med': new THREE.MeshLambertMaterial({ color: 0x1753c7 }),
+	  'F1-Redish-Front': new THREE.MeshLambertMaterial({ color: 0xFFBC00 }),
+	  'Stator-Blue-Dark': new THREE.MeshLambertMaterial({ color: 0x431cc6 }),
+	  'Stator-Base': new THREE.MeshLambertMaterial({ color: 0xBC00BC }),
+	  'Test-Velvet-Green': new THREE.MeshLambertMaterial({ color: 0x21f112 }),
+	  'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({ color: 0x60be44 }),
+	  'TM-Section': new THREE.MeshLambertMaterial({ color: 0xBA9F7C }),
+	  'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({ color: 0xFF5900 })
+	};
+	
+	var materialMappings = {
+	  'Axel-Front': 0x007C00,
+	  'OSAP': 0x950095,
+	  'Stator-Blue-Med': 0x1753c7,
+	  'F1-Redish-Front': 0xFFBC00,
+	  'Stator-Blue-Dark': 0x431cc6,
+	  'Stator-Base': 0xBC00BC,
+	  'Test-Velvet-Green': 0x21f112,
+	  'Test-Velvet-Green.001': 0x60be44,
+	  'TM-Section': 0xBA9F7C,
+	  'F1-Redish-Dark-Front': 0xFF5900
+	};
 	
 	var crudeSynthaseCreator = exports.crudeSynthaseCreator = function crudeSynthaseCreator() {
 	  var synthase = new THREE.Group();
@@ -9502,6 +9757,72 @@
 	  return dimer;
 	};
 	
+	var dimerCreatorColoured = exports.dimerCreatorColoured = function dimerCreatorColoured(_ref2) {
+	  var synthase = _ref2.synthase;
+	  var _ref2$spread = _ref2.spread;
+	  var spread = _ref2$spread === undefined ? -0.2 : _ref2$spread;
+	  var _ref2$rotationY = _ref2.rotationY;
+	  var rotationY = _ref2$rotationY === undefined ? 0 : _ref2$rotationY;
+	  var _ref2$rotationX = _ref2.rotationX;
+	  var rotationX = _ref2$rotationX === undefined ? Math.PI / 4 : _ref2$rotationX;
+	
+	  var synthaseA = synthase.clone();
+	  // for some reason, need this..
+	  synthaseA.rotation.x = rotationX;
+	
+	  var synthaseB = synthase.clone();
+	
+	  var bBox = new THREE.BoundingBoxHelper(synthaseA, 0x000000);
+	  bBox.update();
+	
+	  synthaseA.geometry = new THREE.Geometry().fromBufferGeometry(synthaseA.geometry);
+	  synthaseA.geometry.rotateX(rotationX);
+	
+	  synthaseB.geometry = new THREE.Geometry().fromBufferGeometry(synthaseB.geometry);
+	  synthaseB.geometry.rotateX(rotationX);
+	  synthaseB.geometry.rotateY(Math.PI);
+	  synthaseB.geometry.translate(0, 0, -(bBox.scale.z + spread * bBox.scale.z));
+	
+	  var geom = synthaseA.geometry;
+	  geom.merge(synthaseB.geometry);
+	  geom.center();
+	
+	  var bufferGeom = new THREE.BufferGeometry().fromGeometry(geom);
+	
+	  var dimer = new THREE.Mesh(bufferGeom, new THREE.MeshLambertMaterial({ color: 0xffffff, vertexColors: THREE.VertexColors }));
+	
+	  return dimer;
+	};
+	
+	// +0.4
+	var dimerCreatorColouredSpinning = exports.dimerCreatorColouredSpinning = function dimerCreatorColouredSpinning(_ref3) {
+	  var synthase = _ref3.synthase;
+	  var _ref3$spread = _ref3.spread;
+	  var spread = _ref3$spread === undefined ? -0.2 : _ref3$spread;
+	  var _ref3$rotationY = _ref3.rotationY;
+	  var rotationY = _ref3$rotationY === undefined ? 0 : _ref3$rotationY;
+	  var _ref3$rotationX = _ref3.rotationX;
+	  var rotationX = _ref3$rotationX === undefined ? Math.PI / 4 : _ref3$rotationX;
+	
+	  var synthaseA = synthase.clone();
+	  var synthaseB = synthase.clone();
+	
+	  var boundingBox = (0, _geometryUtils.getGroupBoundingBox)(synthaseA);
+	
+	  var difference = new THREE.Vector3().subVectors(boundingBox.max, boundingBox.min);
+	
+	  synthaseA.rotation.x = rotationX;
+	  synthaseB.rotation.x = -rotationX;
+	  synthaseB.rotation.y = Math.PI;
+	  synthaseB.position.set(0, 0, -(difference.z + spread * difference.z));
+	
+	  var dimer = new THREE.Group();
+	  dimer.add(synthaseA);
+	  dimer.add(synthaseB);
+	
+	  return dimer;
+	};
+	
 	var constructDimer = exports.constructDimer = function constructDimer(synthase) {
 	  var ATPSynthase = constructSynthase(synthase);
 	
@@ -9513,19 +9834,6 @@
 	};
 	
 	var constructSynthase = exports.constructSynthase = function constructSynthase(object) {
-	  var materialMappings = {
-	    'Axel-Front': new THREE.MeshLambertMaterial({ color: 0x007C00 }),
-	    'OSAP': new THREE.MeshLambertMaterial({ color: 0x6f8efa }),
-	    'Stator-Blue-Med': new THREE.MeshLambertMaterial({ color: 0x1753c7 }),
-	    'F1-Redish-Front': new THREE.MeshLambertMaterial({ color: 0xc43535 }),
-	    'Stator-Blue-Dark': new THREE.MeshLambertMaterial({ color: 0x431cc6 }),
-	    'Stator-Base': new THREE.MeshLambertMaterial({ color: 0x2f28be }),
-	    'Test-Velvet-Green': new THREE.MeshLambertMaterial({ color: 0x21f112 }),
-	    'Test-Velvet-Green.001': new THREE.MeshLambertMaterial({ color: 0x60be44 }),
-	    'Axel-Hydrophobic': new THREE.MeshLambertMaterial({ color: 0xcdcdcd }),
-	    'F1-Redish-Dark-Front': new THREE.MeshLambertMaterial({ color: 0xd5381d })
-	  };
-	
 	  var ATPSynthase = new THREE.Group();
 	  var components = [];
 	
@@ -9533,7 +9841,7 @@
 	    var child = object.children[i];
 	    child.name = child.name.split('_')[2];
 	
-	    child.material = materialMappings[child.name];
+	    child.material = materialMappingsLambert[child.name];
 	
 	    components.push(child);
 	  }
@@ -9555,8 +9863,8 @@
 	    var mesh = group.children[i];
 	
 	    // TODO define naming conventions to make this work the same for all proteins
-	    mesh.name = mesh.name.replace(/_ShapeIndexedFaceSet_/, '_');
-	    var section = mesh.name.split('_')[1];
+	    var name = mesh.name.replace(/_ShapeIndexedFaceSet\.[\d]+_/, '_');
+	    var section = name.split('_')[1];
 	
 	    if (section === 'TM-Section') {
 	      var bbox = (0, _geometryUtils.getBBoxDimensions)(mesh.geometry);
@@ -9581,6 +9889,157 @@
 	
 	  return porin;
 	};
+	
+	var constructSynthaseColoured = exports.constructSynthaseColoured = function constructSynthaseColoured(group) {
+	  var bilayerWidth = 4;
+	
+	  var scale = 1;
+	  var geometry = void 0;
+	  var components = [];
+	  // console.log(group.children.length)
+	  // console.log(Object.keys(materialMappingsLambert).length)
+	
+	  var _loop = function _loop(i) {
+	    var mesh = group.children[i];
+	    var geom = new THREE.Geometry().fromBufferGeometry(mesh.geometry);
+	    // console.log(geom)
+	
+	    // TODO define naming conventions to make this work the same for all proteins
+	    var name = mesh.name.replace(/_ShapeIndexedFaceSet\.[\d]+_/, '_');
+	    var section = name.split('_')[1];
+	    // console.log(section)
+	
+	    geom.faces.forEach(function (face) {
+	      // face.materialIndex = Object.keys(materialMappingsLambert).indexOf(section)
+	      face.color.setHex(materialMappings[section]);
+	    });
+	
+	    if (section === 'TM-Section') {
+	      var bbox = (0, _geometryUtils.getBBoxDimensions)(mesh.geometry);
+	      scale = bilayerWidth / bbox.height;
+	      console.log('scale is ', scale);
+	    }
+	
+	    if (i === 1) {
+	      geometry = geom;
+	    } else if (i > 1) {
+	      components.push(geom);
+	    }
+	  };
+	
+	  for (var i = 1; i < group.children.length; i++) {
+	    _loop(i);
+	  }
+	
+	  for (var _i2 = 0; _i2 < components.length; _i2++) {
+	    geometry.merge(components[_i2]);
+	  }
+	
+	  var materials = Object.keys(materialMappingsLambert).map(function (key) {
+	    return materialMappingsLambert[key];
+	  });
+	  var material = new THREE.MeshLambertMaterial({ color: 0xffffff, vertexColors: THREE.VertexColors });
+	
+	  geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+	  // const porin = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials))
+	  var porin = new THREE.Mesh(geometry, material);
+	  // console.log(porin)
+	
+	  porin.scale.set(scale, scale, scale);
+	
+	  return porin;
+	};
+	
+	var constructSynthaseSpinning = exports.constructSynthaseSpinning = function constructSynthaseSpinning(group) {
+	  var bilayerWidth = 4;
+	
+	  var scale = 1;
+	  var geometry = void 0;
+	  var components = [];
+	  var barrelGeom = null;
+	
+	  var ATPSynthase = new THREE.Group();
+	
+	  var buildBarrel = function buildBarrel(geom) {
+	    // geom = new THREE.Geometry().fromBufferGeometry(geom)
+	
+	    if (barrelGeom === null) {
+	      barrelGeom = geom;
+	    } else {
+	      barrelGeom.merge(geom);
+	    }
+	  };
+	
+	  // console.log(group.children.length)
+	  // console.log(Object.keys(materialMappingsLambert).length)
+	
+	  var _loop2 = function _loop2(i) {
+	    var mesh = group.children[i];
+	    var geom = new THREE.Geometry().fromBufferGeometry(mesh.geometry);
+	    // console.log(geom)
+	
+	    // TODO define naming conventions to make this work the same for all proteins
+	    var name = mesh.name.replace(/_ShapeIndexedFaceSet\.[\d]+_/, '_');
+	    var section = name.split('_')[1];
+	    // console.log(section)
+	
+	    geom.faces.forEach(function (face) {
+	      // face.materialIndex = Object.keys(materialMappingsLambert).indexOf(section)
+	      face.color.setHex(materialMappings[section]);
+	    });
+	
+	    switch (section) {
+	      case 'TM-Section':
+	        var bbox = (0, _geometryUtils.getBBoxDimensions)(mesh.geometry);
+	        scale = bilayerWidth / bbox.height;
+	        // console.log('scale is ', scale)
+	
+	        buildBarrel(geom);
+	
+	        break;
+	      case 'Test-Velvet-Green':
+	        buildBarrel(geom);
+	        break;
+	      case 'Test-Velvet-Green.001':
+	        buildBarrel(geom);
+	        break;
+	      default:
+	        if (i === 1) {
+	          geometry = geom;
+	        } else if (i > 1) {
+	          components.push(geom);
+	        }
+	    }
+	  };
+	
+	  for (var i = 1; i < group.children.length; i++) {
+	    _loop2(i);
+	  }
+	
+	  for (var _i3 = 0; _i3 < components.length; _i3++) {
+	    geometry.merge(components[_i3]);
+	  }
+	
+	  var materials = Object.keys(materialMappingsLambert).map(function (key) {
+	    return materialMappingsLambert[key];
+	  });
+	  var material = new THREE.MeshLambertMaterial({ color: 0xffffff, vertexColors: THREE.VertexColors });
+	
+	  geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+	  // const porin = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials))
+	  var porin = new THREE.Mesh(geometry, material);
+	  // console.log(porin)
+	
+	  porin.scale.set(scale, scale, scale);
+	
+	  var barrel = new THREE.Mesh(barrelGeom, material);
+	  barrel.scale.set(scale, scale, scale);
+	
+	  ATPSynthase.add(porin);
+	  ATPSynthase.add(barrel);
+	
+	  return ATPSynthase;
+	};
 
 /***/ },
 /* 304 */
@@ -9598,10 +10057,10 @@
 	var _UVUtil = __webpack_require__(305);
 	
 	var constructCristae = exports.constructCristae = function constructCristae(group) {
-	  var phosphosTopAlbedo = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_a.png');
+	  var phosphosTopAlbedo = _loaders.textureLoader.load('/biorender/textures/phospholipids-top/phospholipids-top_a.png');
 	  phosphosTopAlbedo.wrapT = phosphosTopAlbedo.wrapS = THREE.RepeatWrapping;
 	  phosphosTopAlbedo.repeat.set(100, 100);
-	  var phosphosTopBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids-top/phospholipids-top_b.png');
+	  var phosphosTopBump = _loaders.textureLoader.load('/biorender/textures/phospholipids-top/phospholipids-top_b.png');
 	  phosphosTopBump.wrapS = phosphosTopBump.wrapT = THREE.RepeatWrapping;
 	  phosphosTopBump.repeat.set(100, 100);
 	
@@ -9630,8 +10089,8 @@
 	
 	      etc = child;
 	    } else if (child.name === 'Cristae.Rim') {
-	      var phosphosAlbedo = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids_a.png');
-	      var phosphosBump = _loaders.textureLoader.load('http://biorender.github.io/biorender/textures/phospholipids_b.png');
+	      var phosphosAlbedo = _loaders.textureLoader.load('/biorender/textures/phospholipids_a.png');
+	      var phosphosBump = _loaders.textureLoader.load('/biorender/textures/phospholipids_b.png');
 	
 	      child.geometry = new THREE.Geometry().fromBufferGeometry(child.geometry);
 	
