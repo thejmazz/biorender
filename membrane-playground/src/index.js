@@ -192,7 +192,8 @@ let wallsBoxes = []
 let walls = []
 let pinches = []
 let outerMembrane
-let rim
+let innerRim
+let outerRim
 let base
 async function makePiecesMito() {
   const mitochondria = await OBJLoaderAsync('/models/Mitochondria/mitochondria.obj')
@@ -225,7 +226,7 @@ async function makePiecesMito() {
     const mesh = mitochondria.children[i]
 
     const name = mesh.name.replace(/Cube\.\d+_?/, '')
-    // console.log(name)
+    console.log(name)
 
     if (name.indexOf('Pinch') !== -1) {
       // console.log('pinch: ', name)
@@ -237,6 +238,15 @@ async function makePiecesMito() {
       mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
       triFaceMaterials(mesh.geometry)
       walls.push(mesh)
+    } else if (name.indexOf('Membrane.Outer.RIM') !== -1) {
+      console.log('outer rim')
+      mesh.geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
+
+      triFaceMaterials(mesh.geometry)
+
+      // mesh.material = faceMat
+      // mesh.material = new THREE.MeshNormalMaterial()
+      outerRim = mesh
     } else if (name.indexOf('Membrane.Outer') !== -1) {
       mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
       triFaceMaterials(mesh.geometry)
@@ -249,14 +259,14 @@ async function makePiecesMito() {
       triFaceMaterials(mesh.geometry)
       // console.log('base: ', name)
       base = mesh
-    } else if (name.indexOf('RIM') !== -1) {
+    } else if (name.indexOf('Membrane.Inner.RIM') !== -1) {
       mesh.geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
 
       triFaceMaterials(mesh.geometry)
 
       // mesh.material = faceMat
       // mesh.material = new THREE.MeshNormalMaterial()
-      rim = mesh
+      innerRim = mesh
     } else {
       console.log('else: ', name)
     }
@@ -297,7 +307,8 @@ async function makePiecesMito() {
   // scene.add(base)
 
   // rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
-  rim.scale.set(scale, scale, scale)
+  innerRim.scale.set(scale, scale, scale)
+  outerRim.scale.set(scale, scale, scale)
   // scene.add(rim)
 }
 
@@ -785,8 +796,11 @@ async function init() {
   // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
   const phosphosBump = textureLoader.load('/textures/phospholipids/phospholipids_b.png')
   // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
-  rim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
-  scene.add(rim)
+  innerRim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+  scene.add(innerRim)
+
+  outerRim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+  scene.add(outerRim)
 
   const phosphosTopTexture = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
   const phosphosTopBump = textureLoader.load('/textures/phospholipids-top/phospholipids-top_b.png')
