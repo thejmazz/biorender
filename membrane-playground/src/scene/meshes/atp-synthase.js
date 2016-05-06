@@ -310,7 +310,7 @@ export const constructSynthaseSpinning = (group) => {
       case 'TM-Section':
         const bbox = getBBoxDimensions(mesh.geometry)
         scale = bilayerWidth / bbox.height
-        console.log('scale is ', scale)
+        // console.log('scale is ', scale)
 
         buildBarrel(geom)
 

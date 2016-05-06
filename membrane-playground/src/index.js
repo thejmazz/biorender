@@ -190,7 +190,8 @@ const initVesicle = ({radius=50, thickness=4, name}) => {
 let pinchesBoxes = []
 let wallsBoxes = []
 let walls = []
-let pinches = []
+let awayPinches = []
+let towardsPinches = []
 let outerMembrane
 let innerRim
 let outerRim
@@ -226,20 +227,25 @@ async function makePiecesMito() {
     const mesh = mitochondria.children[i]
 
     const name = mesh.name.replace(/Cube\.\d+_?/, '')
-    console.log(name)
+    // console.log(name)
 
     if (name.indexOf('Pinch') !== -1) {
       // console.log('pinch: ', name)
       mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
       triFaceMaterials(mesh.geometry)
-      pinches.push(mesh)
+
+
+      if (name.indexOf('.L') !== -1) {
+        awayPinches.push(mesh)
+      } else {
+        towardsPinches.push(mesh)
+      }
     } else if (name.indexOf('Wall') !== -1) {
       // console.log('wall: ', name)
       mesh.geometry = (new THREE.Geometry()).fromBufferGeometry(mesh.geometry)
       triFaceMaterials(mesh.geometry)
       walls.push(mesh)
     } else if (name.indexOf('Membrane.Outer.RIM') !== -1) {
-      console.log('outer rim')
       mesh.geometry = new THREE.Geometry().fromBufferGeometry(mesh.geometry)
 
       triFaceMaterials(mesh.geometry)
@@ -274,7 +280,7 @@ async function makePiecesMito() {
 
   // console.log(scale)
 
-  pinches.forEach( (mesh) => {
+  awayPinches.forEach( (mesh) => {
     // scene.add(mesh)
     const bbox = new THREE.BoundingBoxHelper(mesh, 0x000000)
     bbox.update()
@@ -284,6 +290,9 @@ async function makePiecesMito() {
     mesh.material = randMaterial()
     mesh.scale.set(scale, scale, scale)
     // scene.add(mesh)
+  })
+  towardsPinches.forEach( (mesh) => {
+    mesh.scale.set(scale, scale, scale)
   })
 
   walls.forEach( (wall) => {
@@ -404,7 +413,7 @@ let ATPSynthaseMed, ATPSynthaseLow
 let barrelsLeft = []
 let barrelsRight = []
 
-const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
+const usePinch = ({pinches, ATPSynthase, lods, lodOctree, sidedness}) => {
   const parentDimer = dimerCreatorColouredSpinning({synthase: ATPSynthase})
   const parentDimerMed = dimerCreatorColouredSpinning({synthase: ATPSynthaseMed})
   const parentDimerLow = dimerCreatorColouredSpinning({synthase: ATPSynthaseLow})
@@ -414,7 +423,7 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
   // kinda sketchy. will only work if mito is in left-right. after this, you can rotate.
   const getSidedness = (pinch) => {
     const bbox = getBBoxDimensions(pinch.geometry)
-    const zThreshold = pinch.geometry.boundingBox.min.z + bbox.depth*0.9
+    const zThreshold = pinch.geometry.boundingBox.min.z + bbox.depth*0.95
     const faces = pinch.geometry.faces
     const verts = pinch.geometry.vertices
 
@@ -429,10 +438,12 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
       }
     }
 
+    // console.log(maxZNorm)
+
     let side
-    if (maxZNorm < 0) {
+    if (maxZNorm < 0.3) {
       side = 'away'
-    } else if (maxZNorm > 0) {
+    } else if (maxZNorm > 0.3) {
       side = 'towards'
     }
 
@@ -584,9 +595,9 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
 
   for (let i=0; i < pinches.length; i++) {
     const pinch = pinches[i]
-    const side = getSidedness(pinch)
+    // const side = getSidedness(pinch)
 
-    doPinch({pinch, side})
+    doPinch({pinch, side: sidedness})
   }
 
   return dimers
@@ -767,8 +778,10 @@ async function init() {
   await makePiecesMito()
 
   // useWalls({walls, lods})
-  const dimers = usePinch({pinches, ATPSynthase, lods, lodOctree: LODOctree})
-  dimers.forEach(dimer => scene.add(dimer))
+  // console.log(awayPinches)
+  const dimers = usePinch({pinches: awayPinches, ATPSynthase, lods, lodOctree: LODOctree, sidedness: 'away'})
+  const dimers2 = usePinch({pinches: towardsPinches, ATPSynthase, lods, lodOctree: LODOctree, sidedness: 'towards'})
+  dimers.concat(dimers2).forEach(dimer => scene.add(dimer))
   // const mergedGeom = new THREE.Geometry().fromBufferGeometry(dimers[0].children[1].geometry)
   // const mergedGeom = dimers[0].children[1].geometry
   // console.log(dimers.length-1)
@@ -810,7 +823,7 @@ async function init() {
     scene.add(wall)
   })
 
-  pinches.forEach( (pinch) => {
+  awayPinches.concat(towardsPinches).forEach( (pinch) => {
     pinch.material = wallMat
     scene.add(pinch)
   })
