@@ -660,10 +660,23 @@ async function init() {
   ATPSynthaseLow.geometry.center()
 
   const ATPSynthaseSpinning = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
-  // ATPSynthaseSpinning.geometry.center()
+  ATPSynthaseSpinning.children[0].geometry.computeBoundingBox()
+  const first = ATPSynthaseSpinning.children[0].geometry.boundingBox.max.clone()
+  console.log(first)
+  ATPSynthaseSpinning.children[0].geometry.center()
+  ATPSynthaseSpinning.children[0].geometry.computeBoundingBox()
+  const second = ATPSynthaseSpinning.children[0].geometry.boundingBox.max.clone()
+  console.log(second)
+
+  const difference = new THREE.Vector3().subVectors(first, second)
+  console.log(difference)
+
+  // ATPSynthaseSpinning.children[1].geometry.center()
   scene.add(ATPSynthaseSpinning)
-  console.log(ATPSynthaseSpinning)
+  // console.log(ATPSynthaseSpinning)
   barrel = ATPSynthaseSpinning.children[1]
+  barrel.position.sub(difference)
+  console.log(barrel.position)
   atpReady = true
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
