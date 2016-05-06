@@ -40,7 +40,7 @@ for (let obj3DKey of Object.keys(sceneGraph)) {
 
 import { OBJLoaderAsync, textureLoader, JSONLoaderAsync } from './lib/loaders.js'
 import { makeLOD, preDisableDetail } from './lib/lod.js'
-import { populateMembrane, getBBoxDimensions, getBoundingRadius } from './lib/geometry-utils.js'
+import { populateMembrane, getBBoxDimensions, getBoundingRadius, centerGroup } from './lib/geometry-utils.js'
 
 import {
   crudeSynthaseCreator,
@@ -390,10 +390,13 @@ const useWalls = ({walls, lods}) => {
 
 // let ATPSynthase
 let ATPSynthaseMed, ATPSynthaseLow
+let barrelsLeft = []
+let barrelsRight = []
+
 const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
-  const parentDimer = dimerCreatorColoured({synthase: ATPSynthase})
-  const parentDimerMed = dimerCreatorColoured({synthase: ATPSynthaseMed})
-  const parentDimerLow = dimerCreatorColoured({synthase: ATPSynthaseLow})
+  const parentDimer = dimerCreatorColouredSpinning({synthase: ATPSynthase})
+  const parentDimerMed = dimerCreatorColouredSpinning({synthase: ATPSynthaseMed})
+  const parentDimerLow = dimerCreatorColouredSpinning({synthase: ATPSynthaseLow})
   let dimers = []
 
   // use max z factor from normals on 90% of z of mesh to determine which way its pointing
@@ -518,7 +521,9 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
       const newDimerLow = dimerLow.clone()
       newDimerLow.material = newDimer.material
 
-      const radius = getBoundingRadius(newDimer.geometry)
+      // const radius = getBoundingRadius(newDimer.geometry)
+      const box = new THREE.Box3().setFromObject(newDimer)
+      const radius = new THREE.Sphere().setFromPoints([box.max, box.min]).radius
       const newDimerBox = new THREE.Mesh(
         new THREE.BoxBufferGeometry(dimerBbox.scale.x, dimerBbox.scale.y, dimerBbox.scale.z),
         randMaterial()
@@ -532,11 +537,18 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree}) => {
       const bb = new THREE.Mesh(billboard, newDimer.material)
       bb.material.side = THREE.DoubleSide
 
+
+      barrelsLeft.push(newDimer.children[0].children[1])
+      barrelsRight.push(newDimer.children[1].children[1])
+
+      barrelsLeft.push(newDimerLow.children[0].children[1])
+      barrelsRight.push(newDimerLow.children[1].children[1])
+
       const dimerLOD = makeLOD({
         meshes: [newDimer, newDimerLow, bb],
         distances: [2, 3, 20].map(num => radius*num)
       })
-      dimerLOD.position.set(x, currentY, z)
+      dimerLOD.position.set(x+5.5, currentY, z-6)
       dimerLOD.updateMatrix()
       lods.push(dimerLOD)
       // const { x, y, z } = dimerLOD.position
@@ -617,8 +629,8 @@ let lods = []
 const LODOctree = new THREE.Octree()
 
 let barrel
-let barrelsLeft = []
-let barrelsRight = []
+let dimerSpinning
+
 async function init() {
   initGlobalLights()
   initMembrane()
@@ -644,23 +656,23 @@ async function init() {
   // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
 
-  const ATPSynthase = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
-  ATPSynthase.geometry.computeBoundingBox()
+  const ATPSynthase = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
+  // ATPSynthase.geometry.computeBoundingBox()
   // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
   // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
-  ATPSynthase.geometry.center()
+  // ATPSynthase.geometry.center()
 
   // const ATPSynthase2 = ATPSynthase.clone()
   // ATPSynthase2.position.set(5, 0, 0)
   // scene.add(ATPSynthase2)
 
-  ATPSynthaseMed = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.05.obj'))
-  ATPSynthaseMed.geometry.computeBoundingBox()
-  ATPSynthaseMed.geometry.center()
+  ATPSynthaseMed = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.05.obj'))
+  // ATPSynthaseMed.geometry.computeBoundingBox()
+  // ATPSynthaseMed.geometry.center()
 
-  ATPSynthaseLow = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.01.obj'))
-  ATPSynthaseLow.geometry.computeBoundingBox()
-  ATPSynthaseLow.geometry.center()
+  ATPSynthaseLow = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.01.obj'))
+  // ATPSynthaseLow.geometry.computeBoundingBox()
+  // ATPSynthaseLow.geometry.center()
 
   const ATPSynthaseSpinning = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
   ATPSynthaseSpinning.children[0].geometry.computeBoundingBox()
@@ -676,41 +688,42 @@ async function init() {
   barrel.position.sub(difference)
 
 
-  const dimerSpinning = dimerCreatorColouredSpinning({synthase: ATPSynthaseSpinning})
+  dimerSpinning = dimerCreatorColouredSpinning({synthase: ATPSynthaseSpinning})
+  // centerGroup(dimerSpinning)
   console.log(dimerSpinning)
   scene.add(dimerSpinning)
 
-  // barrelsLeft.push(dimerSpinning.children[0].children[1])
-  // barrelsRight.push(dimerSpinning.children[1].children[1])
-  // atpReady = true
+  barrelsLeft.push(dimerSpinning.children[0].children[1])
+  barrelsRight.push(dimerSpinning.children[1].children[1])
+  atpReady = true
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
   // ATPSynthase.geometry.translate(0, ATPSynthase.geometry.boundingBox.min.y, 0)
-  const dimer = dimerCreator({synthase: ATPSynthase})
-  // scene.add(dimer)
-  const dimer2 = dimerCreator({synthase: ATPSynthase})
-  dimer2.rotation.z = Math.PI/2
-  dimer2.rotation.y = Math.PI/2
+  // const dimer = dimerCreator({synthase: ATPSynthase})
+  // // scene.add(dimer)
+  // const dimer2 = dimerCreator({synthase: ATPSynthase})
+  // dimer2.rotation.z = Math.PI/2
+  // dimer2.rotation.y = Math.PI/2
   // scene.add(dimer2)
 
-  const dimerLow = dimerCreator({synthase: ATPSynthaseLow})
+  // const dimerLow = dimerCreator({synthase: ATPSynthaseLow})
 
 
-  const bboxA = getBBoxDimensions(ATPSynthase.geometry)
-  const atpRadius = getBoundingRadius(ATPSynthase.geometry)
-  const boxy = new THREE.Mesh(
-    new THREE.BoxGeometry(bboxA.width, bboxA.height, bboxA.depth),
-    randMaterial()
-  )
-  const testLOD = makeLOD({
-    meshes: [ATPSynthase, boxy],
-    distances: [4, 6].map(num => atpRadius*num)
-  })
-  testLOD.position.set(0, -20, 0)
-  testLOD.updateMatrix()
-  // lods.push(testLOD)
-  const { x, y, z } = testLOD.position
-  LODOctree.add({x, y, z, radius: atpRadius, id: lods.length - 1})
+  // const bboxA = getBBoxDimensions(ATPSynthase.geometry)
+  // const atpRadius = getBoundingRadius(ATPSynthase.geometry)
+  // const boxy = new THREE.Mesh(
+  //   new THREE.BoxGeometry(bboxA.width, bboxA.height, bboxA.depth),
+  //   randMaterial()
+  // )
+  // const testLOD = makeLOD({
+  //   meshes: [ATPSynthase, boxy],
+  //   distances: [4, 6].map(num => atpRadius*num)
+  // })
+  // testLOD.position.set(0, -20, 0)
+  // testLOD.updateMatrix()
+  // // lods.push(testLOD)
+  // const { x, y, z } = testLOD.position
+  // LODOctree.add({x, y, z, radius: atpRadius, id: lods.length - 1})
   // LODOctree.update()
   // console.log(LODOctree.search(new THREE.Vector3().clone(testLOD.position), 100))
   // preDisableDetail(testLOD)
@@ -823,6 +836,7 @@ const render = () => {
   const delta = clock.getDelta()
   if (atpReady) {
     // ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta*0.8
+    dimerSpinning.rotation.y = dimerSpinning.rotation.y + delta*0.8
 
     for (let i=0; i < barrelsLeft.length; i++) {
       const barrelLeft = barrelsLeft[i]

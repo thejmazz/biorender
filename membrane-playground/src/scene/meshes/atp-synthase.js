@@ -126,7 +126,8 @@ export const dimerCreatorColoured = ({synthase, spread=-0.2, rotationY=0, rotati
   return dimer
 }
 
-export const dimerCreatorColouredSpinning = ({synthase, spread=0.4, rotationY=0, rotationX=Math.PI/4}) => {
+// +0.4
+export const dimerCreatorColouredSpinning = ({synthase, spread=-0.2, rotationY=0, rotationX=Math.PI/4}) => {
   const synthaseA = synthase.clone()
   const synthaseB = synthase.clone()
 
@@ -142,22 +143,6 @@ export const dimerCreatorColouredSpinning = ({synthase, spread=0.4, rotationY=0,
   const dimer = new THREE.Group()
   dimer.add(synthaseA)
   dimer.add(synthaseB)
-
-  // synthaseA.children[0].geometry = new THREE.Geometry().fromBufferGeometry(synthaseA.children[0].geometry)
-  // synthaseA.children[0].geometry.rotateX(rotationX)
-  //
-  // synthaseB.children[0].geometry = new THREE.Geometry().fromBufferGeometry(synthaseB.children[0].geometry)
-  // synthaseB.children[0].geometry.rotateX(rotationX)
-  // synthaseB.children[0].geometry.rotateY(Math.PI)
-  // synthaseB.children[0].geometry.translate(0,0, -(difference.z + spread*difference.z))
-
-  // const geom = synthaseA.children[0].geometry
-  // geom.merge(synthaseB.children[0].geometry)
-  // geom.center()
-  //
-  // const bufferGeom = new THREE.BufferGeometry().fromGeometry(geom)
-  //
-  // const dimer = new THREE.Mesh(bufferGeom, new THREE.MeshLambertMaterial({color: 0xffffff, vertexColors: THREE.VertexColors}))
 
   return dimer
 }

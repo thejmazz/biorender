@@ -48,6 +48,24 @@ export const getGroupBoundingBox = (group) => {
   return boundingBox
 }
 
+export const centerGroup = (group) => {
+  const offset = new THREE.Vector3()
+  const boundingBox = new THREE.Box3().setFromObject(group)
+
+  // get center of bbox
+  offset.addVectors( boundingBox.min, boundingBox.max );
+  offset.multiplyScalar( -0.5 );
+
+  // move all meshes
+  for( var i = 0; i < group.children.length; ++i)
+  {
+      // apply matrix translation
+      group.children[i].geometry.applyMatrix( new THREE.Matrix4().makeTranslation( offset.x, offset.y, offset.z ) );
+      // update bbox of each mesh
+      group.children[i].geometry.computeBoundingBox();
+  }
+}
+
 const applyScaleToBBox = (bbox, scale) => {
   const { x, y, z } = scale
 
