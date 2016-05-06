@@ -47,6 +47,7 @@ import {
   crudeDimerCreator,
   dimerCreator,
   dimerCreatorColoured,
+  dimerCreatorColouredSpinning,
   constructSynthase,
   constructSynthaseSimple,
   constructSynthaseColoured,
@@ -616,6 +617,8 @@ let lods = []
 const LODOctree = new THREE.Octree()
 
 let barrel
+let barrelsLeft = []
+let barrelsRight = []
 async function init() {
   initGlobalLights()
   initMembrane()
@@ -662,21 +665,23 @@ async function init() {
   const ATPSynthaseSpinning = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
   ATPSynthaseSpinning.children[0].geometry.computeBoundingBox()
   const first = ATPSynthaseSpinning.children[0].geometry.boundingBox.max.clone()
-  console.log(first)
   ATPSynthaseSpinning.children[0].geometry.center()
   ATPSynthaseSpinning.children[0].geometry.computeBoundingBox()
   const second = ATPSynthaseSpinning.children[0].geometry.boundingBox.max.clone()
-  console.log(second)
-
   const difference = new THREE.Vector3().subVectors(first, second)
-  console.log(difference)
-
   // ATPSynthaseSpinning.children[1].geometry.center()
-  scene.add(ATPSynthaseSpinning)
+  // scene.add(ATPSynthaseSpinning)
   // console.log(ATPSynthaseSpinning)
   barrel = ATPSynthaseSpinning.children[1]
   barrel.position.sub(difference)
-  console.log(barrel.position)
+
+
+  const dimerSpinning = dimerCreatorColouredSpinning({synthase: ATPSynthaseSpinning})
+  console.log(dimerSpinning)
+  scene.add(dimerSpinning)
+
+  barrelsLeft.push(dimerSpinning.children[0].children[1])
+  barrelsRight.push(dimerSpinning.children[1].children[1])
   atpReady = true
 
   // const bbox = getBBoxDimensions(ATPSynthase.geometry)
@@ -818,7 +823,15 @@ const render = () => {
   const delta = clock.getDelta()
   if (atpReady) {
     // ATPSynthase.rotation.z = ATPSynthase.rotation.z + delta*0.8
-    barrel.rotation.y = barrel.rotation.y + delta*0.8
+
+    for (let i=0; i < barrelsLeft.length; i++) {
+      const barrelLeft = barrelsLeft[i]
+      barrelLeft.rotation.y = barrelLeft.rotation.y + delta*0.8
+
+      const barrelRight = barrelsRight[i]
+      barrelRight.rotation.y = barrelRight.rotation.y - delta*0.8
+    }
+
     // bboxH.update()
   }
   // innerMembrane.rotation.y = innerMembrane.rotation.y + delta*0.4

@@ -126,6 +126,63 @@ export const dimerCreatorColoured = ({synthase, spread=-0.2, rotationY=0, rotati
   return dimer
 }
 
+export const dimerCreatorColouredSpinning = ({synthase, spread=0.4, rotationY=0, rotationX=Math.PI/4}) => {
+  const synthaseA = synthase.clone()
+  // for some reason, need this..
+  synthaseA.rotation.x = rotationX
+
+  const synthaseB = synthase.clone()
+
+  // === TODO utilify this ===
+  const boundingBox = { min: new THREE.Vector3(Number.MAX_VALUE), max: new THREE.Vector3(Number.MIN_VALUE) }
+
+  for (let i=0; i < synthase.children.length; i++) {
+    const child = synthase.children[i]
+    child.geometry.computeBoundingBox()
+    const childBox = child.geometry.boundingBox
+
+    boundingBox.min.x = Math.min(childBox.min.x, boundingBox.min.x)
+    boundingBox.min.y = Math.min(childBox.min.y, boundingBox.min.y)
+    boundingBox.min.z = Math.min(childBox.min.z, boundingBox.min.z)
+
+    boundingBox.max.x = Math.max(childBox.max.x, boundingBox.max.x)
+    boundingBox.max.y = Math.max(childBox.max.y, boundingBox.max.y)
+    boundingBox.max.z = Math.max(childBox.max.z, boundingBox.max.z)
+  }
+  // === === ===
+
+  // const bBox = new THREE.BoundingBoxHelper(synthaseA.children[0], 0x000000)
+  // bBox.update()
+  const difference = new THREE.Vector3().subVectors(boundingBox.max, boundingBox.min)
+
+  synthaseA.rotation.x = rotationX
+  synthaseB.rotation.x = -rotationX
+  synthaseB.rotation.y = Math.PI
+  synthaseB.position.set(0, 0, -(difference.z + spread*difference.z))
+
+  const dimer = new THREE.Group()
+  dimer.add(synthaseA)
+  dimer.add(synthaseB)
+
+  // synthaseA.children[0].geometry = new THREE.Geometry().fromBufferGeometry(synthaseA.children[0].geometry)
+  // synthaseA.children[0].geometry.rotateX(rotationX)
+  //
+  // synthaseB.children[0].geometry = new THREE.Geometry().fromBufferGeometry(synthaseB.children[0].geometry)
+  // synthaseB.children[0].geometry.rotateX(rotationX)
+  // synthaseB.children[0].geometry.rotateY(Math.PI)
+  // synthaseB.children[0].geometry.translate(0,0, -(difference.z + spread*difference.z))
+
+  // const geom = synthaseA.children[0].geometry
+  // geom.merge(synthaseB.children[0].geometry)
+  // geom.center()
+  //
+  // const bufferGeom = new THREE.BufferGeometry().fromGeometry(geom)
+  //
+  // const dimer = new THREE.Mesh(bufferGeom, new THREE.MeshLambertMaterial({color: 0xffffff, vertexColors: THREE.VertexColors}))
+
+  return dimer
+}
+
 export const constructDimer = (synthase) => {
   const ATPSynthase = constructSynthase(synthase)
 
