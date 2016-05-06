@@ -805,14 +805,16 @@ async function init() {
   // const iDimers = makeInstanced(dimers, dimerLow)
   // scene.add(iDimers)
 
-  const phosphosTexture = textureLoader.load('/textures/phospholipids/phospholipids_a.png')
-  // phosphosTexture.wrapS = phosphosTexture.wrapT =  THREE.RepeatWrapping
-  const phosphosBump = textureLoader.load('/textures/phospholipids/phospholipids_b.png')
-  // phosphosBump.wrapS = phosphosBump.wrapT =  THREE.RepeatWrapping
-  innerRim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+  const phosphosTextureInner = textureLoader.load('/textures/phospholipids/mitochondria-inner-membrane-phospholipids_a.png')
+  const phosphosBumpInner = textureLoader.load('/textures/phospholipids/mitochondria-inner-membrane-phospholipids_b.png')
+
+  innerRim.material = new THREE.MeshPhongMaterial({map: phosphosTextureInner, bumpMap: phosphosBumpInner})
   scene.add(innerRim)
 
-  outerRim.material = new THREE.MeshPhongMaterial({map: phosphosTexture, bumpMap: phosphosBump})
+  const phosphosTextureOuter = textureLoader.load('/textures/phospholipids/mitochondria-outer-membrane-phospholipids_a.png')
+  const phosphosBumpOuter = textureLoader.load('/textures/phospholipids/mitochondria-outer-membrane-phospholipids_b.png')
+
+  outerRim.material = new THREE.MeshPhongMaterial({map: phosphosTextureOuter, bumpMap: phosphosBumpOuter})
   scene.add(outerRim)
 
   const phosphosTopTexture = textureLoader.load('/textures/phospholipids-top/phospholipids-top_a.png')
