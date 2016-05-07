@@ -7980,7 +7980,7 @@
 	
 	var init = function () {
 	  var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
-	    var membraneDimensions, ATPSynthase, ATPSynthaseSpinning, first, second, difference, plane, planeMat, billboard, objy, dimers, dimers2, phosphosTextureInner, phosphosBumpInner, phosphosTextureOuter, phosphosBumpOuter, phosphosTopTexture, phosphosTopBump, wallMat, porin;
+	    var membraneDimensions, ATPSynthase, first, second, difference, first2, second2, difference2, barrel2, plane, planeMat, billboard, objy, dimers, dimers2, phosphosTextureInner, phosphosBumpInner, phosphosTextureOuter, phosphosBumpOuter, phosphosTopTexture, phosphosTopBump, wallMat, porin;
 	    return regeneratorRuntime.wrap(function _callee3$(_context3) {
 	      while (1) {
 	        switch (_context3.prev = _context3.next) {
@@ -8026,19 +8026,19 @@
 	
 	          case 18:
 	            _context3.t3 = _context3.sent;
-	            ATPSynthase = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t3);
+	            ATPSynthase = (0, _atpSynthase.constructSynthaseColoured)(_context3.t3);
 	            _context3.next = 22;
 	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.05.obj');
 	
 	          case 22:
 	            _context3.t4 = _context3.sent;
-	            ATPSynthaseMed = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t4);
+	            ATPSynthaseMed = (0, _atpSynthase.constructSynthaseColoured)(_context3.t4);
 	            _context3.next = 26;
 	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.01.obj');
 	
 	          case 26:
 	            _context3.t5 = _context3.sent;
-	            ATPSynthaseLow = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t5);
+	            ATPSynthaseLow = (0, _atpSynthase.constructSynthaseColoured)(_context3.t5);
 	            _context3.next = 30;
 	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.1.obj');
 	
@@ -8059,6 +8059,24 @@
 	
 	            barrel = ATPSynthaseSpinning.children[1];
 	            barrel.position.sub(difference);
+	
+	            _context3.next = 42;
+	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/ATP-Synthase/ATP-synthase-d0.05.obj');
+	
+	          case 42:
+	            _context3.t7 = _context3.sent;
+	            ATPSynthaseLowSpinning = (0, _atpSynthase.constructSynthaseSpinning)(_context3.t7);
+	
+	            ATPSynthaseLowSpinning.children[0].geometry.computeBoundingBox();
+	            first2 = ATPSynthaseLowSpinning.children[0].geometry.boundingBox.max.clone();
+	
+	            ATPSynthaseLowSpinning.children[0].geometry.center();
+	            ATPSynthaseLowSpinning.children[0].geometry.computeBoundingBox();
+	            second2 = ATPSynthaseLowSpinning.children[0].geometry.boundingBox.max.clone();
+	            difference2 = new THREE.Vector3().subVectors(first2, second2);
+	            barrel2 = ATPSynthaseLowSpinning.children[1];
+	
+	            barrel2.position.sub(difference2);
 	
 	            // TODO properly center dimerSpinning group
 	            // dimerSpinning = dimerCreatorColouredSpinning({synthase: ATPSynthaseSpinning})
@@ -8101,10 +8119,10 @@
 	            // preDisableDetail(testLOD)
 	            // scene.add(testLOD)
 	
-	            _context3.next = 43;
+	            _context3.next = 55;
 	            return (0, _loaders.JSONLoaderAsync)('/biorender/models/ETC-billboard.json');
 	
-	          case 43:
+	          case 55:
 	            plane = _context3.sent;
 	            planeMat = _loaders.textureLoader.load('/biorender/textures/etc-billboard.png');
 	            billboard = new THREE.Mesh(plane[0], new THREE.MeshPhongMaterial({ map: planeMat, transparent: true, side: THREE.DoubleSide, alphaTest: 0.5 }));
@@ -8120,10 +8138,10 @@
 	            // scene.add(innerMembraneProteins)
 	
 	            // await makeUnifiedMito()
-	            _context3.next = 51;
+	            _context3.next = 63;
 	            return makePiecesMito();
 	
-	          case 51:
+	          case 63:
 	
 	            // useWalls({walls, lods})
 	            // console.log(awayPinches)
@@ -8191,14 +8209,14 @@
 	            outerMembrane.material.opacity = 0.5;
 	            scene.add(outerMembrane);
 	
-	            _context3.next = 75;
+	            _context3.next = 87;
 	            return (0, _loaders.OBJLoaderAsync)('/biorender/models/Mitochondria/Outer-Membrane/porin.obj');
 	
-	          case 75:
-	            _context3.t7 = _context3.sent;
-	            porin = (0, _porin.constructPorin)(_context3.t7);
+	          case 87:
+	            _context3.t8 = _context3.sent;
+	            porin = (0, _porin.constructPorin)(_context3.t8);
 	
-	          case 77:
+	          case 89:
 	          case 'end':
 	            return _context3.stop();
 	        }
@@ -8255,7 +8273,8 @@
 	
 	// ===========================================================================
 	
-	camera.position.set(0, 1, 0);
+	// camera.position.set(0, 30, -25)
+	camera.position.set(300, 100, 50);
 	
 	// Cam
 	
@@ -8352,7 +8371,10 @@
 	  camera.add(cLight);
 	  cLight.position.set(0, 0, -0.001);
 	
-	  camera.lookAt(new THREE.Vector3(0, 0, 0));
+	  // console.log(controls)
+	  camera.lookAt(new THREE.Vector3(0, 0, -25));
+	  controls.target.set(0, 0, -25);
+	
 	  scene.add(camera);
 	
 	  var aLight = new THREE.AmbientLight(0xe6e6e6, 0.5);
@@ -8513,6 +8535,8 @@
 	// let ATPSynthase
 	var ATPSynthaseMed = void 0,
 	    ATPSynthaseLow = void 0;
+	var ATPSynthaseSpinning = void 0;
+	var ATPSynthaseLowSpinning = void 0;
 	var barrelsLeft = [];
 	var barrelsRight = [];
 	
@@ -8523,9 +8547,13 @@
 	  var lodOctree = _ref3.lodOctree;
 	  var sidedness = _ref3.sidedness;
 	
-	  var parentDimer = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthase });
-	  var parentDimerMed = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthaseMed });
-	  var parentDimerLow = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthaseLow });
+	  var parentDimer = (0, _atpSynthase.dimerCreatorColoured)({ synthase: ATPSynthase });
+	  var parentDimerMed = (0, _atpSynthase.dimerCreatorColoured)({ synthase: ATPSynthaseMed });
+	  var parentDimerLow = (0, _atpSynthase.dimerCreatorColoured)({ synthase: ATPSynthaseLow });
+	
+	  var parentDimerSpinning = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthaseSpinning });
+	  var parentDimerLowSpinning = (0, _atpSynthase.dimerCreatorColouredSpinning)({ synthase: ATPSynthaseLowSpinning });
+	
 	  var dimers = [];
 	
 	  // use max z factor from normals on 90% of z of mesh to determine which way its pointing
@@ -8570,8 +8598,8 @@
 	    var max = null;
 	    // assumes up. assumes left-right.
 	    var verts = pinch.geometry.vertices;
-	    for (var i = 0; i < verts.length; i++) {
-	      var vert = verts[i];
+	    for (var _i = 0; _i < verts.length; _i++) {
+	      var vert = verts[_i];
 	
 	      if (vert.y > yThreshold) {
 	        if (min === null) {
@@ -8607,20 +8635,25 @@
 	    min.multiplyScalar(pinch.scale.x);
 	
 	    var dimer = parentDimer.clone();
+	    var dimerSpinning = parentDimerSpinning.clone();
 	    var x = min.x + (max.x - min.x) / 2;
 	    var y = max.y;
 	    var z = void 0;
 	    if (side === 'towards') {
 	      z = max.z;
 	      dimer.rotation.z = Math.PI / 2;
+	      dimerSpinning.rotation.z = Math.PI / 2;
 	    } else if (side === 'away') {
 	      z = min.z;
 	      dimer.rotation.z = -Math.PI / 2;
+	      dimerSpinning.rotation.z = -Math.PI / 2;
 	    }
 	    dimer.rotation.y = Math.PI / 2;
+	    dimerSpinning.rotation.y = Math.PI / 2;
 	
 	    var spacage = void 0;
 	    var dimerLow = parentDimerLow.clone();
+	    var dimerLowSpinning = parentDimerLowSpinning.clone();
 	    // let x = min.x + (max.x - min.x)/2
 	    // let y = max.y
 	    // let z
@@ -8628,18 +8661,22 @@
 	      // z = max.z
 	      spacage = -1;
 	      dimerLow.rotation.z = Math.PI / 2;
+	      dimerLowSpinning.rotation.z = Math.PI / 2;
 	    } else if (side === 'away') {
 	      // z = min.z
 	      spacage = 1;
 	      dimerLow.rotation.z = -Math.PI / 2;
+	      dimerLowSpinning.rotation.z = -Math.PI / 2;
 	    }
 	    dimerLow.rotation.y = Math.PI / 2;
+	    dimerLowSpinning.rotation.y = Math.PI / 2;
 	
 	    var dimerBbox = new THREE.BoundingBoxHelper(dimer);
 	    dimerBbox.update();
 	
 	    var currentY = y;
 	
+	    // TODO geom-utilify
 	    var makeGlobalMinY = function makeGlobalMinY(dist, mesh) {
 	      mesh.geometry.computeBoundingBox();
 	      var _mesh$geometry$boundi = mesh.geometry.boundingBox;
@@ -8653,13 +8690,17 @@
 	    };
 	
 	    var globalMinY = makeGlobalMinY(0.1, pinch);
+	    var i = 0;
 	
 	    var _loop = function _loop() {
 	      var newDimer = dimer.clone();
+	      var newDimerSpinning = dimerSpinning.clone();
 	      // newDimer.position.set(x, currentY, z)
 	      // newDimer.material = randMaterial()
 	      var newDimerLow = dimerLow.clone();
 	      newDimerLow.material = newDimer.material;
+	      var newDimerLowSpinning = dimerLowSpinning.clone();
+	      newDimerLowSpinning.material = newDimer.material;
 	
 	      // const radius = getBoundingRadius(newDimer.geometry)
 	      var box = new THREE.Box3().setFromObject(newDimer);
@@ -8674,35 +8715,47 @@
 	      var bb = new THREE.Mesh(billboard, newDimer.material);
 	      bb.material.side = THREE.DoubleSide;
 	
-	      barrelsLeft.push(newDimer.children[0].children[1]);
-	      barrelsRight.push(newDimer.children[1].children[1]);
+	      if (i === 0) {
+	        barrelsLeft.push(newDimerSpinning.children[0].children[1]);
+	        barrelsRight.push(newDimerSpinning.children[1].children[1]);
 	
-	      barrelsLeft.push(newDimerLow.children[0].children[1]);
-	      barrelsRight.push(newDimerLow.children[1].children[1]);
+	        barrelsLeft.push(newDimerLowSpinning.children[0].children[1]);
+	        barrelsRight.push(newDimerLowSpinning.children[1].children[1]);
 	
-	      // const dimerLOD = makeLOD({
-	      //   meshes: [newDimer, newDimerLow, bb],
-	      //   distances: [2, 3, 20].map(num => radius*num)
-	      // })
-	      var dimerLOD = (0, _lod.makeLOD)({
-	        meshes: [newDimer, newDimerLow],
-	        distances: [2, 3].map(function (num) {
-	          return radius * num;
-	        })
-	      });
-	      dimerLOD.position.set(x + 5.5, currentY, z + spacage * 6);
-	      dimerLOD.updateMatrix();
-	      lods.push(dimerLOD);
-	      // const { x, y, z } = dimerLOD.position
-	      // LODOctree.add({x, y, z, radius, id: lods.length - 1})
-	      (0, _lod.preDisableDetail)(dimerLOD);
-	      // scene.add(dimerLOD)
-	      dimers.push(dimerLOD);
-	
-	      // newDimer.position.set(x, currentY, z)
-	      // scene.add(newDimer)
+	        var dimerLOD = (0, _lod.makeLOD)({
+	          meshes: [newDimerSpinning, newDimerLowSpinning],
+	          distances: [2, 3].map(function (num) {
+	            return radius * num;
+	          })
+	        });
+	        // dimerLOD.position.set(x+5.5, currentY, z + spacage*6)
+	        dimerLOD.position.set(x + 9.5, currentY, z);
+	        dimerLOD.updateMatrix();
+	        lods.push(dimerLOD);
+	        (0, _lod.preDisableDetail)(dimerLOD);
+	        dimers.push(dimerLOD);
+	      } else {
+	        // const dimerLOD = makeLOD({
+	        //   meshes: [newDimer, newDimerLow, bb],
+	        //   distances: [2, 3, 20].map(num => radius*num)
+	        // })
+	        var _dimerLOD = (0, _lod.makeLOD)({
+	          meshes: [newDimer, newDimerLow],
+	          distances: [2, 3].map(function (num) {
+	            return radius * num;
+	          })
+	        });
+	        // dimerLOD.position.set(x+5.5, currentY, z + spacage*6)
+	        _dimerLOD.position.set(x, currentY, z + spacage * 1.5);
+	        _dimerLOD.updateMatrix();
+	        lods.push(_dimerLOD);
+	        (0, _lod.preDisableDetail)(_dimerLOD);
+	        dimers.push(_dimerLOD);
+	      }
 	
 	      currentY -= dimerBbox.scale.y * 1.5;
+	
+	      i++;
 	    };
 	
 	    while (currentY > globalMinY) {
@@ -8736,14 +8789,14 @@
 	  igeom.addAttribute('position', vertices);
 	
 	  var offsets = new THREE.InstancedBufferAttribute(new Float32Array(instances * 3), 3, 1);
-	  for (var _i = 0; _i < offsets.count; _i++) {
-	    var _positions$_i$positio = positions[_i].position;
-	    var x = _positions$_i$positio.x;
-	    var y = _positions$_i$positio.y;
-	    var z = _positions$_i$positio.z;
+	  for (var _i2 = 0; _i2 < offsets.count; _i2++) {
+	    var _positions$_i2$positi = positions[_i2].position;
+	    var x = _positions$_i2$positi.x;
+	    var y = _positions$_i2$positi.y;
+	    var z = _positions$_i2$positi.z;
 	
 	
-	    offsets.setXYZ(_i, x, y, z);
+	    offsets.setXYZ(_i2, x, y, z);
 	  }
 	  igeom.addAttribute('offset', offsets);
 	
@@ -8755,18 +8808,18 @@
 	
 	  var vector = new THREE.Vector4();
 	  var orientations = new THREE.InstancedBufferAttribute(new Float32Array(instances * 4), 4, 1);
-	  for (var _i2 = 0; _i2 < orientations.count; _i2++) {
-	    var _positions$_i2$childr = positions[_i2].children[0].quaternion;
-	    var x = _positions$_i2$childr.x;
-	    var y = _positions$_i2$childr.y;
-	    var z = _positions$_i2$childr.z;
-	    var w = _positions$_i2$childr.w;
+	  for (var _i3 = 0; _i3 < orientations.count; _i3++) {
+	    var _positions$_i3$childr = positions[_i3].children[0].quaternion;
+	    var x = _positions$_i3$childr.x;
+	    var y = _positions$_i3$childr.y;
+	    var z = _positions$_i3$childr.z;
+	    var w = _positions$_i3$childr.w;
 	
 	    vector.set(x, y, z, w);
 	    // vector.set( Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1 )
 	    vector.normalize();
 	    // orientations.setXYZW(i, x, y, z, w)
-	    orientations.setXYZW(_i2, 0, 0, 0, 1);
+	    orientations.setXYZW(_i3, 0, 0, 0, 1);
 	  }
 	  igeom.addAttribute('orientation', orientations);
 	
@@ -8879,8 +8932,8 @@
 	  // }
 	
 	  // console.time('lodUpdate')
-	  for (var _i3 = 0; _i3 < lods.length; _i3++) {
-	    lods[_i3].update(camera);
+	  for (var _i4 = 0; _i4 < lods.length; _i4++) {
+	    lods[_i4].update(camera);
 	  }
 	  // console.timeEnd('lodUpdate')
 	
@@ -9760,7 +9813,7 @@
 	var dimerCreatorColoured = exports.dimerCreatorColoured = function dimerCreatorColoured(_ref2) {
 	  var synthase = _ref2.synthase;
 	  var _ref2$spread = _ref2.spread;
-	  var spread = _ref2$spread === undefined ? -0.2 : _ref2$spread;
+	  var spread = _ref2$spread === undefined ? -0.5 : _ref2$spread;
 	  var _ref2$rotationY = _ref2.rotationY;
 	  var rotationY = _ref2$rotationY === undefined ? 0 : _ref2$rotationY;
 	  var _ref2$rotationX = _ref2.rotationX;
@@ -9795,10 +9848,11 @@
 	};
 	
 	// +0.4
+	// -0.2
 	var dimerCreatorColouredSpinning = exports.dimerCreatorColouredSpinning = function dimerCreatorColouredSpinning(_ref3) {
 	  var synthase = _ref3.synthase;
 	  var _ref3$spread = _ref3.spread;
-	  var spread = _ref3$spread === undefined ? -0.2 : _ref3$spread;
+	  var spread = _ref3$spread === undefined ? 0.4 : _ref3$spread;
 	  var _ref3$rotationY = _ref3.rotationY;
 	  var rotationY = _ref3$rotationY === undefined ? 0 : _ref3$rotationY;
 	  var _ref3$rotationX = _ref3.rotationX;
