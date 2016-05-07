@@ -97,7 +97,7 @@ export const dimerCreator = ({synthase, spread=-0.2, rotationY=0, rotationX=Math
   return dimer
 }
 
-export const dimerCreatorColoured = ({synthase, spread=-0.2, rotationY=0, rotationX=Math.PI/4}) => {
+export const dimerCreatorColoured = ({synthase, spread=-0.5, rotationY=0, rotationX=Math.PI/4}) => {
   const synthaseA = synthase.clone()
   // for some reason, need this..
   synthaseA.rotation.x = rotationX
@@ -127,7 +127,8 @@ export const dimerCreatorColoured = ({synthase, spread=-0.2, rotationY=0, rotati
 }
 
 // +0.4
-export const dimerCreatorColouredSpinning = ({synthase, spread=-0.2, rotationY=0, rotationX=Math.PI/4}) => {
+// -0.2
+export const dimerCreatorColouredSpinning = ({synthase, spread=0.4, rotationY=0, rotationX=Math.PI/4}) => {
   const synthaseA = synthase.clone()
   const synthaseB = synthase.clone()
 

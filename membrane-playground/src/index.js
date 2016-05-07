@@ -11,7 +11,8 @@ window.scene = scene
 
 // ===========================================================================
 
-camera.position.set(0, 1, 0)
+// camera.position.set(0, 30, -25)
+camera.position.set(300, 100, 50)
 
 // Cam
 
@@ -117,7 +118,10 @@ const initGlobalLights = () => {
   camera.add(cLight)
   cLight.position.set(0,0,-0.001)
 
-  camera.lookAt(new THREE.Vector3(0,0,0))
+  // console.log(controls)
+  camera.lookAt(new THREE.Vector3(0,0,-25))
+  controls.target.set(0, 0, -25)
+
   scene.add(camera)
 
   const aLight = new THREE.AmbientLight(0xe6e6e6, 0.5)
@@ -410,13 +414,19 @@ const useWalls = ({walls, lods}) => {
 
 // let ATPSynthase
 let ATPSynthaseMed, ATPSynthaseLow
+let ATPSynthaseSpinning
+let ATPSynthaseLowSpinning
 let barrelsLeft = []
 let barrelsRight = []
 
 const usePinch = ({pinches, ATPSynthase, lods, lodOctree, sidedness}) => {
-  const parentDimer = dimerCreatorColouredSpinning({synthase: ATPSynthase})
-  const parentDimerMed = dimerCreatorColouredSpinning({synthase: ATPSynthaseMed})
-  const parentDimerLow = dimerCreatorColouredSpinning({synthase: ATPSynthaseLow})
+  const parentDimer = dimerCreatorColoured({synthase: ATPSynthase})
+  const parentDimerMed = dimerCreatorColoured({synthase: ATPSynthaseMed})
+  const parentDimerLow = dimerCreatorColoured({synthase: ATPSynthaseLow})
+
+  const parentDimerSpinning = dimerCreatorColouredSpinning({synthase: ATPSynthaseSpinning})
+  const parentDimerLowSpinning = dimerCreatorColouredSpinning({synthase: ATPSynthaseLowSpinning})
+
   let dimers = []
 
   // use max z factor from normals on 90% of z of mesh to determine which way its pointing
@@ -496,20 +506,25 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree, sidedness}) => {
     min.multiplyScalar(pinch.scale.x)
 
     const dimer = parentDimer.clone()
+    const dimerSpinning = parentDimerSpinning.clone()
     let x = min.x + (max.x - min.x)/2
     let y = max.y
     let z
     if (side === 'towards') {
       z = max.z
       dimer.rotation.z = Math.PI/2
+      dimerSpinning.rotation.z = Math.PI/2
     } else if (side === 'away') {
       z = min.z
       dimer.rotation.z = -Math.PI/2
+      dimerSpinning.rotation.z = -Math.PI/2
     }
     dimer.rotation.y = Math.PI/2
+    dimerSpinning.rotation.y = Math.PI/2
 
     let spacage
     const dimerLow = parentDimerLow.clone()
+    const dimerLowSpinning = parentDimerLowSpinning.clone()
     // let x = min.x + (max.x - min.x)/2
     // let y = max.y
     // let z
@@ -517,18 +532,22 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree, sidedness}) => {
       // z = max.z
       spacage = -1
       dimerLow.rotation.z = Math.PI/2
+      dimerLowSpinning.rotation.z = Math.PI/2
     } else if (side === 'away') {
       // z = min.z
       spacage = 1
       dimerLow.rotation.z = -Math.PI/2
+      dimerLowSpinning.rotation.z = -Math.PI/2
     }
     dimerLow.rotation.y = Math.PI/2
+    dimerLowSpinning.rotation.y = Math.PI/2
 
     const dimerBbox = new THREE.BoundingBoxHelper(dimer)
     dimerBbox.update()
 
     let currentY = y
 
+    // TODO geom-utilify
     const makeGlobalMinY = (dist, mesh) => {
       mesh.geometry.computeBoundingBox()
       const { min, max } = mesh.geometry.boundingBox
@@ -539,12 +558,17 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree, sidedness}) => {
     }
 
     let globalMinY = makeGlobalMinY(0.1, pinch)
+    let i=0
     while (currentY > globalMinY) {
       const newDimer = dimer.clone()
+      const newDimerSpinning = dimerSpinning.clone()
       // newDimer.position.set(x, currentY, z)
       // newDimer.material = randMaterial()
       const newDimerLow = dimerLow.clone()
       newDimerLow.material = newDimer.material
+      const newDimerLowSpinning = dimerLowSpinning.clone()
+      newDimerLowSpinning.material = newDimer.material
+
 
       // const radius = getBoundingRadius(newDimer.geometry)
       const box = new THREE.Box3().setFromObject(newDimer)
@@ -562,34 +586,44 @@ const usePinch = ({pinches, ATPSynthase, lods, lodOctree, sidedness}) => {
       const bb = new THREE.Mesh(billboard, newDimer.material)
       bb.material.side = THREE.DoubleSide
 
+      if (i === 0) {
+        barrelsLeft.push(newDimerSpinning.children[0].children[1])
+        barrelsRight.push(newDimerSpinning.children[1].children[1])
 
-      barrelsLeft.push(newDimer.children[0].children[1])
-      barrelsRight.push(newDimer.children[1].children[1])
+        barrelsLeft.push(newDimerLowSpinning.children[0].children[1])
+        barrelsRight.push(newDimerLowSpinning.children[1].children[1])
 
-      barrelsLeft.push(newDimerLow.children[0].children[1])
-      barrelsRight.push(newDimerLow.children[1].children[1])
+        const dimerLOD = makeLOD({
+          meshes: [newDimerSpinning, newDimerLowSpinning],
+          distances: [2, 3].map(num => radius*num)
+        })
+        // dimerLOD.position.set(x+5.5, currentY, z + spacage*6)
+        dimerLOD.position.set(x+9.5, currentY, z)
+        dimerLOD.updateMatrix()
+        lods.push(dimerLOD)
+        preDisableDetail(dimerLOD)
+        dimers.push(dimerLOD)
 
-      // const dimerLOD = makeLOD({
-      //   meshes: [newDimer, newDimerLow, bb],
-      //   distances: [2, 3, 20].map(num => radius*num)
-      // })
-      const dimerLOD = makeLOD({
-        meshes: [newDimer, newDimerLow],
-        distances: [2, 3].map(num => radius*num)
-      })
-      dimerLOD.position.set(x+5.5, currentY, z + spacage*6)
-      dimerLOD.updateMatrix()
-      lods.push(dimerLOD)
-      // const { x, y, z } = dimerLOD.position
-      // LODOctree.add({x, y, z, radius, id: lods.length - 1})
-      preDisableDetail(dimerLOD)
-      // scene.add(dimerLOD)
-      dimers.push(dimerLOD)
-
-      // newDimer.position.set(x, currentY, z)
-      // scene.add(newDimer)
+      } else {
+        // const dimerLOD = makeLOD({
+        //   meshes: [newDimer, newDimerLow, bb],
+        //   distances: [2, 3, 20].map(num => radius*num)
+        // })
+        const dimerLOD = makeLOD({
+          meshes: [newDimer, newDimerLow],
+          distances: [2, 3].map(num => radius*num)
+        })
+        // dimerLOD.position.set(x+5.5, currentY, z + spacage*6)
+        dimerLOD.position.set(x, currentY, z+spacage*1.5)
+        dimerLOD.updateMatrix()
+        lods.push(dimerLOD)
+        preDisableDetail(dimerLOD)
+        dimers.push(dimerLOD)
+      }
 
       currentY -= dimerBbox.scale.y*1.5
+
+      i++
     }
   }
 
@@ -685,7 +719,7 @@ async function init() {
   // etc2.position.set(0, 2, 0)
   // scene.add(etc2)
 
-  const ATPSynthase = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
+  const ATPSynthase = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
   // ATPSynthase.geometry.computeBoundingBox()
   // SKETCHY AF. but not needed anymore. but alternative sln. isn't exactly amazing either.
   // ATPSynthase.userData.yOffset = ATPSynthase.geometry.boundingBox.min.y*1.5 //* ATPSynthase.scale.y
@@ -695,15 +729,15 @@ async function init() {
   // ATPSynthase2.position.set(5, 0, 0)
   // scene.add(ATPSynthase2)
 
-  ATPSynthaseMed = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.05.obj'))
+  ATPSynthaseMed = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.05.obj'))
   // ATPSynthaseMed.geometry.computeBoundingBox()
   // ATPSynthaseMed.geometry.center()
 
-  ATPSynthaseLow = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.01.obj'))
+  ATPSynthaseLow = constructSynthaseColoured(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.01.obj'))
   // ATPSynthaseLow.geometry.computeBoundingBox()
   // ATPSynthaseLow.geometry.center()
 
-  const ATPSynthaseSpinning = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
+  ATPSynthaseSpinning = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.1.obj'))
   ATPSynthaseSpinning.children[0].geometry.computeBoundingBox()
   const first = ATPSynthaseSpinning.children[0].geometry.boundingBox.max.clone()
   ATPSynthaseSpinning.children[0].geometry.center()
@@ -715,6 +749,16 @@ async function init() {
   // console.log(ATPSynthaseSpinning)
   barrel = ATPSynthaseSpinning.children[1]
   barrel.position.sub(difference)
+
+  ATPSynthaseLowSpinning = constructSynthaseSpinning(await OBJLoaderAsync('/models/ATP-Synthase/ATP-synthase-d0.05.obj'))
+  ATPSynthaseLowSpinning.children[0].geometry.computeBoundingBox()
+  const first2 = ATPSynthaseLowSpinning.children[0].geometry.boundingBox.max.clone()
+  ATPSynthaseLowSpinning.children[0].geometry.center()
+  ATPSynthaseLowSpinning.children[0].geometry.computeBoundingBox()
+  const second2 = ATPSynthaseLowSpinning.children[0].geometry.boundingBox.max.clone()
+  const difference2 = new THREE.Vector3().subVectors(first2, second2)
+  let barrel2 = ATPSynthaseLowSpinning.children[1]
+  barrel2.position.sub(difference2)
 
 
   // TODO properly center dimerSpinning group
