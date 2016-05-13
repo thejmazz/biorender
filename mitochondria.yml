@@ -1,0 +1,20 @@
+structure-name: mitochondria
+structure-file: mitochondria.obj
+proteins:
+  - ATPsynthase
+  - ETC
+
+protein:
+  name: ATPsynthase
+  models:
+    - ATPsynthase-d0.1.obj
+    - ATPsynthase-d0.05.obj
+    - ATPsynthase-d0.01.obj
+  lodlevels:
+    - 2
+    - 4
+    - 10
+  materials:
+    material:
+      name: F1-head
+      color: 0x123123
