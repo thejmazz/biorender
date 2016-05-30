@@ -1,5 +1,7 @@
 # BioRender
 
+Biorender can take 3D models (such as the model of a mitochondrion), which have vertex groups describing protein localization zones, and properly attach transmembrane proteins in their proper orientation. On the roadmap is plans to expand it to support yaml based configuration and so that Geno Ontology descriptions (under biological structures root) can be automatically constructed into 3D scenes. Ultimately, biorender is a tool for creating and sharing 3D interactive visualizations of biochemical scenes. See the [presentation](https://github.com/biorender/biorender/releases/download/v0.1.0/biorender-torbug-2016-04-27.pdf) given at TorBUG on April 27 for more info.
+
 Thanks for [Smart Biology](https://www.smart-biology.com/) for providing several models and resources!
 - ATP Synthase
 - phosholipid bilayer texture
